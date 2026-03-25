@@ -5,16 +5,19 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev":   "nodemon src/app.js",
-    "db":    "psql bridge_db < src/db/schema.sql"
+    "dev": "nodemon src/app.js",
+    "db": "psql bridge_db < src/db/schema.sql"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@slack/bolt": "^4.6.0",
+    "axios": "^1.13.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "form-data": "^4.0.5",
+    "multer": "^2.1.1",
     "pg": "^8.20.0",
     "redis": "^5.11.0",
     "twilio": "^5.13.0"
