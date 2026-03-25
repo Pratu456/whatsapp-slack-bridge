@@ -1,5 +1,6 @@
 // src/app.js
 require('dotenv').config();
+const { pool } = require('./db');
 const express       = require('express');
 const { App }       = require('@slack/bolt');
 const whatsappRoute = require('./routes/whatsapp');
@@ -8,6 +9,8 @@ const { sendWhatsApp }  = require('./services/twilioService');
 const { getWaNumber }   = require('./services/mappingService');
 const { logMessage }    = require('./services/messageLogger');
 const path = require('path');
+const statusRoute = require('./routes/status');
+const commandsRoute = require('./routes/commands');
 
 
 // ── Express server ────────────────────────────────────────
@@ -16,6 +19,8 @@ server.use(express.urlencoded({ extended: false }));
 server.use(express.json());
 
 server.use('/whatsapp', whatsappRoute);
+server.use('/status', statusRoute);
+server.use('/commands', commandsRoute);
 
 server.get('/health', (req, res) => res.json({ status: 'ok' }));
 server.use('/media', require('express').static(path.join(__dirname, 'tmp')));
@@ -108,6 +113,89 @@ slackApp.message(async ({ message }) => {
 
   } catch (err) {
     console.error('Slack message handler error:', err.message);
+  }
+});
+// /history command
+slackApp.command('/history', async ({ command, ack, respond }) => {
+  await ack();
+  try {
+    const waNumber = await getWaNumber(command.channel_id);
+    if (!waNumber) {
+      return respond('❌ This channel is not linked to a WhatsApp contact.');
+    }
+
+    const result = await pool.query(
+      `SELECT m.body, m.direction, m.status, m.created_at
+       FROM messages m
+       JOIN contacts c ON c.id = m.contact_id
+       WHERE c.wa_number = $1
+       ORDER BY m.created_at DESC
+       LIMIT 10`,
+      [waNumber]
+    );
+
+    if (!result.rows.length) {
+      return respond('📭 No messages found for this contact.');
+    }
+
+    const lines = result.rows.reverse().map(msg => {
+      const direction = msg.direction === 'inbound' ? '📱 WhatsApp' : '💬 Slack';
+      const time = new Date(msg.created_at).toLocaleTimeString();
+      return `*${direction}* [${msg.status}] ${time}\n${msg.body}`;
+    });
+
+    await respond(`📋 *Last ${result.rows.length} messages with ${waNumber}:*\n\n${lines.join('\n\n')}`);
+
+  } catch (err) {
+    console.error('/history error:', err.message);
+    await respond('❌ Error fetching history.');
+  }
+});
+
+// /block command
+slackApp.command('/block', async ({ command, ack, respond }) => {
+  await ack();
+  try {
+    const waNumber = await getWaNumber(command.channel_id);
+    if (!waNumber) {
+      return respond('❌ This channel is not linked to a WhatsApp contact.');
+    }
+
+    await pool.query(
+      'ALTER TABLE contacts ADD COLUMN IF NOT EXISTS blocked BOOLEAN DEFAULT FALSE'
+    );
+    await pool.query(
+      'UPDATE contacts SET blocked = TRUE WHERE wa_number = $1',
+      [waNumber]
+    );
+
+    await respond(`🚫 Contact *${waNumber}* has been blocked. No further messages will be forwarded.`);
+
+  } catch (err) {
+    console.error('/block error:', err.message);
+    await respond('❌ Error blocking contact.');
+  }
+});
+
+// /unblock command
+slackApp.command('/unblock', async ({ command, ack, respond }) => {
+  await ack();
+  try {
+    const waNumber = await getWaNumber(command.channel_id);
+    if (!waNumber) {
+      return respond('❌ This channel is not linked to a WhatsApp contact.');
+    }
+
+    await pool.query(
+      'UPDATE contacts SET blocked = FALSE WHERE wa_number = $1',
+      [waNumber]
+    );
+
+    await respond(`✅ Contact *${waNumber}* has been unblocked.`);
+
+  } catch (err) {
+    console.error('/unblock error:', err.message);
+    await respond('❌ Error unblocking contact.');
   }
 });
 

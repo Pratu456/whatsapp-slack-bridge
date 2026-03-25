@@ -1,4 +1,5 @@
 // src/routes/whatsapp.js
+const { pool } = require('../db');
 const express  = require('express');
 const router   = express.Router();
 const path     = require('path');
@@ -40,6 +41,15 @@ router.post('/webhook', async (req, res) => {
 
     // 2. Get sender number
     const waNumber = From.replace('whatsapp:', '');
+    // Check if contact is blocked
+    const blockedCheck = await pool.query(
+      'SELECT blocked FROM contacts WHERE wa_number = $1',
+      [waNumber]
+    );
+    if (blockedCheck.rows[0]?.blocked) {
+      console.log(`Blocked contact tried to message: ${waNumber}`);
+      return res.status(200).send('<Response></Response>');
+    }
 
     // 3. Get or create Slack channel
     const channelId = await getOrCreateChannel(waNumber, ProfileName);
