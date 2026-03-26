@@ -36,61 +36,55 @@ const slackApp = new App({
 slackApp.message(async ({ message }) => {
   try {
     console.log('Slack event received:', message.channel, message.subtype);
-
     if (message.subtype === 'bot_message' || message.bot_id) return;
 
-    const waNumber = await getWaNumber(message.channel);
+    // Find tenant by channel
+    const tenantResult = await pool.query(
+      `SELECT t.* FROM tenants t
+       JOIN contacts c ON c.tenant_id = t.id
+       WHERE c.slack_channel = $1 AND t.is_active = TRUE
+       LIMIT 1`,
+      [message.channel]
+    );
+
+    if (!tenantResult.rows.length) return;
+    const tenant = tenantResult.rows[0];
+
+    // Get WA number scoped to tenant
+    const { getWaNumberForTenant } = require('./services/tenantService');
+    const waNumber = await getWaNumberForTenant(message.channel, tenant.id);
     if (!waNumber) return;
 
     // Handle file shares
     if (message.files && message.files.length > 0) {
       for (const file of message.files) {
         console.log('File shared from Slack:', file.name, file.mimetype);
-
         try {
           const axios = require('axios');
-
-          // Download from Slack
           const response = await axios.get(file.url_private_download, {
             headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` },
             responseType: 'arraybuffer',
             timeout: 10000,
           });
-
           console.log('Downloaded from Slack, size:', response.data.byteLength);
-
-          // Save file temporarily to disk
           const fs   = require('fs');
           const path = require('path');
-          const tmpDir  = path.join(__dirname, 'tmp');
+          const tmpDir = path.join(__dirname, 'tmp');
           if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
           const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
           const tmpPath = path.join(tmpDir, safeFileName);
           fs.writeFileSync(tmpPath, Buffer.from(response.data));
-
-          // Build public URL via ngrok
           const publicUrl = `${process.env.NGROK_URL}/media/${encodeURIComponent(safeFileName)}`;
-          console.log('NGROK_URL value:', process.env.NGROK_URL);
           console.log('Public media URL:', publicUrl);
-
           const { sendWhatsAppMedia } = require('./services/twilioService');
           const sid = await sendWhatsAppMedia(waNumber, publicUrl, message.text || '');
           console.log('Media sent to WhatsApp, SID:', sid);
-
           await logMessage({
-            waNumber,
-            body:      file.name,
-            direction: 'outbound',
-            twilioSid: sid,
-            slackTs:   message.ts,
-            mediaType: file.mimetype,
+            waNumber, body: file.name, direction: 'outbound',
+            twilioSid: sid, slackTs: message.ts,
+            mediaType: file.mimetype, tenantId: tenant.id,
           });
-
-          // Clean up temp file after 1 minute
-          setTimeout(() => {
-            try { fs.unlinkSync(tmpPath); } catch (e) {}
-          }, 60000);
-
+          setTimeout(() => { try { fs.unlinkSync(tmpPath); } catch (e) {} }, 60000);
         } catch (fileErr) {
           console.error('File handling error:', fileErr.message);
         }
@@ -103,11 +97,8 @@ slackApp.message(async ({ message }) => {
       const sid = await sendWhatsApp(waNumber, message.text);
       console.log('Sent to WhatsApp, SID:', sid);
       await logMessage({
-        waNumber,
-        body:      message.text,
-        direction: 'outbound',
-        twilioSid: sid,
-        slackTs:   message.ts,
+        waNumber, body: message.text, direction: 'outbound',
+        twilioSid: sid, slackTs: message.ts, tenantId: tenant.id,
       });
     }
 

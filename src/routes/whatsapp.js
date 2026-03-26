@@ -1,26 +1,21 @@
 // src/routes/whatsapp.js
-const { pool } = require('../db');
 const express  = require('express');
 const router   = express.Router();
-const path     = require('path');
-const { getOrCreateChannel }            = require('../services/mappingService');
-const { postToSlack, uploadMediaToSlack } = require('../services/slackService');
-const { logMessage }                    = require('../services/messageLogger');
-const { downloadTwilioMedia }           = require('../services/twilioService');
-const { isDuplicate, markProcessed }    = require('../cache/redis');
+const { pool } = require('../db');
+const { logMessage }                        = require('../services/messageLogger');
+const { downloadTwilioMedia }               = require('../services/twilioService');
+const { isDuplicate, markProcessed }        = require('../cache/redis');
+const { getTenantByTwilioNumber,
+        getOrCreateChannelForTenant,
+        postToTenantSlack }                 = require('../services/tenantService');
+const { uploadMediaToSlack }                = require('../services/slackService');
 require('dotenv').config();
 
-// Map Twilio media content types to file extensions
 const getExtension = (contentType) => {
   const map = {
-    'image/jpeg':       'jpg',
-    'image/png':        'png',
-    'image/gif':        'gif',
-    'image/webp':       'webp',
-    'audio/ogg':        'ogg',
-    'audio/mpeg':       'mp3',
-    'video/mp4':        'mp4',
-    'application/pdf':  'pdf',
+    'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif',
+    'image/webp': 'webp', 'audio/ogg': 'ogg', 'audio/mpeg': 'mp3',
+    'video/mp4': 'mp4', 'application/pdf': 'pdf',
     'application/octet-stream': 'bin',
   };
   return map[contentType] || 'bin';
@@ -30,7 +25,7 @@ router.post('/webhook', async (req, res) => {
   try {
     const {
       MessageSid, From, Body, ProfileName,
-      NumMedia, MediaUrl0, MediaContentType0
+      To, NumMedia, MediaUrl0, MediaContentType0
     } = req.body;
 
     // 1. Deduplicate
@@ -41,57 +36,58 @@ router.post('/webhook', async (req, res) => {
 
     // 2. Get sender number
     const waNumber = From.replace('whatsapp:', '');
-    // Check if contact is blocked
-    const blockedCheck = await pool.query(
-      'SELECT blocked FROM contacts WHERE wa_number = $1',
-      [waNumber]
-    );
-    if (blockedCheck.rows[0]?.blocked) {
-      console.log(`Blocked contact tried to message: ${waNumber}`);
+    const toNumber = To.replace('whatsapp:', '');
+
+    // 3. Identify tenant by the Twilio number the message was sent TO
+    const tenant = await getTenantByTwilioNumber(toNumber);
+
+    if (!tenant) {
+      console.error('No active tenant found for Twilio number:', toNumber);
       return res.status(200).send('<Response></Response>');
     }
 
-    // 3. Get or create Slack channel
-    const channelId = await getOrCreateChannel(waNumber, ProfileName);
+    console.log(`Tenant identified: ${tenant.company_name}`);
+
+    // 4. Check if contact is blocked
+    const blockedCheck = await pool.query(
+      'SELECT blocked FROM contacts WHERE wa_number = $1 AND tenant_id = $2',
+      [waNumber, tenant.id]
+    );
+    if (blockedCheck.rows[0]?.blocked) {
+      console.log(`Blocked contact: ${waNumber}`);
+      return res.status(200).send('<Response></Response>');
+    }
+
+    // 5. Get or create Slack channel for this tenant
+    const channelId = await getOrCreateChannelForTenant(tenant, waNumber, ProfileName);
 
     let slackTs = null;
 
-    // 4. Handle media or text
+    // 6. Handle media or text
     if (parseInt(NumMedia) > 0 && MediaUrl0) {
       console.log(`Media received: ${MediaContentType0}`);
-
-      // Download media from Twilio
       const { data, contentType } = await downloadTwilioMedia(MediaUrl0);
       const ext      = getExtension(contentType);
       const fileName = `${MessageSid}.${ext}`;
 
-      // Upload to Slack
       slackTs = await uploadMediaToSlack(
         channelId, data, contentType,
-        fileName, ProfileName || waNumber, Body
+        fileName, ProfileName || waNumber, Body,
+        tenant.slack_bot_token
       );
 
-      // Log with media info
       await logMessage({
-        waNumber,
-        body:      Body || `[${contentType} file]`,
-        direction: 'inbound',
-        twilioSid: MessageSid,
-        slackTs,
-        mediaUrl:  MediaUrl0,
-        mediaType: contentType,
+        waNumber, body: Body || `[${contentType} file]`,
+        direction: 'inbound', twilioSid: MessageSid,
+        slackTs, mediaUrl: MediaUrl0, mediaType: contentType,
+        tenantId: tenant.id,
       });
 
     } else {
-      // Text message
-      slackTs = await postToSlack(channelId, Body, ProfileName || waNumber);
-
+      slackTs = await postToTenantSlack(tenant, channelId, Body, ProfileName || waNumber);
       await logMessage({
-        waNumber,
-        body:      Body,
-        direction: 'inbound',
-        twilioSid: MessageSid,
-        slackTs,
+        waNumber, body: Body, direction: 'inbound',
+        twilioSid: MessageSid, slackTs, tenantId: tenant.id,
       });
     }
 
