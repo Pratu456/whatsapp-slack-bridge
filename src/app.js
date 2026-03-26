@@ -9,10 +9,11 @@ const { sendWhatsApp }  = require('./services/twilioService');
 const { getWaNumber }   = require('./services/mappingService');
 const { logMessage }    = require('./services/messageLogger');
 const path = require('path');
-const statusRoute = require('./routes/status');
-const commandsRoute = require('./routes/commands');
-const authRoute = require('./routes/auth');
 
+const authRoute = require('./routes/auth');
+const onboardingRoute = require('./routes/onboarding');
+const adminRoute = require('./routes/admin');
+const commandsRoute = require('./routes/commands');
 
 // ── Express server ────────────────────────────────────────
 const server = express();
@@ -20,8 +21,10 @@ server.use(express.urlencoded({ extended: false }));
 server.use(express.json());
 
 server.use('/whatsapp', whatsappRoute);
-server.use('/status', statusRoute);
+
 server.use('/auth', authRoute);
+server.use('/onboarding', onboardingRoute); 
+server.use('/admin', adminRoute);
 server.use('/commands', commandsRoute);
 
 server.get('/health', (req, res) => res.json({ status: 'ok' }));
