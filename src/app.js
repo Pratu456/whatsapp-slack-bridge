@@ -11,6 +11,7 @@ const { logMessage }    = require('./services/messageLogger');
 const path = require('path');
 const statusRoute = require('./routes/status');
 const commandsRoute = require('./routes/commands');
+const authRoute = require('./routes/auth');
 
 
 // ── Express server ────────────────────────────────────────
@@ -20,6 +21,7 @@ server.use(express.json());
 
 server.use('/whatsapp', whatsappRoute);
 server.use('/status', statusRoute);
+server.use('/auth', authRoute);
 server.use('/commands', commandsRoute);
 
 server.get('/health', (req, res) => res.json({ status: 'ok' }));
