@@ -5,8 +5,8 @@ const express       = require('express');
 const { App }       = require('@slack/bolt');
 const whatsappRoute = require('./routes/whatsapp');
 const { connect: connectRedis } = require('./cache/redis');
-const { sendWhatsApp }  = require('./services/twilioService');
-const { getWaNumber }   = require('./services/mappingService');
+const { sendWhatsApp, sendWhatsAppMedia } = require('./services/twilioService');
+const { getWaNumberForTenant }            = require('./services/tenantService');
 const { logMessage }    = require('./services/messageLogger');
 const path = require('path');
 
@@ -67,7 +67,7 @@ slackApp.message(async ({ message }) => {
         try {
           const axios = require('axios');
           const response = await axios.get(file.url_private_download, {
-            headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` },
+            headers: { Authorization: `Bearer ${tenant.slack_bot_token}` },
             responseType: 'arraybuffer',
             timeout: 10000,
           });
@@ -81,7 +81,7 @@ slackApp.message(async ({ message }) => {
           fs.writeFileSync(tmpPath, Buffer.from(response.data));
           const publicUrl = `${process.env.NGROK_URL}/media/${encodeURIComponent(safeFileName)}`;
           console.log('Public media URL:', publicUrl);
-          const { sendWhatsAppMedia } = require('./services/twilioService');
+          
           const sid = await sendWhatsAppMedia(waNumber, publicUrl, message.text || '');
           console.log('Media sent to WhatsApp, SID:', sid);
           await logMessage({
@@ -112,23 +112,61 @@ slackApp.message(async ({ message }) => {
   }
 });
 // /history command
-slackApp.command('/history', async ({ command, ack, respond }) => {
-  await ack();
-  try {
-    const waNumber = await getWaNumber(command.channel_id);
-    if (!waNumber) {
-      return respond('❌ This channel is not linked to a WhatsApp contact.');
-    }
+  slackApp.command('/history', async ({ command, ack, respond }) => {
+    await ack();
+    try {
+      const waNumber = await getWaNumber(command.channel_id);
+      if (!waNumber) {
+        return respond('❌ This channel is not linked to a WhatsApp contact.');
+      }
 
-    const result = await pool.query(
-      `SELECT m.body, m.direction, m.status, m.created_at
-       FROM messages m
-       JOIN contacts c ON c.id = m.contact_id
-       WHERE c.wa_number = $1
-       ORDER BY m.created_at DESC
-       LIMIT 10`,
-      [waNumber]
-    );
+      // const result = await pool.query(
+      //   `SELECT m.body, m.direction, m.status, m.created_at
+      //    FROM messages m
+      //    JOIN contacts c ON c.id = m.contact_id
+      //    WHERE c.wa_number = $1
+      //    ORDER BY m.created_at DESC
+      //    LIMIT 10`,
+      //   [waNumber]
+      // );
+      const result = await pool.query(
+        'SELECT id, company_name, twilio_number, claim_code, slack_team_name, is_active, created_at FROM tenants ORDER BY created_at DESC'
+      );
+      slackApp.command('/history', async ({ command, ack, respond }) => {
+    await ack();
+    try {
+      const tenantResult = await pool.query(
+        `SELECT t.*, c.wa_number FROM tenants t
+         JOIN contacts c ON c.tenant_id = t.id
+         WHERE c.slack_channel = $1 AND t.is_active = TRUE LIMIT 1`,
+        [command.channel_id]
+      );
+      if (!tenantResult.rows.length) return respond('❌ This channel is not linked to a WhatsApp contact.');
+      const { wa_number, id: tenantId } = tenantResult.rows[0];
+
+      const result = await pool.query(
+        `SELECT m.body, m.direction, m.status, m.created_at
+         FROM messages m
+         JOIN contacts c ON c.id = m.contact_id
+         WHERE c.wa_number = $1 AND m.tenant_id = $2
+         ORDER BY m.created_at DESC LIMIT 10`,
+        [wa_number, tenantId]
+      );
+
+      if (!result.rows.length) return respond('📭 No messages found for this contact.');
+
+      const lines = result.rows.reverse().map(msg => {
+        const direction = msg.direction === 'inbound' ? '📱 WhatsApp' : '💬 Slack';
+        const time = new Date(msg.created_at).toLocaleTimeString();
+        return `*${direction}* [${msg.status}] ${time}\n${msg.body}`;
+      });
+
+      await respond(`📋 *Last ${result.rows.length} messages with ${wa_number}:*\n\n${lines.join('\n\n')}`);
+    } catch (err) {
+      console.error('/history error:', err.message);
+      await respond('❌ Error fetching history.');
+    }
+  });
 
     if (!result.rows.length) {
       return respond('📭 No messages found for this contact.');
@@ -160,11 +198,55 @@ slackApp.command('/block', async ({ command, ack, respond }) => {
     await pool.query(
       'ALTER TABLE contacts ADD COLUMN IF NOT EXISTS blocked BOOLEAN DEFAULT FALSE'
     );
-    await pool.query(
-      'UPDATE contacts SET blocked = TRUE WHERE wa_number = $1',
-      [waNumber]
-    );
+    // await pool.query(
+    //   'UPDATE contacts SET blocked = TRUE WHERE wa_number = $1',
+    //   [waNumber]
+    // );
+  slackApp.command('/block', async ({ command, ack, respond }) => {
+    await ack();
+    try {
+      const tenantResult = await pool.query(
+        `SELECT t.*, c.wa_number FROM tenants t
+         JOIN contacts c ON c.tenant_id = t.id
+         WHERE c.slack_channel = $1 AND t.is_active = TRUE LIMIT 1`,
+        [command.channel_id]
+      );
+      if (!tenantResult.rows.length) return respond('❌ Channel not linked to any contact.');
+      const { wa_number, id: tenantId } = tenantResult.rows[0];
 
+      await pool.query(
+        'UPDATE contacts SET blocked = TRUE WHERE wa_number = $1 AND tenant_id = $2',
+        [wa_number, tenantId]
+      );
+      await respond(`🚫 Contact *${wa_number}* has been blocked.`);
+    } catch (err) {
+      console.error('/block error:', err.message);
+      await respond('❌ Error blocking contact.');
+    }
+  });
+
+  slackApp.command('/unblock', async ({ command, ack, respond }) => {
+    await ack();
+    try {
+      const tenantResult = await pool.query(
+        `SELECT t.*, c.wa_number FROM tenants t
+         JOIN contacts c ON c.tenant_id = t.id
+         WHERE c.slack_channel = $1 AND t.is_active = TRUE LIMIT 1`,
+        [command.channel_id]
+      );
+      if (!tenantResult.rows.length) return respond('❌ Channel not linked to any contact.');
+      const { wa_number, id: tenantId } = tenantResult.rows[0];
+
+      await pool.query(
+        'UPDATE contacts SET blocked = FALSE WHERE wa_number = $1 AND tenant_id = $2',
+        [wa_number, tenantId]
+      );
+      await respond(`✅ Contact *${wa_number}* has been unblocked.`);
+    } catch (err) {
+      console.error('/unblock error:', err.message);
+      await respond('❌ Error unblocking contact.');
+    }
+  });
     await respond(`🚫 Contact *${waNumber}* has been blocked. No further messages will be forwarded.`);
 
   } catch (err) {

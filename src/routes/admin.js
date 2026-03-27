@@ -43,6 +43,7 @@ router.get('/', auth, async (req, res) => {
         <td>${t.id}</td>
         <td><strong>${t.company_name}</strong></td>
         <td>${t.twilio_number}</td>
+        <td><code>${t.claim_code || '-'}</code></td>
         <td>${t.slack_team_name || '-'}</td>
         <td>${t.is_active ? '<span class="badge active">✅ Active</span>' : '<span class="badge pending">⏳ Pending</span>'}</td>
         <td>${new Date(t.created_at).toLocaleDateString()}</td>
@@ -118,26 +119,29 @@ router.get('/', auth, async (req, res) => {
               <div class="form-group"><label>Company Name</label><input type="text" id="newCompany" placeholder="e.g. Acme Corp" /></div>
               <div class="form-group"><label>Twilio WhatsApp Number</label><input type="text" id="newTwilio" placeholder="+14155238886" /></div>
               <div class="form-group"><label>Slack Bot Token</label><input type="text" id="newToken" placeholder="xoxb-..." /></div>
-            </div>
+              <div class="form-group"><label>Claim Code</label><input type="text" id="newClaimCode" placeholder="e.g. acme (one word, no spaces)" /></div>
+
+              </div>
             <button class="btn-add" onclick="addTenant()">Add Tenant</button>
           </div>
           <h2>📋 All Tenants</h2>
           <table>
-            <thead><tr><th>ID</th><th>Company</th><th>Twilio Number</th><th>Slack Workspace</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+            <thead><tr><th>ID</th><th>Company</th><th>Twilio Number</th><th>Claim Code</th><th>Slack Workspace</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
             <tbody>${rows}</tbody>
           </table>
         </div>
         <div class="modal" id="activateModal">
-          <div class="modal-box">
-            <h3>✅ Activate Tenant</h3>
-            <p style="color:#777;margin-bottom:16px;font-size:14px">Assign a Twilio WhatsApp number to activate this tenant.</p>
-            <input type="text" id="modalTwilio" placeholder="+14155238886" />
-            <input type="hidden" id="modalTenantId" />
-            <div class="modal-btns">
-              <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-              <button class="btn-confirm" onclick="confirmActivate()">Activate</button>
-            </div>
+        <div class="modal-box">
+          <h3>✅ Activate Tenant</h3>
+          <p style="color:#777;margin-bottom:16px;font-size:14px">Assign a Twilio number and claim code to activate.</p>
+          <input type="text" id="modalTwilio" placeholder="Twilio number e.g. +14155238886" style="margin-bottom:10px"/>
+          <input type="text" id="modalClaimCode" placeholder="Claim code e.g. flo (one word)" style="margin-bottom:16px"/>
+          <input type="hidden" id="modalTenantId" />
+          <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn-confirm" onclick="confirmActivate()">Activate</button>
           </div>
+        </div>
         </div>
         <script>
           const pwd = '${pwd}';
@@ -146,8 +150,9 @@ router.get('/', auth, async (req, res) => {
           async function confirmActivate(){
             const id=document.getElementById('modalTenantId').value;
             const twilio=document.getElementById('modalTwilio').value.trim();
-            if(!twilio){alert('Please enter a Twilio number');return}
-            const res=await fetch('/admin/activate?pwd='+pwd,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,twilio_number:twilio})});
+            const claimCode=document.getElementById('modalClaimCode').value.trim().toLowerCase();
+            if(!twilio||!claimCode){alert('Please enter both Twilio number and claim code');return}
+            const res=await fetch('/admin/activate?pwd='+pwd,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,twilio_number:twilio,claim_code:claimCode})});
             const data=await res.json();
             if(data.success){closeModal();location.reload()}else alert('Error: '+data.error);
           }
@@ -167,8 +172,9 @@ router.get('/', auth, async (req, res) => {
             const company=document.getElementById('newCompany').value.trim();
             const twilio=document.getElementById('newTwilio').value.trim();
             const token=document.getElementById('newToken').value.trim();
-            if(!company||!twilio||!token){alert('Please fill in all fields');return}
-            const res=await fetch('/admin/add?pwd='+pwd,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company,twilio_number:twilio,slack_bot_token:token})});
+            const claimCode=document.getElementById('newClaimCode').value.trim().toLowerCase();
+            if(!company||!twilio||!token||!claimCode){alert('Please fill in all fields including Claim Code');return}
+            const res=await fetch('/admin/add?pwd='+pwd,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company,twilio_number:twilio,slack_bot_token:token,claim_code:claimCode})});
             const data=await res.json();
             if(data.success)location.reload();else alert('Error: '+data.error);
           }
@@ -184,8 +190,12 @@ router.get('/', auth, async (req, res) => {
 
 router.post('/activate', auth, async (req, res) => {
   try {
-    const { id, twilio_number } = req.body;
-    await pool.query('UPDATE tenants SET is_active = TRUE, twilio_number = $1 WHERE id = $2', [twilio_number, id]);
+    const { id, twilio_number, claim_code } = req.body;
+    if (!claim_code) return res.json({ success: false, error: 'Claim code is required' });
+    await pool.query(
+      'UPDATE tenants SET is_active = TRUE, twilio_number = $1, claim_code = $2 WHERE id = $3',
+      [twilio_number, claim_code.toLowerCase().trim(), id]
+    );
     res.json({ success: true });
   } catch (err) { res.json({ success: false, error: err.message }); }
 });
@@ -208,11 +218,12 @@ router.post('/delete', auth, async (req, res) => {
 
 router.post('/add', auth, async (req, res) => {
   try {
-    const { company, twilio_number, slack_bot_token } = req.body;
+    const { company, twilio_number, slack_bot_token, claim_code } = req.body;
+    if (!claim_code) return res.json({ success: false, error: 'Claim code is required' });
     await pool.query(
-      `INSERT INTO tenants (company_name, twilio_number, slack_bot_token, slack_team_id, slack_team_name, is_active)
-       VALUES ($1, $2, $3, $4, $5, TRUE)`,
-      [company, twilio_number, slack_bot_token, 'MANUAL', company]
+      `INSERT INTO tenants (company_name, twilio_number, slack_bot_token, slack_team_id, slack_team_name, claim_code, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, TRUE)`,
+      [company, twilio_number, slack_bot_token, 'MANUAL', company, claim_code.toLowerCase().trim()]
     );
     res.json({ success: true });
   } catch (err) { res.json({ success: false, error: err.message }); }

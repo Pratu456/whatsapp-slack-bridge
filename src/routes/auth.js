@@ -14,10 +14,13 @@ router.get('/slack', (req, res) => {
   const scopes = [
     'channels:manage',
     'channels:read',
+    'channels:history',
     'chat:write',
     'files:write',
+    'files:read',
     'im:write',
     'groups:write',
+    'users:read',
   ].join(',');
 
   // Encode company info in state parameter
