@@ -19,6 +19,7 @@ const commandsRoute = require('./routes/commands');
 const server = express();
 server.use(express.urlencoded({ extended: false }));
 server.use(express.json());
+server.use(express.static(path.join(__dirname, '../public')));
 
 // Landing page
 server.get('/', (req, res) => {
@@ -31,7 +32,8 @@ server.use('/onboarding', onboardingRoute);
 server.use('/admin', adminRoute);
 server.use('/commands', commandsRoute);
 server.get('/health', (req, res) => res.json({ status: 'ok' }));
-server.use('/media', express.static(path.join(__dirname, 'tmp')));
+server.use('/media', express.static(path.join(__dirname, 'public')));
+
 
 // ── Slack Bolt App ────────────────────────────────────────
 const slackApp = new App({

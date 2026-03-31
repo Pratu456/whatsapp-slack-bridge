@@ -78,17 +78,17 @@ router.get('/slack/callback', async (req, res) => {
 
     if (existing.rows.length > 0) {
       await pool.query(
-        'UPDATE tenants SET slack_bot_token = $1, slack_team_name = $2, company_name = $3 WHERE slack_team_id = $4',
-        [botToken, teamName, companyName, teamId]
+        'UPDATE tenants SET slack_bot_token = $1, slack_team_name = $2, company_name = $3, email = COALESCE(NULLIF($4,\'\'), email) WHERE slack_team_id = $5',
+        [botToken, teamName, companyName, email, teamId]
       );
       console.log(`Updated existing tenant: ${companyName}`);
     } else {
       // Create new tenant — is_active FALSE until admin assigns Twilio number
       await pool.query(
         `INSERT INTO tenants 
-          (company_name, twilio_number, slack_bot_token, slack_team_id, slack_team_name, is_active)
-         VALUES ($1, $2, $3, $4, $5, FALSE)`,
-        [companyName, 'PENDING', botToken, teamId, teamName]
+        (company_name, email, twilio_number, slack_bot_token, slack_team_id, slack_team_name, is_active)
+        VALUES ($1, $2, $3, $4, $5, $6, FALSE)`,
+        [companyName, email || null, 'PENDING', botToken, teamId, teamName]
       );
       console.log(`New tenant created: ${companyName} — pending activation`);
     }

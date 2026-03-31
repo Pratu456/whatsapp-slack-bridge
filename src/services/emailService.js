@@ -13,102 +13,121 @@ const transporter = nodemailer.createTransport({
 
 const sendActivationEmail = async ({ to, companyName, claimCode, twilioNumber }) => {
   const html = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"/>
-<style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f0f0f0;padding:32px 16px}
-  .wrap{max-width:560px;margin:0 auto}
-  .card{background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.1)}
-  .header{background:#060608;padding:28px 32px;text-align:center}
-  .header-logo{font-size:26px;font-weight:900;color:#25D366;letter-spacing:-1px;margin-bottom:12px}
-  .header-logo span{color:#ffffff}
-  .header h1{color:#ffffff;font-size:20px;font-weight:700;margin-bottom:4px}
-  .header p{color:rgba(255,255,255,.45);font-size:14px}
-  .body{padding:28px 32px}
-  .greeting{font-size:15px;color:#333;margin-bottom:20px;line-height:1.6}
-  .info-table{width:100%;border-collapse:collapse;background:#f8fdf9;border:1px solid #c3e6cb;border-radius:10px;overflow:hidden;margin-bottom:20px}
-  .info-table td{padding:12px 16px;font-size:14px;border-bottom:1px solid #d4edda}
-  .info-table tr:last-child td{border-bottom:none}
-  .info-label{font-weight:700;color:#166534;text-transform:uppercase;font-size:11px;letter-spacing:.8px;width:140px}
-  .info-value{color:#1a3c2a;font-weight:600}
-  .code-box{background:#060608;border-radius:10px;padding:20px;text-align:center;margin-bottom:20px}
-  .code-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:8px}
-  .code-val{font-size:34px;font-weight:900;color:#25D366;letter-spacing:6px;font-family:'Courier New',monospace}
-  .steps-title{font-size:14px;font-weight:700;color:#111;margin-bottom:12px}
-  .step{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}
-  .step-num{min-width:24px;height:24px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#000;flex-shrink:0;margin-top:1px}
-  .step-text{font-size:14px;color:#444;line-height:1.5}
-  .footer{background:#f5f5f5;padding:20px 32px;text-align:center;border-top:1px solid #e0e0e0}
-  .footer-brand{font-size:18px;font-weight:900;color:#25D366;margin-bottom:8px;letter-spacing:-0.5px}
-  .footer-brand span{color:#555}
-  .footer p{font-size:12px;color:#888;line-height:1.6}
-  .footer a{color:#25D366}
-</style>
-</head>
-<body>
-<div class="wrap">
-<div class="card">
+<html><head><meta charset="UTF-8"/></head>
+<body style="margin:0;padding:0;background:#f0f0f0;font-family:Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f0f0;padding:32px 16px">
+<tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:12px;overflow:hidden;max-width:560px;width:100%">
 
   <!-- HEADER -->
-  <div class="header">
-    <div class="header-logo">SYNC<span>ORA</span></div>
-    <h1>You're live on Syncora! 🎉</h1>
-    <p>Your workspace has been activated</p>
-  </div>
+  <tr>
+    <td style="background:#060608;padding:28px 32px;text-align:center">
+      <div style="font-size:28px;font-weight:900;color:#25D366;letter-spacing:-1px;margin-bottom:12px;font-family:Arial,sans-serif">SYNC<span style="color:#ffffff">ORA</span></div>
+      <div style="color:#ffffff;font-size:20px;font-weight:700;margin-bottom:4px">You're live on Syncora! 🎉</div>
+      <div style="color:rgba(255,255,255,.45);font-size:14px">Your workspace has been activated</div>
+    </td>
+  </tr>
 
   <!-- BODY -->
-  <div class="body">
-    <p class="greeting">Hi <strong>${companyName}</strong>,<br/><br/>
-    Great news — your Syncora workspace has been activated. You can now receive WhatsApp messages directly in your Slack workspace.</p>
+  <tr>
+    <td style="padding:28px 32px">
 
-    <!-- INFO TABLE -->
-    <table class="info-table">
-      <tr>
-        <td class="info-label">Company</td>
-        <td class="info-value">${companyName}</td>
-      </tr>
-      <tr>
-        <td class="info-label">WhatsApp number</td>
-        <td class="info-value">${twilioNumber}</td>
-      </tr>
-    </table>
+      <!-- GREETING -->
+      <p style="font-size:15px;color:#333;margin:0 0 20px;line-height:1.6">
+        Hi <strong>${companyName}</strong>,<br/><br/>
+        Great news — your Syncora workspace has been activated. You can now receive WhatsApp messages directly in your Slack workspace.
+      </p>
 
-    <!-- CLAIM CODE -->
-    <div class="code-box">
-      <div class="code-label">Your claim code</div>
-      <div class="code-val">${claimCode}</div>
-    </div>
+      <!-- INFO TABLE -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fdf9;border:1px solid #c3e6cb;border-radius:10px;margin-bottom:20px">
+        <tr>
+          <td width="140" style="padding:12px 16px;font-size:11px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid #d4edda">Company</td>
+          <td style="padding:12px 16px;font-size:14px;font-weight:600;color:#1a3c2a;border-bottom:1px solid #d4edda">${companyName}</td>
+        </tr>
+        <tr>
+          <td width="140" style="padding:12px 16px;font-size:11px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.8px">WhatsApp No.</td>
+          <td style="padding:12px 16px;font-size:14px;font-weight:600;color:#1a3c2a">${twilioNumber}</td>
+        </tr>
+      </table>
 
-    <!-- STEPS -->
-    <p class="steps-title">How to get started:</p>
+      <!-- CLAIM CODE -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#060608;border-radius:10px;margin-bottom:20px">
+        <tr>
+          <td style="padding:20px;text-align:center">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:8px">Your claim code</div>
+            <div style="font-size:34px;font-weight:900;color:#25D366;letter-spacing:6px;font-family:'Courier New',monospace">${claimCode}</div>
+          </td>
+        </tr>
+      </table>
 
-    <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-text">Save this WhatsApp number: <strong>${twilioNumber}</strong></div>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-text">Share this number with your customers and ask them to send your claim code <strong>${claimCode}</strong> as their first message</div>
-    </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <div class="step-text">Their messages will appear instantly in a dedicated Slack channel in your workspace</div>
-    </div>
-    <div class="step">
-      <div class="step-num">4</div>
-      <div class="step-text">Reply directly from Slack — your customer receives it on WhatsApp</div>
-    </div>
-  </div>
+      <!-- STEPS TITLE -->
+      <p style="font-size:14px;font-weight:700;color:#111;margin:0 0 14px">How to get started:</p>
+
+      <!-- STEP 1 -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px">
+        <tr>
+          <td width="32" valign="top" style="padding-top:1px">
+            <div style="width:24px;height:24px;background:#25D366;border-radius:50%;text-align:center;line-height:24px;font-size:11px;font-weight:800;color:#000;font-family:Arial,sans-serif">1</div>
+          </td>
+          <td style="padding-left:10px;font-size:14px;color:#444;line-height:1.5">
+            Save this WhatsApp number: <strong>${twilioNumber}</strong>
+          </td>
+        </tr>
+      </table>
+
+      <!-- STEP 2 -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px">
+        <tr>
+          <td width="32" valign="top" style="padding-top:1px">
+            <div style="width:24px;height:24px;background:#25D366;border-radius:50%;text-align:center;line-height:24px;font-size:11px;font-weight:800;color:#000;font-family:Arial,sans-serif">2</div>
+          </td>
+          <td style="padding-left:10px;font-size:14px;color:#444;line-height:1.5">
+            Share this number with your customers and ask them to send your claim code <strong>${claimCode}</strong> as their first message
+          </td>
+        </tr>
+      </table>
+
+      <!-- STEP 3 -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px">
+        <tr>
+          <td width="32" valign="top" style="padding-top:1px">
+            <div style="width:24px;height:24px;background:#25D366;border-radius:50%;text-align:center;line-height:24px;font-size:11px;font-weight:800;color:#000;font-family:Arial,sans-serif">3</div>
+          </td>
+          <td style="padding-left:10px;font-size:14px;color:#444;line-height:1.5">
+            Their messages will appear instantly in a dedicated Slack channel in your workspace
+          </td>
+        </tr>
+      </table>
+
+      <!-- STEP 4 -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px">
+        <tr>
+          <td width="32" valign="top" style="padding-top:1px">
+            <div style="width:24px;height:24px;background:#25D366;border-radius:50%;text-align:center;line-height:24px;font-size:11px;font-weight:800;color:#000;font-family:Arial,sans-serif">4</div>
+          </td>
+          <td style="padding-left:10px;font-size:14px;color:#444;line-height:1.5">
+            Reply directly from Slack — your customer receives it on WhatsApp
+          </td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
 
   <!-- FOOTER -->
-  <div class="footer">
-    <div class="footer-brand">SYNC<span>ORA</span></div>
-    <p>Questions? Reply to this email or contact us at <a href="mailto:${process.env.GMAIL_USER}">${process.env.GMAIL_USER}</a><br/>
-    © 2026 Syncora · WhatsApp ↔ Slack Bridge</p>
-  </div>
+  <tr>
+    <td style="background:#f5f5f5;padding:20px 32px;text-align:center;border-top:1px solid #e0e0e0">
+      <div style="font-size:20px;font-weight:900;color:#25D366;margin-bottom:8px;font-family:Arial,sans-serif">SYNC<span style="color:#555">ORA</span></div>
+      <p style="font-size:12px;color:#888;line-height:1.6;margin:0">
+        Questions? Reply to this email or contact us at <a href="mailto:${process.env.GMAIL_USER}" style="color:#25D366">${process.env.GMAIL_USER}</a><br/>
+        © 2026 Syncora · WhatsApp ↔ Slack Bridge
+      </p>
+    </td>
+  </tr>
 
-</div>
-</div>
+</table>
+</td></tr>
+</table>
 </body></html>`;
 
   await transporter.sendMail({

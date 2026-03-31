@@ -34,25 +34,23 @@ router.post('/webhook', async (req, res) => {
     }
     await markProcessed(MessageSid);
 
-    // 2. Get sender number
     const waNumber = From.replace('whatsapp:', '');
 
-    // 3. Identify tenant — by existing contact mapping OR claim code in message body
-    const { tenant, isNew } = await getTenantForIncomingMessage(waNumber, Body);
+    // 2. Identify tenant
+    const { tenant, isNew, claimCodeUsed } = await getTenantForIncomingMessage(waNumber, Body);
 
     if (!tenant) {
-      // Unknown contact, no claim code matched — send instructions
       console.warn('No tenant matched for:', waNumber, '| Body:', Body);
       await sendWhatsApp(
         waNumber,
-        `👋 Welcome! To connect with a company, send their code word as your first message.\n\nExample: type *acme* or *mvtech*`
+        `👋 Welcome to Syncora!\n\nTo connect with a company, send their *claim code* as your first message.\n\nExample: type *acme* or *mvtech*`
       );
       return res.status(200).send('<Response></Response>');
     }
 
-    console.log(`Tenant identified: ${tenant.company_name} | New contact: ${isNew}`);
+    console.log(`Tenant identified: ${tenant.company_name} | New: ${isNew} | ClaimCode: ${claimCodeUsed}`);
 
-    // 4. Check if contact is blocked
+    // 3. Check if blocked
     const blockedCheck = await pool.query(
       'SELECT blocked FROM contacts WHERE wa_number = $1 AND tenant_id = $2',
       [waNumber, tenant.id]
@@ -62,10 +60,10 @@ router.post('/webhook', async (req, res) => {
       return res.status(200).send('<Response></Response>');
     }
 
-    // 5. Get or create Slack channel for this tenant
+    // 4. Get or create Slack channel
     const channelId = await getOrCreateChannelForTenant(tenant, waNumber, ProfileName);
 
-    // 6. If new contact, post a welcome banner in Slack so the team knows
+    // 5. If new contact, post welcome banner in Slack
     if (isNew) {
       const { WebClient } = require('@slack/web-api');
       const slack = new WebClient(tenant.slack_bot_token);
@@ -73,6 +71,27 @@ router.post('/webhook', async (req, res) => {
         channel: channelId,
         text: `🆕 *New contact connected via code \`${tenant.claim_code}\`*\nNumber: ${waNumber}\nName: ${ProfileName || 'Unknown'}`,
       });
+      // Confirm to the customer
+      await sendWhatsApp(
+        waNumber,
+        `✅ You're now connected to *${tenant.company_name}*! Send your message and their team will reply shortly.`
+      );
+      return res.status(200).send('<Response></Response>');
+    }
+
+    // 6. If returning contact switched workspace via claim code — notify and confirm
+    if (claimCodeUsed && !isNew) {
+      const { WebClient } = require('@slack/web-api');
+      const slack = new WebClient(tenant.slack_bot_token);
+      await slack.chat.postMessage({
+        channel: channelId,
+        text: `🔄 *${ProfileName || waNumber}* reconnected via claim code \`${tenant.claim_code}\``,
+      });
+      await sendWhatsApp(
+        waNumber,
+        `✅ Switched to *${tenant.company_name}*. Send your message and their team will reply shortly.`
+      );
+      return res.status(200).send('<Response></Response>');
     }
 
     let slackTs = null;
@@ -98,10 +117,7 @@ router.post('/webhook', async (req, res) => {
       });
 
     } else {
-      // Skip forwarding the claim code message itself — it's just for routing
-      if (!isNew) {
-        slackTs = await postToTenantSlack(tenant, channelId, Body, ProfileName || waNumber);
-      }
+      slackTs = await postToTenantSlack(tenant, channelId, Body, ProfileName || waNumber);
       await logMessage({
         waNumber, body: Body, direction: 'inbound',
         twilioSid: MessageSid, slackTs, tenantId: tenant.id,

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS tenants (
   id                SERIAL PRIMARY KEY,
   company_name      VARCHAR(100) NOT NULL,
   email             VARCHAR(100),
-  twilio_number     VARCHAR(20),                -- ✅ NO UNIQUE constraint (shared sandbox number)
+  twilio_number     VARCHAR(20),                
   slack_bot_token   TEXT,
   slack_team_id     VARCHAR(50),
   slack_team_name   VARCHAR(100),
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS contacts (
   tenant_id     INTEGER REFERENCES tenants(id) ON DELETE CASCADE,
   blocked       BOOLEAN      DEFAULT FALSE,
   created_at    TIMESTAMPTZ  DEFAULT NOW(),
-  UNIQUE (wa_number, tenant_id)                 -- ✅ unique per tenant, not globally
+  UNIQUE (wa_number, tenant_id)                 
 );
 
 CREATE TABLE IF NOT EXISTS messages (
