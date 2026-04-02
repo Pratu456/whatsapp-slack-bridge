@@ -133,4 +133,11 @@ router.post('/webhook', async (req, res) => {
   }
 });
 
+// Status callback — handles delivery status updates from Twilio
+router.post('/status', (req, res) => {
+  const { MessageSid, MessageStatus, To } = req.body;
+  console.log(`Status update: ${MessageSid} → ${MessageStatus} (to ${To})`);
+  res.status(200).send('OK');
+});
+
 module.exports = router;

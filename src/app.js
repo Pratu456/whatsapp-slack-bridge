@@ -21,6 +21,12 @@ server.use(express.urlencoded({ extended: false }));
 server.use(express.json());
 server.use(express.static(path.join(__dirname, '../public')));
 
+// Accept-Ranges for video streaming
+server.use((req, res, next) => {
+  res.setHeader('Accept-Ranges', 'bytes');
+  next();
+});
+
 // Landing page
 server.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../index.html'));
@@ -32,8 +38,9 @@ server.use('/onboarding', onboardingRoute);
 server.use('/admin', adminRoute);
 server.use('/commands', commandsRoute);
 server.get('/health', (req, res) => res.json({ status: 'ok' }));
-server.use('/media', express.static(path.join(__dirname, '/public')));
 
+// ✅ Fixed: serve from tmp folder (not public)
+server.use('/media', express.static(path.join(__dirname, 'tmp')));
 
 // ── Slack Bolt App ────────────────────────────────────────
 const slackApp = new App({
@@ -67,26 +74,68 @@ slackApp.message(async ({ message }) => {
         try {
           const axios = require('axios');
           const fs = require('fs');
+          const { WebClient } = require('@slack/web-api');
+
+          console.log('File shared from Slack:', file.name, file.mimetype);
+
+          // ✅ Fixed: increased timeout to 60s, added 16MB max
           const response = await axios.get(file.url_private_download, {
             headers: { Authorization: `Bearer ${tenant.slack_bot_token}` },
             responseType: 'arraybuffer',
-            timeout: 10000,
+            timeout: 60000,
+            maxContentLength: 16 * 1024 * 1024,
           });
+
+          // ✅ Check file size before sending
+          const fileSizeBytes = response.data.byteLength;
+          const fileSizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(2);
+          console.log(`File size: ${fileSizeMB}MB`);
+
+          if (fileSizeBytes > 16 * 1024 * 1024) {
+            console.warn(`File too large: ${fileSizeMB}MB — notifying Slack`);
+            const slack = new WebClient(tenant.slack_bot_token);
+            await slack.chat.postMessage({
+              channel: message.channel,
+              text: `⚠️ File *${file.name}* (${fileSizeMB}MB) is too large to send via WhatsApp. Maximum size is 16MB.`,
+            });
+            continue;
+          }
+
           const tmpDir = path.join(__dirname, 'tmp');
           if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
           const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
           const tmpPath = path.join(tmpDir, safeFileName);
           fs.writeFileSync(tmpPath, Buffer.from(response.data));
+
           const publicUrl = `${process.env.NGROK_URL}/media/${encodeURIComponent(safeFileName)}`;
+          console.log('Public media URL:', publicUrl);
+
           const sid = await sendWhatsAppMedia(waNumber, publicUrl, message.text || '');
+          console.log('Media sent to WhatsApp, SID:', sid);
+
           await logMessage({
             waNumber, body: file.name, direction: 'outbound',
             twilioSid: sid, slackTs: message.ts,
             mediaType: file.mimetype, tenantId: tenant.id,
           });
+
+          // Clean up tmp file after 60 seconds
           setTimeout(() => { try { fs.unlinkSync(tmpPath); } catch (e) {} }, 60000);
+
         } catch (fileErr) {
           console.error('File handling error:', fileErr.message);
+
+          // Notify Slack if file sending failed
+          try {
+            const { WebClient } = require('@slack/web-api');
+            const slack = new WebClient(tenant.slack_bot_token);
+            await slack.chat.postMessage({
+              channel: message.channel,
+              text: `⚠️ Failed to send file *${file.name}* to WhatsApp: ${fileErr.message}`,
+            });
+          } catch (notifyErr) {
+            console.error('Could not notify Slack of file error:', notifyErr.message);
+          }
         }
       }
       return;
@@ -95,6 +144,7 @@ slackApp.message(async ({ message }) => {
     // Handle text
     if (message.text) {
       const sid = await sendWhatsApp(waNumber, message.text);
+      console.log('Sent to WhatsApp, SID:', sid);
       await logMessage({
         waNumber, body: message.text, direction: 'outbound',
         twilioSid: sid, slackTs: message.ts, tenantId: tenant.id,
