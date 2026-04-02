@@ -32,7 +32,7 @@ server.use('/onboarding', onboardingRoute);
 server.use('/admin', adminRoute);
 server.use('/commands', commandsRoute);
 server.get('/health', (req, res) => res.json({ status: 'ok' }));
-server.use('/media', express.static(path.join(__dirname, 'public')));
+server.use('/media', express.static(path.join(__dirname, '/public')));
 
 
 // ── Slack Bolt App ────────────────────────────────────────
