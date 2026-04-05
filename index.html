@@ -3,182 +3,650 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Syncora — See how it works</title>
+<title>Syncora — WhatsApp meets Slack</title>
 <link rel="icon" type="image/png" href="/logo.png"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--g:#25D366;--gd:#1aad52;--bg:#060608;--bg1:#0c0c10;--bg2:#111116;--b:rgba(255,255,255,.08);--t:#fff;--t2:rgba(255,255,255,.65);--t3:rgba(255,255,255,.35)}
+:root{
+  --g:#25D366;--gd:#1aad52;--gx:rgba(37,211,102,.12);--gxx:rgba(37,211,102,.06);
+  --bg:#07080a;--bg1:#0c0d10;--bg2:#111318;--bg3:#181a20;--bg4:#1e2028;
+  --b1:rgba(255,255,255,.05);--b2:rgba(255,255,255,.09);--b3:rgba(255,255,255,.14);
+  --t:#f2f2ee;--t2:rgba(242,242,238,.7);--t3:rgba(242,242,238,.42);--t4:rgba(242,242,238,.22);
+  --slack:#4A154B;
+}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--t);font-family:'Inter',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased;min-height:100vh}
-.bg-orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12}
-.orb1{width:700px;height:700px;background:var(--g);top:-200px;left:-200px;animation:drift 20s ease-in-out infinite}
-.orb2{width:500px;height:500px;background:#7c3aed;bottom:-100px;right:-100px;animation:drift 26s ease-in-out infinite reverse}
-@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,-30px)}}
-.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:80px 80px}
-nav{position:fixed;top:0;left:0;right:0;z-index:100;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;background:rgba(6,6,8,.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--b)}
-.logo{font-size:18px;font-weight:800;color:var(--t);display:flex;align-items:center;gap:10px;text-decoration:none}
-.nav-cta{background:var(--g);color:#000;padding:9px 20px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;transition:all .3s}
-.nav-cta:hover{background:var(--gd);transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,211,102,.3)}
-.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 24px 80px;position:relative;z-index:1}
-.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.2);color:var(--g);padding:7px 18px;border-radius:100px;font-size:12px;font-weight:600;margin-bottom:28px;letter-spacing:.5px}
-.live{width:6px;height:6px;background:var(--g);border-radius:50%;box-shadow:0 0 0 3px rgba(37,211,102,.2);animation:lp 2s infinite}
-@keyframes lp{0%,100%{box-shadow:0 0 0 3px rgba(37,211,102,.2)}50%{box-shadow:0 0 0 7px rgba(37,211,102,0)}}
-h1{font-size:clamp(40px,6vw,76px);font-weight:900;line-height:1;letter-spacing:-3px;margin-bottom:20px}
-.g{color:var(--g)}
-.hero-sub{font-size:clamp(16px,2vw,19px);color:var(--t2);max-width:520px;margin:0 auto 40px;line-height:1.6;font-weight:400}
-.hero-sub strong{color:var(--t);font-weight:600}
-.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.btn-p{background:var(--g);color:#000;padding:14px 32px;border-radius:10px;font-size:16px;font-weight:700;text-decoration:none;transition:all .3s;display:inline-flex;align-items:center;gap:8px}
-.btn-p:hover{background:var(--gd);transform:translateY(-2px);box-shadow:0 10px 28px rgba(37,211,102,.28)}
-.btn-s{background:rgba(255,255,255,.06);color:var(--t2);padding:14px 32px;border-radius:10px;font-size:16px;font-weight:500;text-decoration:none;border:1px solid rgba(255,255,255,.1);transition:all .3s}
-.btn-s:hover{background:rgba(255,255,255,.1);color:var(--t);transform:translateY(-2px)}
-.scroll-hint{margin-top:60px;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--t3);font-size:12px}
-.scroll-arrow{width:1px;height:40px;background:linear-gradient(var(--g),transparent);animation:scrollFade 2s ease-in-out infinite}
-@keyframes scrollFade{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.1)}}
-.videos{padding:80px 24px 120px;position:relative;z-index:1;max-width:1100px;margin:0 auto}
-.video-block{margin-bottom:80px}
-.video-block:last-child{margin-bottom:0}
-.vb-label{display:inline-flex;align-items:center;gap:8px;margin-bottom:16px}
-.vb-num{width:28px;height:28px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#000;flex-shrink:0}
-.vb-tag{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--g);font-weight:700}
-.vb-title{font-size:clamp(26px,3.5vw,40px);font-weight:800;letter-spacing:-1.5px;line-height:1.05;margin-bottom:10px}
-.vb-desc{font-size:16px;color:var(--t2);margin-bottom:32px;line-height:1.6;max-width:680px}
-.video-frame{background:var(--bg1);border:1px solid rgba(37,211,102,.12);border-radius:20px;overflow:hidden;position:relative;box-shadow:0 0 0 1px rgba(255,255,255,.04),0 32px 80px rgba(0,0,0,.6)}
-.video-frame::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--g),transparent 60%);z-index:1}
-.vf-titlebar{background:var(--bg2);padding:12px 18px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--b)}
-.vf-dots{display:flex;gap:6px}
-.vfd{width:10px;height:10px;border-radius:50%}
-.vfd-r{background:#ff5f57}.vfd-y{background:#ffbd2e}.vfd-g{background:#28ca41}
-.vf-title-text{flex:1;text-align:center;font-size:11px;color:var(--t3);transform:translateX(-15px)}
-.video-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden}
-.video-wrap video{width:100%;height:100%;object-fit:contain;display:block}
-.cta-section{padding:0 24px 100px;position:relative;z-index:1}
-.cta-box{max-width:680px;margin:0 auto;background:var(--bg1);border:1px solid rgba(37,211,102,.15);border-radius:24px;padding:56px 48px;text-align:center;position:relative;overflow:hidden}
-.cta-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(37,211,102,.05),transparent);pointer-events:none}
-.cta-box::after{content:'';position:absolute;top:0;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,rgba(37,211,102,.4),transparent)}
-.cta-box h2{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-1.5px;line-height:1.05;margin-bottom:14px}
-.cta-box p{font-size:16px;color:var(--t2);margin-bottom:32px;line-height:1.6}
-.cta-form{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.cta-input{flex:1;min-width:220px;background:var(--bg2);border:1px solid rgba(255,255,255,.12);color:var(--t);padding:14px 20px;border-radius:10px;font-size:15px;outline:none;font-family:'Inter',sans-serif;transition:border-color .3s}
-.cta-input:focus{border-color:rgba(37,211,102,.5);box-shadow:0 0 0 3px rgba(37,211,102,.08)}
-.cta-input::placeholder{color:var(--t3)}
-.cta-note{font-size:12px;color:var(--t3);margin-top:14px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
-.cta-note span{display:flex;align-items:center;gap:5px}
-footer{padding:32px 48px;border-top:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:relative;z-index:1}
-.footer-logo{font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px}
-footer p{font-size:12px;color:var(--t3)}
-/* Custom video controls styling */
-video::-webkit-media-controls-panel{background:linear-gradient(transparent,rgba(0,0,0,.7))}
-video::-webkit-media-controls-play-button{filter:invert(1)}
+body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased;line-height:1.6}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.35}
+
+.bg-glow{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.glow1{position:absolute;width:800px;height:800px;top:-200px;left:50%;transform:translateX(-50%);background:radial-gradient(circle,rgba(37,211,102,.055) 0%,transparent 65%)}
+.glow2{position:absolute;width:600px;height:600px;bottom:20%;left:-100px;background:radial-gradient(circle,rgba(37,211,102,.035) 0%,transparent 70%)}
+.glow3{position:absolute;width:500px;height:500px;top:40%;right:-80px;background:radial-gradient(circle,rgba(74,21,75,.07) 0%,transparent 70%)}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;background:rgba(7,8,10,.88);backdrop-filter:blur(28px);border-bottom:1px solid var(--b1)}
+.nav-logo img{height:20px;width:auto;display:block}
+.nav-links{display:flex;align-items:center;gap:36px}
+.nav-links a{font-size:14px;color:var(--t3);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--t)}
+.btn-nav{background:var(--g);color:#000;padding:9px 22px;border-radius:8px;font-size:13.5px;font-weight:600;text-decoration:none;transition:all .2s}
+.btn-nav:hover{background:var(--gd);transform:translateY(-1px)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:110px 24px 80px;position:relative;z-index:1}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.16);color:var(--g);padding:6px 16px;border-radius:100px;font-size:11.5px;font-weight:600;margin-bottom:36px;letter-spacing:.8px;text-transform:uppercase}
+.live-dot{width:6px;height:6px;background:var(--g);border-radius:50%;flex-shrink:0;animation:livepulse 2s infinite}
+@keyframes livepulse{0%,100%{box-shadow:0 0 0 0 rgba(37,211,102,.5)}65%{box-shadow:0 0 0 7px rgba(37,211,102,0)}}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(32px,5vw,62px);font-weight:800;line-height:1.08;letter-spacing:-2px;margin-bottom:24px;max-width:760px}
+.hero h1 .g{color:var(--g)}
+.hero-sub{font-size:clamp(15px,1.6vw,17px);color:var(--t2);max-width:460px;margin:0 auto 44px;line-height:1.8;font-weight:400}
+.hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:72px}
+.btn-p{background:var(--g);color:#000;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;transition:all .25s;display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-p:hover{background:var(--gd);transform:translateY(-2px);box-shadow:0 14px 36px rgba(37,211,102,.2)}
+.btn-s{background:transparent;color:var(--t2);padding:12px 28px;border-radius:10px;font-size:14px;font-weight:400;text-decoration:none;border:1px solid var(--b2);transition:all .25s}
+.btn-s:hover{background:var(--bg2);color:var(--t);border-color:var(--b3)}
+
+/* HERO MOCKUP */
+.hero-mockup{width:100%;max-width:880px;background:var(--bg1);border:1px solid var(--b2);border-radius:20px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.025),0 48px 120px rgba(0,0,0,.75)}
+.mock-bar{background:var(--bg2);padding:11px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--b1)}
+.mock-dots{display:flex;gap:5px}
+.mock-dot{width:10px;height:10px;border-radius:50%}
+.mock-title{margin:0 auto;font-size:11px;color:var(--t4);font-weight:400;letter-spacing:.4px}
+.mock-split{display:grid;grid-template-columns:1fr 1fr;min-height:260px;position:relative}
+.mock-side{padding:18px;display:flex;flex-direction:column;gap:7px}
+.mock-wa{background:#0a0f0d}
+.mock-sl{background:#0e0714;border-left:1px solid var(--b1)}
+.mock-hdr{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;padding:0 0 10px;display:flex;align-items:center;gap:6px;color:var(--t4)}
+.mock-hdr-dot{width:5px;height:5px;border-radius:50%}
+.bubble{padding:8px 12px;border-radius:10px;font-size:12px;max-width:80%;line-height:1.5;animation:bubin .35s ease both}
+@keyframes bubin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.b-in{background:#1c241f;color:#ccc;border-radius:3px 10px 10px 10px;align-self:flex-start}
+.b-out{background:var(--g);color:#000;font-weight:500;border-radius:10px 3px 10px 10px;align-self:flex-end}
+.sl-msg{display:flex;gap:8px;align-items:flex-start}
+.sl-av{width:26px;height:26px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.sl-av-g{background:var(--g);color:#000}
+.sl-av-t{background:var(--slack);color:#e8a0eb}
+.sl-name{font-size:10px;font-weight:600;color:var(--t);margin-bottom:2px}
+.sl-name span{font-weight:400;color:var(--t4);margin-left:4px}
+.sl-text{font-size:12px;color:#bbb;line-height:1.5}
+.mock-divider{position:absolute;top:0;bottom:0;left:50%;width:1px;background:linear-gradient(to bottom,transparent,var(--b2),var(--b2),transparent)}
+.bridge-tag{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--b3);color:var(--t3);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:5px 13px;border-radius:100px;white-space:nowrap;z-index:2}
+
+/* LOGOS STRIP */
+.logos-strip{padding:0 24px 80px;position:relative;z-index:1}
+.logos-inner{max-width:1100px;margin:0 auto;border-top:1px solid var(--b1);border-bottom:1px solid var(--b1);padding:28px 0;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.logos-label{font-size:12px;color:var(--t4);text-transform:uppercase;letter-spacing:2px;margin-right:8px}
+.logos-app{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--b1);padding:10px 18px;border-radius:10px;font-size:13px;color:var(--t2);font-weight:500}
+
+/* SECTION */
+.section{position:relative;z-index:1;padding:100px 24px;max-width:1100px;margin:0 auto}
+.sec-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:var(--g);margin-bottom:12px}
+.sec-title{font-family:'Syne',sans-serif;font-size:clamp(22px,3vw,36px);font-weight:700;letter-spacing:-1px;line-height:1.15;margin-bottom:14px}
+.sec-sub{font-size:15px;color:var(--t2);line-height:1.75;font-weight:400;max-width:520px}
+
+/* HOW IT WORKS */
+.how-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:60px;position:relative}
+.how-steps::before{content:'';position:absolute;top:44px;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,rgba(37,211,102,.2) 20%,rgba(37,211,102,.2) 80%,transparent);z-index:0;pointer-events:none}
+.how-step{background:var(--bg1);border:1px solid var(--b1);border-radius:18px;padding:28px 24px;position:relative;transition:border-color .25s,transform .25s}
+.how-step:hover{border-color:rgba(37,211,102,.22);transform:translateY(-4px)}
+.how-step-num{width:32px;height:32px;border-radius:9px;background:var(--gxx);border:1px solid rgba(37,211,102,.18);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:var(--g);margin-bottom:16px;position:relative;z-index:1}
+.how-step-icon{font-size:20px;margin-bottom:8px}
+.how-step h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--t);margin-bottom:7px;letter-spacing:-.1px}
+.how-step p{font-size:12.5px;color:var(--t3);line-height:1.65}
+
+/* USER FLOW */
+.flow-wrap{background:var(--bg1);border:1px solid var(--b1);border-radius:22px;padding:48px;margin-top:60px;position:relative;overflow:hidden}
+.flow-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--g),transparent)}
+.flow-cols{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:start;gap:0}
+.flow-col{display:flex;flex-direction:column;gap:14px}
+.flow-col-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;color:var(--t4);text-align:center;padding-bottom:16px;border-bottom:1px solid var(--b1);margin-bottom:4px}
+.flow-node{background:var(--bg2);border:1px solid var(--b1);border-radius:12px;padding:14px 16px;text-align:center;transition:border-color .2s}
+.flow-node:hover{border-color:rgba(37,211,102,.2)}
+.flow-node-icon{font-size:18px;margin-bottom:6px}
+.flow-node h4{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--t);margin-bottom:4px}
+.flow-node p{font-size:11px;color:var(--t4);line-height:1.5}
+.flow-node.hl{border-color:rgba(37,211,102,.22);background:rgba(37,211,102,.04)}
+.flow-node.hl h4{color:var(--g)}
+.flow-arr{display:flex;align-items:center;justify-content:center;padding:0 16px;padding-top:56px}
+.flow-arr-inner{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--g);opacity:.7}
+.flow-arr-inner span{font-size:18px}
+.flow-arr-label{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--t4);white-space:nowrap}
+
+/* WHAT YOUR CLIENT SEES */
+.sides-section{position:relative;z-index:1;padding:0 24px 100px}
+.sides-inner{max-width:1100px;margin:0 auto}
+.sides-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:48px}
+.side-card{border-radius:20px;overflow:hidden;border:1px solid var(--b2)}
+.side-card-hdr{padding:16px 20px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px}
+.side-card-wa .side-card-hdr{background:#0a1a10;color:var(--g);border-bottom:1px solid rgba(37,211,102,.12)}
+.side-card-sl .side-card-hdr{background:#1a0a1c;color:#c084d0;border-bottom:1px solid rgba(192,132,208,.12)}
+.side-card-body{background:var(--bg1);padding:20px;display:flex;flex-direction:column;gap:10px;min-height:260px}
+.chat-bubble{padding:10px 14px;border-radius:12px;font-size:13px;max-width:82%;line-height:1.55}
+.chat-in{background:#1c241f;color:#ccc;border-radius:4px 12px 12px 12px;align-self:flex-start}
+.chat-out{background:var(--g);color:#000;font-weight:500;border-radius:12px 4px 12px 12px;align-self:flex-end}
+.chat-sys{align-self:center;background:rgba(255,255,255,.04);border:1px solid var(--b1);color:var(--t4);border-radius:100px;font-size:11px;padding:5px 14px}
+.slack-msg{display:flex;gap:10px;align-items:flex-start;padding:4px 0}
+.slk-av{width:30px;height:30px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.slk-av-s{background:var(--g);color:#000}
+.slk-av-u{background:var(--slack);color:#e8a0eb}
+.slk-name{font-size:11px;font-weight:600;color:var(--t);margin-bottom:3px}
+.slk-name em{font-style:normal;font-weight:400;color:var(--t4);font-size:10px;margin-left:4px}
+.slk-txt{font-size:12.5px;color:var(--t2);line-height:1.5}
+.slk-tag{display:inline-block;background:rgba(37,211,102,.1);color:var(--g);border-radius:4px;font-size:10px;font-weight:700;padding:2px 7px;margin-top:3px}
+
+/* FEATURES */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:52px}
+.feat-card{background:var(--bg1);border:1px solid var(--b1);border-radius:16px;padding:26px;transition:border-color .25s,transform .25s}
+.feat-card:hover{border-color:rgba(37,211,102,.18);transform:translateY(-3px)}
+.feat-icon{width:42px;height:42px;border-radius:10px;background:var(--gxx);border:1px solid rgba(37,211,102,.12);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:14px}
+.feat-card h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--t);margin-bottom:6px;letter-spacing:0}
+.feat-card p{font-size:12.5px;color:var(--t3);line-height:1.6}
+
+/* SECURITY */
+.security-section{position:relative;z-index:1;padding:100px 24px;background:linear-gradient(to bottom,transparent,rgba(37,211,102,.025),transparent)}
+.security-inner{max-width:1100px;margin:0 auto}
+.security-header{margin-bottom:56px}
+.sec-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+.sec-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+.sec-badge{background:var(--bg2);border:1px solid var(--b1);border-radius:100px;padding:7px 15px;font-size:12px;color:var(--t2);display:flex;align-items:center;gap:7px}
+.sec-badge-dot{width:5px;height:5px;border-radius:50%;background:var(--g);flex-shrink:0}
+.sec-right{display:flex;flex-direction:column;gap:12px}
+.sec-qa{background:var(--bg1);border:1px solid var(--b1);border-radius:14px;padding:20px 22px;cursor:pointer;transition:border-color .2s,background .2s;user-select:none}
+.sec-qa:hover{border-color:rgba(37,211,102,.2)}
+.sec-qa.open{border-color:rgba(37,211,102,.22);background:rgba(37,211,102,.03)}
+.sec-q{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--t);display:flex;align-items:center;gap:10px;justify-content:space-between}
+.sec-q-left{display:flex;align-items:center;gap:10px}
+.sec-q-icon{width:26px;height:26px;border-radius:7px;background:var(--gxx);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.sec-q-arrow{font-size:12px;color:var(--t4);transition:transform .2s;flex-shrink:0}
+.sec-qa.open .sec-q-arrow{transform:rotate(180deg)}
+.sec-a{font-size:13px;color:var(--t3);line-height:1.65;max-height:0;overflow:hidden;transition:max-height .3s ease,padding-top .3s}
+.sec-qa.open .sec-a{max-height:200px;padding-top:10px}
+
+/* VIDEOS */
+.videos-section{position:relative;z-index:1;padding:0 24px 100px}
+.videos-inner{max-width:1100px;margin:0 auto}
+.video-block{margin-bottom:52px}
+.vb-meta{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.vb-num{width:26px;height:26px;border-radius:7px;background:var(--gxx);border:1px solid rgba(37,211,102,.16);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:var(--g)}
+.vb-tag{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--t4);font-weight:600}
+.vb-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--t);letter-spacing:-.3px;margin-bottom:6px}
+.vb-desc{font-size:14px;color:var(--t3);margin-bottom:20px;line-height:1.6}
+.video-frame{background:var(--bg1);border:1px solid var(--b2);border-radius:16px;overflow:hidden}
+.vf-bar{background:var(--bg2);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--b1)}
+.vf-dots{display:flex;gap:5px}
+.vfd{width:9px;height:9px;border-radius:50%}
+.vf-label{font-size:11px;color:var(--t4);margin-left:4px}
+.video-wrap video{width:100%;display:block;max-height:520px;background:#000}
+
+/* CTA */
+.cta-section{position:relative;z-index:1;padding:100px 24px}
+.cta-box{max-width:600px;margin:0 auto;text-align:center;background:var(--bg1);border:1px solid var(--b2);border-radius:24px;padding:64px 48px;position:relative;overflow:hidden}
+.cta-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(37,211,102,.06) 0%,transparent 60%);pointer-events:none}
+.cta-box h2{font-family:'Syne',sans-serif;font-size:clamp(22px,3vw,32px);font-weight:700;letter-spacing:-.8px;margin-bottom:12px;position:relative}
+.cta-box p{font-size:15px;color:var(--t2);line-height:1.7;margin-bottom:32px;font-weight:400;position:relative}
+.cta-form{display:flex;gap:10px;max-width:420px;margin:0 auto 20px;position:relative}
+.cta-input{flex:1;background:var(--bg2);border:1px solid var(--b2);border-radius:10px;padding:13px 16px;font-size:14.5px;color:var(--t);font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
+.cta-input::placeholder{color:var(--t4)}
+.cta-input:focus{border-color:rgba(37,211,102,.35)}
+.cta-note{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;font-size:12px;color:var(--t4);position:relative}
+.cta-note span::before{content:'✓ ';color:var(--g)}
+
+/* FOOTER */
+footer{position:relative;z-index:1;text-align:center;padding:48px 24px;border-top:1px solid var(--b1)}
+.footer-logo{margin-bottom:16px}
+.footer-logo img{height:18px;width:auto;opacity:.7}
+footer p{font-size:13px;color:var(--t4);line-height:1.8}
+
+/* RESPONSIVE */
 @media(max-width:768px){
   nav{padding:0 20px}
-  .videos{padding:60px 20px 80px}
-  .vb-title{font-size:24px}
-  .cta-box{padding:36px 24px}
-  footer{padding:24px 20px}
+  .nav-links{display:none}
+  .hero-mockup{display:none}
+  .how-steps{grid-template-columns:1fr 1fr;gap:10px}
+  .how-steps::before{display:none}
+  .flow-wrap{padding:24px 16px}
+  .flow-cols{grid-template-columns:1fr;gap:8px}
+  .flow-arr{display:none}
+  .feat-grid{grid-template-columns:1fr}
+  .sec-grid{grid-template-columns:1fr}
+  .sides-grid{grid-template-columns:1fr}
+  .cta-box{padding:40px 24px}
   .cta-form{flex-direction:column}
-  .cta-input{min-width:unset;width:100%}
+}
+@media(max-width:480px){
+  .how-steps{grid-template-columns:1fr}
+  .section{padding:72px 20px}
 }
 </style>
 </head>
 <body>
 
-<div class="bg-orbs"><div class="orb orb1"></div><div class="orb orb2"></div></div>
-<div class="bg-grid"></div>
+<div class="bg-glow">
+  <div class="glow1"></div>
+  <div class="glow2"></div>
+  <div class="glow3"></div>
+</div>
 
 <!-- NAV -->
 <nav>
-  <a href="#" class="logo"><img src="/logo_text.png" alt="Syncora" style="height:24px;width:auto"/></a>
-  <a href="#cta" class="nav-cta">Get early access →</a>
+  <div class="nav-logo"><img src="/logo_text.png" alt="Syncora"/></div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#flow">User flow</a>
+    <a href="#sides">What you see</a>
+    <a href="#security">Security</a>
+    <a href="#demo">Demo</a>
+  </div>
+  <a href="#cta" class="btn-nav">Get started free →</a>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="badge"><span class="live"></span>Early access — free to join</div>
-  <h1>WhatsApp messages.<br/><span class="g">Right in Slack.</span></h1>
-  <p class="hero-sub">Customers message you on WhatsApp. Your team replies from <strong>Slack</strong> — no app switching, no missed conversations, ever.</p>
-  <div class="hero-btns">
-    <a href="#video-1" class="btn-p">▶ See how it works</a>
-    <a href="#cta" class="btn-s">Get early access</a>
+  <div class="hero-badge"><span class="live-dot"></span>Early access — free to join</div>
+  <h1>Your customers on WhatsApp.<br/><span class="g">Your team on Slack.</span></h1>
+  <p class="hero-sub">Syncora bridges both worlds — customers message on WhatsApp, your team replies from Slack. No new apps. No switching tools. No missed conversations.</p>
+  <div class="hero-actions">
+    <a href="#how" class="btn-p">See how it works →</a>
+    <a href="#cta" class="btn-s">Get started free</a>
   </div>
-  <div class="scroll-hint">
-    <span>Scroll to watch</span>
-    <div class="scroll-arrow"></div>
+
+  <div class="hero-mockup">
+    <div class="mock-bar">
+      <div class="mock-dots">
+        <div class="mock-dot" style="background:#ff5f57"></div>
+        <div class="mock-dot" style="background:#ffbd2e"></div>
+        <div class="mock-dot" style="background:#28ca41"></div>
+      </div>
+      <div class="mock-title">Syncora — live bridge · WhatsApp ↔ Slack</div>
+    </div>
+    <div class="mock-split">
+      <div class="mock-side mock-wa">
+        <div class="mock-hdr"><div class="mock-hdr-dot" style="background:#25D366"></div>WhatsApp · Customer</div>
+        <div class="bubble b-in" style="animation-delay:.1s">Hey, I placed an order — can I change the delivery address?</div>
+        <div class="bubble b-out" style="animation-delay:.9s">Of course! What's the new address?</div>
+        <div class="bubble b-in" style="animation-delay:1.7s">12 Oak Street, London E1 6RF 🙏</div>
+        <div class="bubble b-out" style="animation-delay:2.5s">Done! Updated and confirmed ✓</div>
+      </div>
+      <div class="mock-side mock-sl">
+        <div class="mock-hdr"><div class="mock-hdr-dot" style="background:#4A154B"></div>Slack · Your team</div>
+        <div class="sl-msg" style="animation:bubin .35s .2s both">
+          <div class="sl-av sl-av-g">S</div>
+          <div><div class="sl-name">Syncora <span>12:04</span></div><div class="sl-text">📱 <b>New message from +44 7700…</b><br/>Hey, I placed an order — can I change the delivery address?</div></div>
+        </div>
+        <div class="sl-msg" style="animation:bubin .35s 1.0s both">
+          <div class="sl-av sl-av-t">T</div>
+          <div><div class="sl-name">Tom <span>12:05</span></div><div class="sl-text">Of course! What's the new address?</div></div>
+        </div>
+        <div class="sl-msg" style="animation:bubin .35s 1.8s both">
+          <div class="sl-av sl-av-g">S</div>
+          <div><div class="sl-name">Syncora <span>12:06</span></div><div class="sl-text">12 Oak Street, London E1 6RF 🙏</div></div>
+        </div>
+        <div class="sl-msg" style="animation:bubin .35s 2.6s both">
+          <div class="sl-av sl-av-t">T</div>
+          <div><div class="sl-name">Tom <span>12:07</span></div><div class="sl-text">Done! Updated and confirmed ✓</div></div>
+        </div>
+      </div>
+      <div class="mock-divider"></div>
+      <div class="bridge-tag">syncora bridge</div>
+    </div>
   </div>
 </section>
 
-<!-- VIDEOS -->
-<div class="videos">
+<!-- WORKS WITH -->
+<div class="logos-strip">
+  <div class="logos-inner">
+    <span class="logos-label">Works with</span>
+    <div class="logos-app"><span>📱</span> WhatsApp Business</div>
+    <span style="color:var(--t4);font-size:18px">+</span>
+    <div class="logos-app"><span>🟣</span> Slack</div>
+    <span style="color:var(--t4);font-size:14px;padding:0 8px">via</span>
+    <div class="logos-app" style="border-color:rgba(37,211,102,.2);background:var(--gxx);color:var(--g)"><span>⚡</span> Syncora</div>
+  </div>
+</div>
 
-  <!-- VIDEO 1 — syncora.mp4 -->
-  <div class="video-block" id="video-1">
-    <div class="vb-label">
-      <div class="vb-num">1</div>
-      <div class="vb-tag">Live demo</div>
+<!-- HOW IT WORKS -->
+<div class="section" id="how">
+  <div class="sec-tag">How it works</div>
+  <div class="sec-title">Up and running in 4 steps</div>
+  <p class="sec-sub">No technical setup needed. Connect your Slack workspace and start receiving WhatsApp messages in minutes.</p>
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="how-step-num">1</div>
+      <div class="how-step-icon">🏢</div>
+      <h3>Sign up</h3>
+      <p>Enter your company name and work email. Takes 30 seconds — no credit card required.</p>
     </div>
-    <h2 class="vb-title">See both sides of<br/>every conversation.</h2>
-    <p class="vb-desc">Watch a real message flow — from a customer's WhatsApp on the left, to your team's Slack channel on the right. Real time. Zero friction.</p>
-    <div class="video-frame">
-      <div class="vf-titlebar">
-        <div class="vf-dots"><div class="vfd vfd-r"></div><div class="vfd vfd-y"></div><div class="vfd vfd-g"></div></div>
-        <div class="vf-title-text">Syncora — Split screen demo · WhatsApp ↔ Slack</div>
+    <div class="how-step">
+      <div class="how-step-num">2</div>
+      <div class="how-step-icon">🟣</div>
+      <h3>Connect Slack</h3>
+      <p>One-click OAuth — authorize Syncora to your Slack workspace. No coding needed.</p>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">3</div>
+      <div class="how-step-icon">🔑</div>
+      <h3>Get your claim code</h3>
+      <p>Share your unique code with customers so they can connect to your team on first contact.</p>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">4</div>
+      <div class="how-step-icon">🚀</div>
+      <h3>Go live</h3>
+      <p>Customer messages appear instantly in Slack. Reply and they receive it on WhatsApp.</p>
+    </div>
+  </div>
+</div>
+
+<!-- USER FLOW DIAGRAM -->
+<div class="section" id="flow" style="padding-top:0">
+  <div class="sec-tag">User flow</div>
+  <div class="sec-title">What happens behind the scenes</div>
+  <p class="sec-sub">Every message follows the same path — fast, reliable and fully traceable.</p>
+
+  <div class="flow-wrap">
+    <div class="flow-cols">
+      <div class="flow-col">
+        <div class="flow-col-title">📱 Customer (WhatsApp)</div>
+        <div class="flow-node">
+          <div class="flow-node-icon">💬</div>
+          <h4>Sends WhatsApp message</h4>
+          <p>Customer messages your shared WhatsApp number</p>
+        </div>
+        <div class="flow-node">
+          <div class="flow-node-icon">🔑</div>
+          <h4>Sends claim code (first time)</h4>
+          <p>e.g. "ACME2026" — links them to your team</p>
+        </div>
+        <div class="flow-node">
+          <div class="flow-node-icon">✅</div>
+          <h4>Gets instant confirmation</h4>
+          <p>Auto-reply: "You're now connected to Acme Co!"</p>
+        </div>
+        <div class="flow-node">
+          <div class="flow-node-icon">↩️</div>
+          <h4>Receives your reply</h4>
+          <p>Your Slack reply arrives in their WhatsApp instantly</p>
+        </div>
       </div>
-      <div class="video-wrap">
-        <video controls preload="metadata" controlsList="nodownload" poster="">
-          <source src="/syncora.mp4" type="video/mp4"/>
-          Your browser does not support the video tag.
-        </video>
+
+      <div class="flow-arr">
+        <div class="flow-arr-inner">
+          <span>→</span>
+          <div class="flow-arr-label">routed</div>
+        </div>
+      </div>
+
+      <div class="flow-col">
+        <div class="flow-col-title">⚡ Syncora (bridge)</div>
+        <div class="flow-node hl">
+          <div class="flow-node-icon">🔀</div>
+          <h4>Routes to your workspace</h4>
+          <p>Claim code identifies your company from all tenants</p>
+        </div>
+        <div class="flow-node hl">
+          <div class="flow-node-icon">👤</div>
+          <h4>Creates customer profile</h4>
+          <p>Stores number and links to your workspace only</p>
+        </div>
+        <div class="flow-node hl">
+          <div class="flow-node-icon">📡</div>
+          <h4>Forwards in real-time</h4>
+          <p>Messages, images, voice notes and PDFs all supported</p>
+        </div>
+        <div class="flow-node hl">
+          <div class="flow-node-icon">🔁</div>
+          <h4>Delivers reply back</h4>
+          <p>Your Slack reply is sent back via WhatsApp immediately</p>
+        </div>
+      </div>
+
+      <div class="flow-arr">
+        <div class="flow-arr-inner">
+          <span>→</span>
+          <div class="flow-arr-label">delivered</div>
+        </div>
+      </div>
+
+      <div class="flow-col">
+        <div class="flow-col-title">🟣 Your team (Slack)</div>
+        <div class="flow-node">
+          <div class="flow-node-icon">🔔</div>
+          <h4>New channel created</h4>
+          <p>Each customer gets their own dedicated Slack channel</p>
+        </div>
+        <div class="flow-node">
+          <div class="flow-node-icon">👁️</div>
+          <h4>Message appears instantly</h4>
+          <p>Your team sees the full conversation in real time</p>
+        </div>
+        <div class="flow-node">
+          <div class="flow-node-icon">💬</div>
+          <h4>Team replies in Slack</h4>
+          <p>No new tools — just reply in the channel as normal</p>
+        </div>
+        <div class="flow-node">
+          <div class="flow-node-icon">📋</div>
+          <h4>Full history saved</h4>
+          <p>All conversations stored in Slack for your records</p>
+        </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- VIDEO 2 — syncora-chat.mp4 -->
-  <div class="video-block" id="video-2">
-    <div class="vb-label">
-      <div class="vb-num">2</div>
-      <div class="vb-tag">Onboarding</div>
-    </div>
-    <h2 class="vb-title">From zero to live<br/>in under 5 minutes.</h2>
-    <p class="vb-desc">Watch the full setup walkthrough — connecting your Slack workspace, getting your claim code, and receiving your very first customer message.</p>
-    <div class="video-frame">
-      <div class="vf-titlebar">
-        <div class="vf-dots"><div class="vfd vfd-r"></div><div class="vfd vfd-y"></div><div class="vfd vfd-g"></div></div>
-        <div class="vf-title-text">Syncora — Setup walkthrough · Full onboarding</div>
+<!-- WHAT EACH SIDE SEES -->
+<div class="sides-section" id="sides">
+  <div class="sides-inner">
+    <div class="sec-tag">Both sides of the conversation</div>
+    <div class="sec-title">What your customer sees<br/>vs what your team sees</div>
+    <p class="sec-sub" style="margin-bottom:0">Same conversation — completely different experience. Zero friction for both sides.</p>
+
+    <div class="sides-grid">
+      <!-- Customer side -->
+      <div class="side-card side-card-wa">
+        <div class="side-card-hdr">
+          <span>📱</span> Customer's WhatsApp
+        </div>
+        <div class="side-card-body">
+          <div class="chat-sys">Connected to Acme Co ✓</div>
+          <div class="chat-bubble chat-in">Hi! I need help with my order #4821</div>
+          <div class="chat-bubble chat-out">Hey! Let me pull that up for you right now 👋</div>
+          <div class="chat-bubble chat-in">It shows as delivered but I haven't received it</div>
+          <div class="chat-bubble chat-out">I can see it — it's at your local depot. They'll redeliver tomorrow before 12. I'll send you the tracking link 📦</div>
+          <div class="chat-bubble chat-in">Amazing, thank you so much! 🙏</div>
+        </div>
       </div>
-      <div class="video-wrap">
-        <video controls preload="metadata" controlsList="nodownload" poster="">
-          <source src="/syncora-chat.mp4" type="video/mp4"/>
-          Your browser does not support the video tag.
-        </video>
+
+      <!-- Team side -->
+      <div class="side-card side-card-sl">
+        <div class="side-card-hdr">
+          <span>🟣</span> Your team's Slack — #wa-sarah-johnson
+        </div>
+        <div class="side-card-body">
+          <div class="slack-msg">
+            <div class="slk-av slk-av-s">S</div>
+            <div>
+              <div class="slk-name">Syncora<em>Today at 14:02</em></div>
+              <div class="slk-txt">📱 <b>New customer connected</b><br/>+44 7911 123456 · Sarah Johnson<div class="slk-tag">wa-sarah-johnson</div></div>
+            </div>
+          </div>
+          <div class="slack-msg">
+            <div class="slk-av slk-av-s">S</div>
+            <div>
+              <div class="slk-name">Syncora<em>14:02</em></div>
+              <div class="slk-txt">Hi! I need help with my order #4821</div>
+            </div>
+          </div>
+          <div class="slack-msg">
+            <div class="slk-av slk-av-u">T</div>
+            <div>
+              <div class="slk-name">Tom (your team)<em>14:03</em></div>
+              <div class="slk-txt">Hey! Let me pull that up for you right now 👋</div>
+            </div>
+          </div>
+          <div class="slack-msg">
+            <div class="slk-av slk-av-s">S</div>
+            <div>
+              <div class="slk-name">Syncora<em>14:04</em></div>
+              <div class="slk-txt">It shows as delivered but I haven't received it</div>
+            </div>
+          </div>
+          <div class="slack-msg">
+            <div class="slk-av slk-av-u">T</div>
+            <div>
+              <div class="slk-name">Tom<em>14:05</em></div>
+              <div class="slk-txt">I can see it — it's at your local depot. They'll redeliver tomorrow before 12. I'll send you the tracking link 📦</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+</div>
 
+<!-- FEATURES -->
+<div class="section" style="padding-top:0">
+  <div class="sec-tag">Everything included</div>
+  <div class="sec-title">All the tools your team needs</div>
+  <p class="sec-sub">No extra setup. Everything works out of the box from day one.</p>
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-icon">⚡</div>
+      <h3>Real-time sync</h3>
+      <p>Messages appear in Slack instantly — no delays, no polling, no waiting.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🖼️</div>
+      <h3>Images, PDFs & voice notes</h3>
+      <p>All media types supported in both directions — exactly as the customer sent them.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">👥</div>
+      <h3>Dedicated channel per customer</h3>
+      <p>Every customer gets their own Slack channel automatically — clean and organized.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🏢</div>
+      <h3>Multi-company support</h3>
+      <p>One WhatsApp number serves multiple companies — each fully isolated from the others.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🚫</div>
+      <h3>Block contacts</h3>
+      <p>Block or unblock any customer from Slack instantly with a single command.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📲</div>
+      <h3>Zero friction for customers</h3>
+      <p>Customers use their existing WhatsApp — nothing to download, no account needed.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SECURITY -->
+<div class="security-section" id="security">
+  <div class="security-inner">
+    <div class="security-header">
+      <div class="sec-tag">Security & privacy</div>
+      <div class="sec-title">Your data is safe with us</div>
+      <p class="sec-sub">We built Syncora with privacy first. Here's exactly how we protect your business and your customers.</p>
+    </div>
+
+    <div class="sec-grid">
+      <div>
+        <p style="font-size:15px;color:var(--t2);line-height:1.8;font-weight:400;margin-bottom:14px">Every company on Syncora operates in a completely isolated environment. Your messages, contacts, and workspace are never visible to — or accessible by — any other company.</p>
+        <p style="font-size:15px;color:var(--t2);line-height:1.8;font-weight:400">Customers connect voluntarily by sending your claim code — explicit, informed consent. You stay in control of your data at all times.</p>
+        <div class="sec-badges">
+          <div class="sec-badge"><div class="sec-badge-dot"></div>Data isolated per company</div>
+          <div class="sec-badge"><div class="sec-badge-dot"></div>GDPR compliant</div>
+          <div class="sec-badge"><div class="sec-badge-dot"></div>Explicit customer consent</div>
+          <div class="sec-badge"><div class="sec-badge-dot"></div>Delete on request</div>
+          <div class="sec-badge"><div class="sec-badge-dot"></div>No data sold</div>
+          <div class="sec-badge"><div class="sec-badge-dot"></div>Encrypted in transit</div>
+        </div>
+      </div>
+
+      <div class="sec-right">
+        <div class="sec-qa open" onclick="toggleQA(this)">
+          <div class="sec-q"><div class="sec-q-left"><div class="sec-q-icon">🔒</div>Is my data safe?</div><div class="sec-q-arrow">▼</div></div>
+          <div class="sec-a">Yes. Every company has completely isolated data. No company can ever see another company's messages, contacts, or conversations. Your data belongs to you only.</div>
+        </div>
+        <div class="sec-qa" onclick="toggleQA(this)">
+          <div class="sec-q"><div class="sec-q-left"><div class="sec-q-icon">👁️</div>Who can see our conversations?</div><div class="sec-q-arrow">▼</div></div>
+          <div class="sec-a">Only your team in your own Slack workspace. Syncora routes messages but does not read or store conversation content beyond what's needed to deliver it. Nobody at Syncora reads your chats.</div>
+        </div>
+        <div class="sec-qa" onclick="toggleQA(this)">
+          <div class="sec-q"><div class="sec-q-left"><div class="sec-q-icon">📞</div>What about customer phone numbers?</div><div class="sec-q-arrow">▼</div></div>
+          <div class="sec-a">Phone numbers are stored securely and linked only to your workspace. They are never shared with other companies or sold to third parties.</div>
+        </div>
+        <div class="sec-qa" onclick="toggleQA(this)">
+          <div class="sec-q"><div class="sec-q-left"><div class="sec-q-icon">🇪🇺</div>Is this GDPR compliant?</div><div class="sec-q-arrow">▼</div></div>
+          <div class="sec-a">Yes. Customers voluntarily connect by sending your claim code — this is explicit, informed consent. You can remove any contact at any time. All data can be permanently deleted on request.</div>
+        </div>
+        <div class="sec-qa" onclick="toggleQA(this)">
+          <div class="sec-q"><div class="sec-q-left"><div class="sec-q-icon">🚪</div>What if we want to stop?</div><div class="sec-q-arrow">▼</div></div>
+          <div class="sec-a">You can deactivate your workspace at any time from the admin panel. All your company data can be permanently deleted on request — no questions asked, no lock-in.</div>
+        </div>
+        <div class="sec-qa" onclick="toggleQA(this)">
+          <div class="sec-q"><div class="sec-q-left"><div class="sec-q-icon">⚠️</div>What are the risks?</div><div class="sec-q-arrow">▼</div></div>
+          <div class="sec-a">Syncora uses Twilio's WhatsApp API and Slack's official OAuth — enterprise-grade infrastructure. The main thing to manage: keep your claim code private. If shared publicly, unintended contacts could reach your workspace. You can regenerate it anytime from the admin panel.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DEMO VIDEOS -->
+<div class="videos-section" id="demo">
+  <div class="videos-inner">
+    <div class="sec-tag">See it in action</div>
+    <div class="sec-title" style="margin-bottom:48px">Watch how it works</div>
+
+    <div class="video-block">
+      <div class="vb-meta"><div class="vb-num">1</div><div class="vb-tag">Live demo</div></div>
+      <div class="vb-title">Both sides of every conversation.</div>
+      <p class="vb-desc">A real message flowing from a customer's WhatsApp into Slack — and the reply going back. In real time.</p>
+      <div class="video-frame">
+        <div class="vf-bar"><div class="vf-dots"><div class="vfd" style="background:#ff5f57"></div><div class="vfd" style="background:#ffbd2e"></div><div class="vfd" style="background:#28ca41"></div></div><div class="vf-label">Syncora — Live demo · WhatsApp ↔ Slack</div></div>
+        <div class="video-wrap"><video controls preload="metadata" controlsList="nodownload"><source src="/syncora.mp4" type="video/mp4"/>Your browser does not support the video tag.</video></div>
+      </div>
+    </div>
+
+    <div class="video-block">
+      <div class="vb-meta"><div class="vb-num">2</div><div class="vb-tag">Setup walkthrough</div></div>
+      <div class="vb-title">From zero to live in under 5 minutes.</div>
+      <p class="vb-desc">The full onboarding — connecting Slack, getting your claim code, and receiving your first customer message.</p>
+      <div class="video-frame">
+        <div class="vf-bar"><div class="vf-dots"><div class="vfd" style="background:#ff5f57"></div><div class="vfd" style="background:#ffbd2e"></div><div class="vfd" style="background:#28ca41"></div></div><div class="vf-label">Syncora — Full onboarding walkthrough</div></div>
+        <div class="video-wrap"><video controls preload="metadata" controlsList="nodownload"><source src="/syncora-chat.mp4" type="video/mp4"/>Your browser does not support the video tag.</video></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- CTA -->
 <section class="cta-section" id="cta">
   <div class="cta-box">
-    <h2>Ready to bridge<br/>the gap?</h2>
+    <h2>Ready to get started?</h2>
     <p>Join teams already managing WhatsApp from Slack. Free to start — no credit card needed.</p>
     <div class="cta-form">
       <input type="email" class="cta-input" placeholder="your@company.com" id="ctaEmail" autocomplete="email"/>
       <button class="btn-p" onclick="signup()">Get early access →</button>
     </div>
     <div class="cta-note">
-      <span>✓ Free forever plan</span>
-      <span>✓ Setup in 5 minutes</span>
-      <span>✓ No credit card</span>
+      <span>Free to start</span>
+      <span>Setup in 5 minutes</span>
+      <span>No credit card</span>
+      <span>GDPR compliant</span>
     </div>
   </div>
 </section>
 
 <footer>
-  <div class="footer-logo"><img src="/logo_text.png" alt="Syncora" style="height:20px;width:auto"/></div>
+  <div class="footer-logo"><img src="/logo_text.png" alt="Syncora"/></div>
   <p>© 2026 Syncora · WhatsApp ↔ Slack Bridge</p>
-  <p>Built for support teams.</p>
+  <p style="margin-top:4px">Secure · GDPR Compliant</p>
 </footer>
 
 <script>
@@ -189,13 +657,21 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
     if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
   });
 });
-
+function toggleQA(el){el.classList.toggle('open')}
 function signup(){
   const e=document.getElementById('ctaEmail');
   if(!e.value.includes('@')){e.style.borderColor='rgba(239,68,68,.5)';e.focus();setTimeout(()=>e.style.borderColor='',2000);return}
   const b=document.querySelector('.cta-form .btn-p');
-  b.textContent='✓ You\'re on the list!';b.style.background='#1aad52';b.disabled=true;e.value='';
+  b.textContent="✓ You're on the list!";b.style.background='#1aad52';b.disabled=true;e.value='';
 }
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(en=>{if(en.isIntersecting){en.target.style.opacity='1';en.target.style.transform='translateY(0)'}});
+},{threshold:0.08});
+document.querySelectorAll('.how-step,.feat-card,.sec-qa,.video-block,.flow-node,.side-card').forEach(el=>{
+  el.style.opacity='0';el.style.transform='translateY(18px)';
+  el.style.transition='opacity .5s ease,transform .5s ease';
+  obs.observe(el);
+});
 </script>
 </body>
 </html>
