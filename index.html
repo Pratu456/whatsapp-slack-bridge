@@ -47,31 +47,37 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:62px;display:flex;ali
 .btn-s{background:transparent;color:var(--t2);padding:12px 28px;border-radius:10px;font-size:14px;font-weight:400;text-decoration:none;border:1px solid var(--b2);transition:all .25s}
 .btn-s:hover{background:var(--bg2);color:var(--t);border-color:var(--b3)}
 
-/* HERO MOCKUP */
-.hero-mockup{width:100%;max-width:880px;background:var(--bg1);border:1px solid var(--b2);border-radius:20px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.025),0 48px 120px rgba(0,0,0,.75)}
-.mock-bar{background:var(--bg2);padding:11px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--b1)}
-.mock-dots{display:flex;gap:5px}
-.mock-dot{width:10px;height:10px;border-radius:50%}
-.mock-title{margin:0 auto;font-size:11px;color:var(--t4);font-weight:400;letter-spacing:.4px}
-.mock-split{display:grid;grid-template-columns:1fr 1fr;min-height:260px;position:relative}
-.mock-side{padding:18px;display:flex;flex-direction:column;gap:7px}
-.mock-wa{background:#0a0f0d}
-.mock-sl{background:#0e0714;border-left:1px solid var(--b1)}
-.mock-hdr{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;padding:0 0 10px;display:flex;align-items:center;gap:6px;color:var(--t4)}
-.mock-hdr-dot{width:5px;height:5px;border-radius:50%}
-.bubble{padding:8px 12px;border-radius:10px;font-size:12px;max-width:80%;line-height:1.5;animation:bubin .35s ease both}
-@keyframes bubin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.b-in{background:#1c241f;color:#ccc;border-radius:3px 10px 10px 10px;align-self:flex-start}
-.b-out{background:var(--g);color:#000;font-weight:500;border-radius:10px 3px 10px 10px;align-self:flex-end}
-.sl-msg{display:flex;gap:8px;align-items:flex-start}
-.sl-av{width:26px;height:26px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
-.sl-av-g{background:var(--g);color:#000}
-.sl-av-t{background:var(--slack);color:#e8a0eb}
-.sl-name{font-size:10px;font-weight:600;color:var(--t);margin-bottom:2px}
-.sl-name span{font-weight:400;color:var(--t4);margin-left:4px}
-.sl-text{font-size:12px;color:#bbb;line-height:1.5}
-.mock-divider{position:absolute;top:0;bottom:0;left:50%;width:1px;background:linear-gradient(to bottom,transparent,var(--b2),var(--b2),transparent)}
-.bridge-tag{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--b3);color:var(--t3);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:5px 13px;border-radius:100px;white-space:nowrap;z-index:2}
+/* ANIMATED BRIDGE */
+.hero-bridge{width:100%;max-width:860px;margin-top:8px}
+.bridge-anim{display:grid;grid-template-columns:1fr 64px 1fr;align-items:stretch;background:var(--bg1);border:1px solid var(--b2);border-radius:20px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.02),0 40px 100px rgba(0,0,0,.7)}
+.ba-side{display:flex;flex-direction:column;min-height:300px}
+.ba-hdr{padding:12px 18px;display:flex;align-items:center;gap:8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;border-bottom:1px solid var(--b1)}
+.ba-hdr-wa{background:#0a120d;color:var(--g)}
+.ba-hdr-sl{background:#0e0a14;color:#c084d0}
+.ba-body{flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.ba-body-wa{background:#07100d}
+.ba-body-sl{background:#0c0812}
+.cb{padding:8px 12px;border-radius:10px;font-size:12px;line-height:1.5;max-width:85%;opacity:0;transform:translateY(6px)}
+.cb-in{background:#1c2b1f;color:#c8c8c8;border-radius:3px 10px 10px 10px;align-self:flex-start}
+.cb-out{background:var(--g);color:#000;font-weight:500;border-radius:10px 3px 10px 10px;align-self:flex-end}
+.cb.show{animation:cbshow .4s ease forwards}
+@keyframes cbshow{to{opacity:1;transform:none}}
+.sm{display:flex;gap:8px;align-items:flex-start;opacity:0;transform:translateY(6px)}
+.sm.show{animation:cbshow .4s ease forwards}
+.sm-av{width:24px;height:24px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+.sm-av-s{background:var(--g);color:#000}
+.sm-av-t{background:var(--slack);color:#e8a0eb}
+.sm-name{font-size:9px;font-weight:700;color:var(--t);margin-bottom:1px}
+.sm-name span{font-weight:400;color:var(--t4);margin-left:3px;font-size:8.5px}
+.sm-text{font-size:11px;color:#bbb;line-height:1.45}
+.sm-badge{display:inline-block;background:rgba(37,211,102,.1);color:var(--g);border-radius:3px;font-size:9px;font-weight:700;padding:1px 5px;margin-top:2px}
+.ba-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg2);border-left:1px solid var(--b1);border-right:1px solid var(--b1);position:relative;overflow:hidden;gap:8px;padding:16px 0}
+.ba-mid-label{font-family:'Syne',sans-serif;font-size:8px;font-weight:800;color:var(--g);letter-spacing:1.5px;text-transform:uppercase;writing-mode:vertical-rl}
+.ba-mid-line{width:2px;flex:1;background:linear-gradient(to bottom,transparent,rgba(37,211,102,.15),rgba(37,211,102,.3),rgba(37,211,102,.15),transparent);position:relative;overflow:hidden;border-radius:2px}
+.ba-mid-dot{width:6px;height:6px;border-radius:50%;background:var(--g);position:absolute;left:50%;transform:translateX(-50%);box-shadow:0 0 8px var(--g);animation:dotdown 2.2s ease-in-out infinite}
+.ba-mid-dot.up{animation:dotup 2.2s ease-in-out infinite;animation-delay:1.1s}
+@keyframes dotdown{0%{top:-10px;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:100%;opacity:0}}
+@keyframes dotup{0%{bottom:-10px;top:auto;opacity:0}15%{opacity:1}85%{opacity:1}100%{bottom:100%;top:auto;opacity:0}}
 
 /* LOGOS STRIP */
 .logos-strip{padding:0 24px 80px;position:relative;z-index:1}
@@ -135,7 +141,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:62px;display:flex;ali
 .slk-txt{font-size:12.5px;color:var(--t2);line-height:1.5}
 .slk-tag{display:inline-block;background:rgba(37,211,102,.1);color:var(--g);border-radius:4px;font-size:10px;font-weight:700;padding:2px 7px;margin-top:3px}
 
-/* FEATURES */
+/* WORKFLOW */
+.workflow-wrap{background:var(--bg1);border:1px solid var(--b1);border-radius:20px;padding:24px;margin-top:40px;position:relative;overflow:hidden}
+.workflow-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--g),transparent)}
 .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:52px}
 .feat-card{background:var(--bg1);border:1px solid var(--b1);border-radius:16px;padding:26px;transition:border-color .25s,transform .25s}
 .feat-card:hover{border-color:rgba(37,211,102,.18);transform:translateY(-3px)}
@@ -233,8 +241,6 @@ footer p{font-size:13px;color:var(--t4);line-height:1.8}
   <div class="nav-logo"><img src="/logo_text.png" alt="Syncora"/></div>
   <div class="nav-links">
     <a href="#how">How it works</a>
-    <a href="#flow">User flow</a>
-    <a href="#sides">What you see</a>
     <a href="#security">Security</a>
     <a href="#demo">Demo</a>
   </div>
@@ -247,48 +253,55 @@ footer p{font-size:13px;color:var(--t4);line-height:1.8}
   <h1>Your customers on WhatsApp.<br/><span class="g">Your team on Slack.</span></h1>
   <p class="hero-sub">Syncora bridges both worlds — customers message on WhatsApp, your team replies from Slack. No new apps. No switching tools. No missed conversations.</p>
   <div class="hero-actions">
-    <a href="#how" class="btn-p">See how it works →</a>
+    <a href="#sides" class="btn-p">See how it works →</a>
     <a href="#cta" class="btn-s">Get started free</a>
   </div>
 
-  <div class="hero-mockup">
-    <div class="mock-bar">
-      <div class="mock-dots">
-        <div class="mock-dot" style="background:#ff5f57"></div>
-        <div class="mock-dot" style="background:#ffbd2e"></div>
-        <div class="mock-dot" style="background:#28ca41"></div>
-      </div>
-      <div class="mock-title">Syncora — live bridge · WhatsApp ↔ Slack</div>
-    </div>
-    <div class="mock-split">
-      <div class="mock-side mock-wa">
-        <div class="mock-hdr"><div class="mock-hdr-dot" style="background:#25D366"></div>WhatsApp · Customer</div>
-        <div class="bubble b-in" style="animation-delay:.1s">Hey, I placed an order — can I change the delivery address?</div>
-        <div class="bubble b-out" style="animation-delay:.9s">Of course! What's the new address?</div>
-        <div class="bubble b-in" style="animation-delay:1.7s">12 Oak Street, London E1 6RF 🙏</div>
-        <div class="bubble b-out" style="animation-delay:2.5s">Done! Updated and confirmed ✓</div>
-      </div>
-      <div class="mock-side mock-sl">
-        <div class="mock-hdr"><div class="mock-hdr-dot" style="background:#4A154B"></div>Slack · Your team</div>
-        <div class="sl-msg" style="animation:bubin .35s .2s both">
-          <div class="sl-av sl-av-g">S</div>
-          <div><div class="sl-name">Syncora <span>12:04</span></div><div class="sl-text">📱 <b>New message from +44 7700…</b><br/>Hey, I placed an order — can I change the delivery address?</div></div>
-        </div>
-        <div class="sl-msg" style="animation:bubin .35s 1.0s both">
-          <div class="sl-av sl-av-t">T</div>
-          <div><div class="sl-name">Tom <span>12:05</span></div><div class="sl-text">Of course! What's the new address?</div></div>
-        </div>
-        <div class="sl-msg" style="animation:bubin .35s 1.8s both">
-          <div class="sl-av sl-av-g">S</div>
-          <div><div class="sl-name">Syncora <span>12:06</span></div><div class="sl-text">12 Oak Street, London E1 6RF 🙏</div></div>
-        </div>
-        <div class="sl-msg" style="animation:bubin .35s 2.6s both">
-          <div class="sl-av sl-av-t">T</div>
-          <div><div class="sl-name">Tom <span>12:07</span></div><div class="sl-text">Done! Updated and confirmed ✓</div></div>
+  <div class="hero-bridge">
+    <div class="bridge-anim">
+      <!-- WhatsApp side -->
+      <div class="ba-side">
+        <div class="ba-hdr ba-hdr-wa">📱 Customer · WhatsApp</div>
+        <div class="ba-body ba-body-wa" id="wa-body">
+          <div class="cb cb-in" id="w1">Hey, I need to change my delivery address</div>
+          <div class="cb cb-out" id="w2">Of course! What's the new address? 👋</div>
+          <div class="cb cb-in" id="w3">12 Oak Street, London E1 6RF 🙏</div>
+          <div class="cb cb-out" id="w4">Updated and confirmed ✓</div>
+          <div class="cb cb-in" id="w5">Amazing, thank you! 🙌</div>
         </div>
       </div>
-      <div class="mock-divider"></div>
-      <div class="bridge-tag">syncora bridge</div>
+      <!-- Center animated line -->
+      <div class="ba-mid">
+        <div class="ba-mid-line"><div class="ba-mid-dot"></div><div class="ba-mid-dot up"></div></div>
+        <div class="ba-mid-label">Syncora</div>
+        <div class="ba-mid-line"><div class="ba-mid-dot"></div><div class="ba-mid-dot up"></div></div>
+      </div>
+      <!-- Slack side -->
+      <div class="ba-side">
+        <div class="ba-hdr ba-hdr-sl">🟣 Your team · Slack · #wa-customer</div>
+        <div class="ba-body ba-body-sl" id="sl-body">
+          <div class="sm" id="s1">
+            <div class="sm-av sm-av-s">S</div>
+            <div><div class="sm-name">Syncora <span>12:04</span></div><div class="sm-text">📱 New: Hey, I need to change my delivery address<div class="sm-badge">new customer</div></div></div>
+          </div>
+          <div class="sm" id="s2">
+            <div class="sm-av sm-av-t">T</div>
+            <div><div class="sm-name">Tom <span>12:05</span></div><div class="sm-text">Of course! What's the new address? 👋</div></div>
+          </div>
+          <div class="sm" id="s3">
+            <div class="sm-av sm-av-s">S</div>
+            <div><div class="sm-name">Syncora <span>12:06</span></div><div class="sm-text">12 Oak Street, London E1 6RF 🙏</div></div>
+          </div>
+          <div class="sm" id="s4">
+            <div class="sm-av sm-av-t">T</div>
+            <div><div class="sm-name">Tom <span>12:07</span></div><div class="sm-text">Updated and confirmed ✓</div></div>
+          </div>
+          <div class="sm" id="s5">
+            <div class="sm-av sm-av-s">S</div>
+            <div><div class="sm-name">Syncora <span>12:08</span></div><div class="sm-text">Amazing, thank you! 🙌</div></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -302,206 +315,6 @@ footer p{font-size:13px;color:var(--t4);line-height:1.8}
     <div class="logos-app"><span>🟣</span> Slack</div>
     <span style="color:var(--t4);font-size:14px;padding:0 8px">via</span>
     <div class="logos-app" style="border-color:rgba(37,211,102,.2);background:var(--gxx);color:var(--g)"><span>⚡</span> Syncora</div>
-  </div>
-</div>
-
-<!-- HOW IT WORKS -->
-<div class="section" id="how">
-  <div class="sec-tag">How it works</div>
-  <div class="sec-title">Up and running in 4 steps</div>
-  <p class="sec-sub">No technical setup needed. Connect your Slack workspace and start receiving WhatsApp messages in minutes.</p>
-  <div class="how-steps">
-    <div class="how-step">
-      <div class="how-step-num">1</div>
-      <div class="how-step-icon">🏢</div>
-      <h3>Sign up</h3>
-      <p>Enter your company name and work email. Takes 30 seconds — no credit card required.</p>
-    </div>
-    <div class="how-step">
-      <div class="how-step-num">2</div>
-      <div class="how-step-icon">🟣</div>
-      <h3>Connect Slack</h3>
-      <p>One-click OAuth — authorize Syncora to your Slack workspace. No coding needed.</p>
-    </div>
-    <div class="how-step">
-      <div class="how-step-num">3</div>
-      <div class="how-step-icon">🔑</div>
-      <h3>Get your claim code</h3>
-      <p>Share your unique code with customers so they can connect to your team on first contact.</p>
-    </div>
-    <div class="how-step">
-      <div class="how-step-num">4</div>
-      <div class="how-step-icon">🚀</div>
-      <h3>Go live</h3>
-      <p>Customer messages appear instantly in Slack. Reply and they receive it on WhatsApp.</p>
-    </div>
-  </div>
-</div>
-
-<!-- USER FLOW DIAGRAM -->
-<div class="section" id="flow" style="padding-top:0">
-  <div class="sec-tag">User flow</div>
-  <div class="sec-title">What happens behind the scenes</div>
-  <p class="sec-sub">Every message follows the same path — fast, reliable and fully traceable.</p>
-
-  <div class="flow-wrap">
-    <div class="flow-cols">
-      <div class="flow-col">
-        <div class="flow-col-title">📱 Customer (WhatsApp)</div>
-        <div class="flow-node">
-          <div class="flow-node-icon">💬</div>
-          <h4>Sends WhatsApp message</h4>
-          <p>Customer messages your shared WhatsApp number</p>
-        </div>
-        <div class="flow-node">
-          <div class="flow-node-icon">🔑</div>
-          <h4>Sends claim code (first time)</h4>
-          <p>e.g. "ACME2026" — links them to your team</p>
-        </div>
-        <div class="flow-node">
-          <div class="flow-node-icon">✅</div>
-          <h4>Gets instant confirmation</h4>
-          <p>Auto-reply: "You're now connected to Acme Co!"</p>
-        </div>
-        <div class="flow-node">
-          <div class="flow-node-icon">↩️</div>
-          <h4>Receives your reply</h4>
-          <p>Your Slack reply arrives in their WhatsApp instantly</p>
-        </div>
-      </div>
-
-      <div class="flow-arr">
-        <div class="flow-arr-inner">
-          <span>→</span>
-          <div class="flow-arr-label">routed</div>
-        </div>
-      </div>
-
-      <div class="flow-col">
-        <div class="flow-col-title">⚡ Syncora (bridge)</div>
-        <div class="flow-node hl">
-          <div class="flow-node-icon">🔀</div>
-          <h4>Routes to your workspace</h4>
-          <p>Claim code identifies your company from all tenants</p>
-        </div>
-        <div class="flow-node hl">
-          <div class="flow-node-icon">👤</div>
-          <h4>Creates customer profile</h4>
-          <p>Stores number and links to your workspace only</p>
-        </div>
-        <div class="flow-node hl">
-          <div class="flow-node-icon">📡</div>
-          <h4>Forwards in real-time</h4>
-          <p>Messages, images, voice notes and PDFs all supported</p>
-        </div>
-        <div class="flow-node hl">
-          <div class="flow-node-icon">🔁</div>
-          <h4>Delivers reply back</h4>
-          <p>Your Slack reply is sent back via WhatsApp immediately</p>
-        </div>
-      </div>
-
-      <div class="flow-arr">
-        <div class="flow-arr-inner">
-          <span>→</span>
-          <div class="flow-arr-label">delivered</div>
-        </div>
-      </div>
-
-      <div class="flow-col">
-        <div class="flow-col-title">🟣 Your team (Slack)</div>
-        <div class="flow-node">
-          <div class="flow-node-icon">🔔</div>
-          <h4>New channel created</h4>
-          <p>Each customer gets their own dedicated Slack channel</p>
-        </div>
-        <div class="flow-node">
-          <div class="flow-node-icon">👁️</div>
-          <h4>Message appears instantly</h4>
-          <p>Your team sees the full conversation in real time</p>
-        </div>
-        <div class="flow-node">
-          <div class="flow-node-icon">💬</div>
-          <h4>Team replies in Slack</h4>
-          <p>No new tools — just reply in the channel as normal</p>
-        </div>
-        <div class="flow-node">
-          <div class="flow-node-icon">📋</div>
-          <h4>Full history saved</h4>
-          <p>All conversations stored in Slack for your records</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- WHAT EACH SIDE SEES -->
-<div class="sides-section" id="sides">
-  <div class="sides-inner">
-    <div class="sec-tag">Both sides of the conversation</div>
-    <div class="sec-title">What your customer sees<br/>vs what your team sees</div>
-    <p class="sec-sub" style="margin-bottom:0">Same conversation — completely different experience. Zero friction for both sides.</p>
-
-    <div class="sides-grid">
-      <!-- Customer side -->
-      <div class="side-card side-card-wa">
-        <div class="side-card-hdr">
-          <span>📱</span> Customer's WhatsApp
-        </div>
-        <div class="side-card-body">
-          <div class="chat-sys">Connected to Acme Co ✓</div>
-          <div class="chat-bubble chat-in">Hi! I need help with my order #4821</div>
-          <div class="chat-bubble chat-out">Hey! Let me pull that up for you right now 👋</div>
-          <div class="chat-bubble chat-in">It shows as delivered but I haven't received it</div>
-          <div class="chat-bubble chat-out">I can see it — it's at your local depot. They'll redeliver tomorrow before 12. I'll send you the tracking link 📦</div>
-          <div class="chat-bubble chat-in">Amazing, thank you so much! 🙏</div>
-        </div>
-      </div>
-
-      <!-- Team side -->
-      <div class="side-card side-card-sl">
-        <div class="side-card-hdr">
-          <span>🟣</span> Your team's Slack — #wa-sarah-johnson
-        </div>
-        <div class="side-card-body">
-          <div class="slack-msg">
-            <div class="slk-av slk-av-s">S</div>
-            <div>
-              <div class="slk-name">Syncora<em>Today at 14:02</em></div>
-              <div class="slk-txt">📱 <b>New customer connected</b><br/>+44 7911 123456 · Sarah Johnson<div class="slk-tag">wa-sarah-johnson</div></div>
-            </div>
-          </div>
-          <div class="slack-msg">
-            <div class="slk-av slk-av-s">S</div>
-            <div>
-              <div class="slk-name">Syncora<em>14:02</em></div>
-              <div class="slk-txt">Hi! I need help with my order #4821</div>
-            </div>
-          </div>
-          <div class="slack-msg">
-            <div class="slk-av slk-av-u">T</div>
-            <div>
-              <div class="slk-name">Tom (your team)<em>14:03</em></div>
-              <div class="slk-txt">Hey! Let me pull that up for you right now 👋</div>
-            </div>
-          </div>
-          <div class="slack-msg">
-            <div class="slk-av slk-av-s">S</div>
-            <div>
-              <div class="slk-name">Syncora<em>14:04</em></div>
-              <div class="slk-txt">It shows as delivered but I haven't received it</div>
-            </div>
-          </div>
-          <div class="slack-msg">
-            <div class="slk-av slk-av-u">T</div>
-            <div>
-              <div class="slk-name">Tom<em>14:05</em></div>
-              <div class="slk-txt">I can see it — it's at your local depot. They'll redeliver tomorrow before 12. I'll send you the tracking link 📦</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -540,6 +353,133 @@ footer p{font-size:13px;color:var(--t4);line-height:1.8}
       <div class="feat-icon">📲</div>
       <h3>Zero friction for customers</h3>
       <p>Customers use their existing WhatsApp — nothing to download, no account needed.</p>
+    </div>
+  </div>
+</div>
+
+<!-- WORKFLOW -->
+<div class="section" style="padding-top:0" id="how">
+  <div class="sec-tag">How it works</div>
+  <div class="sec-title">Up and running in 5 steps</div>
+  <p class="sec-sub">No technical setup. No coding. Live in under 5 minutes.</p>
+  <div class="workflow-wrap">
+    <svg width="100%" viewBox="0 0 680 540" style="display:block">
+      <defs>
+        <marker id="warr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+
+      <!-- Step 1: Sign up -->
+      <g class="wf-step" style="opacity:0;transform:translateY(16px)">
+        <rect x="240" y="20" width="200" height="68" rx="10" fill="rgba(37,211,102,.08)" stroke="rgba(37,211,102,.35)" stroke-width="1"/>
+        <text font-family="Syne,sans-serif" font-size="13" font-weight="700" fill="#f0f0ec" x="340" y="49" text-anchor="middle" dominant-baseline="central">1 · Sign up</text>
+        <text font-size="11" fill="rgba(240,240,236,.5)" x="340" y="69" text-anchor="middle" dominant-baseline="central">Company name + work email</text>
+        <!-- envelope -->
+        <rect x="128" y="28" width="58" height="40" rx="5" fill="rgba(37,211,102,.06)" stroke="rgba(37,211,102,.3)" stroke-width="0.8"/>
+        <line x1="128" y1="28" x2="157" y2="50" stroke="rgba(37,211,102,.4)" stroke-width="0.8"/>
+        <line x1="186" y1="28" x2="157" y2="50" stroke="rgba(37,211,102,.4)" stroke-width="0.8"/>
+        <text font-size="10" fill="rgba(37,211,102,.7)" x="157" y="81" text-anchor="middle">your@email.com</text>
+        <line x1="186" y1="48" x2="238" y2="54" stroke="rgba(37,211,102,.3)" stroke-width="0.8" stroke-dasharray="3 2" marker-end="url(#warr)"/>
+      </g>
+
+      <!-- Arrow 1→2 -->
+      <line class="wf-arr" x1="340" y1="88" x2="340" y2="116" stroke="rgba(37,211,102,.4)" stroke-width="1.5" marker-end="url(#warr)" style="opacity:0"/>
+
+      <!-- Step 2: Connect Slack -->
+      <g class="wf-step" style="opacity:0;transform:translateY(16px)">
+        <rect x="240" y="116" width="200" height="68" rx="10" fill="rgba(124,58,237,.08)" stroke="rgba(124,58,237,.4)" stroke-width="1"/>
+        <text font-family="Syne,sans-serif" font-size="13" font-weight="700" fill="#f0f0ec" x="340" y="145" text-anchor="middle" dominant-baseline="central">2 · Connect Slack</text>
+        <text font-size="11" fill="rgba(240,240,236,.5)" x="340" y="165" text-anchor="middle" dominant-baseline="central">One-click OAuth — 30 seconds</text>
+        <!-- slack icon -->
+        <rect x="492" y="124" width="58" height="52" rx="8" fill="rgba(124,58,237,.08)" stroke="rgba(124,58,237,.35)" stroke-width="0.8"/>
+        <polygon points="521,138 513,154 524,154 516,170" fill="none" stroke="rgba(192,132,208,.8)" stroke-width="1.5" stroke-linejoin="round"/>
+        <text font-size="10" fill="rgba(192,132,208,.8)" x="521" y="190" text-anchor="middle">Slack</text>
+        <line x1="440" y1="150" x2="490" y2="150" stroke="rgba(124,58,237,.3)" stroke-width="0.8" stroke-dasharray="3 2" marker-end="url(#warr)"/>
+      </g>
+
+      <!-- Arrow 2→3 -->
+      <line class="wf-arr" x1="340" y1="184" x2="340" y2="212" stroke="rgba(37,211,102,.4)" stroke-width="1.5" marker-end="url(#warr)" style="opacity:0"/>
+
+      <!-- Step 3: Get claim code -->
+      <g class="wf-step" style="opacity:0;transform:translateY(16px)">
+        <rect x="240" y="212" width="200" height="68" rx="10" fill="rgba(234,170,0,.07)" stroke="rgba(234,170,0,.35)" stroke-width="1"/>
+        <text font-family="Syne,sans-serif" font-size="13" font-weight="700" fill="#f0f0ec" x="340" y="241" text-anchor="middle" dominant-baseline="central">3 · Get your claim code</text>
+        <text font-size="11" fill="rgba(240,240,236,.5)" x="340" y="261" text-anchor="middle" dominant-baseline="central">Unique code for your workspace</text>
+        <!-- key icon -->
+        <circle cx="152" cy="246" r="13" fill="rgba(234,170,0,.08)" stroke="rgba(234,170,0,.4)" stroke-width="0.8"/>
+        <circle cx="152" cy="246" r="5" fill="none" stroke="rgba(234,170,0,.5)" stroke-width="0.8"/>
+        <line x1="165" y1="246" x2="190" y2="246" stroke="rgba(234,170,0,.5)" stroke-width="1.2"/>
+        <line x1="186" y1="246" x2="186" y2="254" stroke="rgba(234,170,0,.5)" stroke-width="1.2"/>
+        <line x1="180" y1="246" x2="180" y2="252" stroke="rgba(234,170,0,.5)" stroke-width="1.2"/>
+        <text font-size="10" fill="rgba(234,170,0,.7)" x="157" y="272" text-anchor="middle">ACME2026</text>
+        <line x1="190" y1="246" x2="238" y2="246" stroke="rgba(234,170,0,.3)" stroke-width="0.8" stroke-dasharray="3 2" marker-end="url(#warr)"/>
+      </g>
+
+      <!-- Arrow 3→4 -->
+      <line class="wf-arr" x1="340" y1="280" x2="340" y2="308" stroke="rgba(37,211,102,.4)" stroke-width="1.5" marker-end="url(#warr)" style="opacity:0"/>
+
+      <!-- Step 4: Customer connects -->
+      <g class="wf-step" style="opacity:0;transform:translateY(16px)">
+        <rect x="240" y="308" width="200" height="68" rx="10" fill="rgba(239,100,68,.07)" stroke="rgba(239,100,68,.35)" stroke-width="1"/>
+        <text font-family="Syne,sans-serif" font-size="13" font-weight="700" fill="#f0f0ec" x="340" y="337" text-anchor="middle" dominant-baseline="central">4 · Customer sends code</text>
+        <text font-size="11" fill="rgba(240,240,236,.5)" x="340" y="357" text-anchor="middle" dominant-baseline="central">WhatsApp → Syncora routes them</text>
+        <!-- phone icon -->
+        <rect x="496" y="316" width="36" height="54" rx="7" fill="rgba(239,100,68,.08)" stroke="rgba(239,100,68,.4)" stroke-width="0.8"/>
+        <rect x="501" y="322" width="26" height="36" rx="3" fill="rgba(239,100,68,.1)" stroke="rgba(239,100,68,.25)" stroke-width="0.5"/>
+        <circle cx="514" cy="363" r="3" fill="none" stroke="rgba(239,100,68,.5)" stroke-width="0.8"/>
+        <text font-size="10" fill="rgba(239,100,68,.7)" x="514" y="386" text-anchor="middle">WhatsApp</text>
+        <line x1="440" y1="342" x2="494" y2="342" stroke="rgba(239,100,68,.3)" stroke-width="0.8" stroke-dasharray="3 2" marker-end="url(#warr)"/>
+      </g>
+
+      <!-- Arrow 4→5 -->
+      <line class="wf-arr" x1="340" y1="376" x2="340" y2="404" stroke="rgba(37,211,102,.4)" stroke-width="1.5" marker-end="url(#warr)" style="opacity:0"/>
+
+      <!-- Step 5: Live -->
+      <g class="wf-step" style="opacity:0;transform:translateY(16px)">
+        <rect x="240" y="404" width="200" height="68" rx="10" fill="rgba(37,211,102,.12)" stroke="rgba(37,211,102,.55)" stroke-width="1.5"/>
+        <text font-family="Syne,sans-serif" font-size="13" font-weight="700" fill="#25D366" x="340" y="433" text-anchor="middle" dominant-baseline="central">5 · You're live!</text>
+        <text font-size="11" fill="rgba(240,240,236,.55)" x="340" y="453" text-anchor="middle" dominant-baseline="central">Messages flow into Slack instantly</text>
+        <!-- bridge viz -->
+        <rect x="116" y="412" width="34" height="52" rx="6" fill="rgba(37,211,102,.08)" stroke="rgba(37,211,102,.35)" stroke-width="0.8"/>
+        <text font-size="9" font-weight="700" fill="rgba(37,211,102,.8)" x="133" y="441" text-anchor="middle" dominant-baseline="central">WA</text>
+        <line x1="150" y1="430" x2="168" y2="430" stroke="rgba(37,211,102,.6)" stroke-width="1.2" marker-end="url(#warr)"/>
+        <line x1="168" y1="444" x2="150" y2="444" stroke="rgba(37,211,102,.6)" stroke-width="1.2" marker-end="url(#warr)"/>
+        <rect x="168" y="412" width="34" height="52" rx="6" fill="rgba(124,58,237,.08)" stroke="rgba(124,58,237,.35)" stroke-width="0.8"/>
+        <text font-size="9" font-weight="700" fill="rgba(192,132,208,.8)" x="185" y="441" text-anchor="middle" dominant-baseline="central">SL</text>
+        <line x1="202" y1="438" x2="238" y2="438" stroke="rgba(37,211,102,.3)" stroke-width="0.8" stroke-dasharray="3 2" marker-end="url(#warr)"/>
+      </g>
+
+      <!-- Bottom note -->
+      <text font-size="11" fill="rgba(240,240,236,.28)" x="340" y="506" text-anchor="middle">Total setup time · under 5 minutes · no technical knowledge needed</text>
+    </svg>
+  </div>
+</div>
+
+<!-- DEMO VIDEOS -->
+<div class="videos-section" id="demo">
+  <div class="videos-inner">
+    <div class="sec-tag">See it in action</div>
+    <div class="sec-title" style="margin-bottom:32px">Watch how it works</div>
+
+    <div class="video-block" style="margin-bottom:32px">
+      <div class="vb-meta"><div class="vb-num">1</div><div class="vb-tag">Live demo</div></div>
+      <div class="vb-title">Both sides of every conversation — customer on WhatsApp, your team on Slack.</div>
+      <p class="vb-desc">Watch a real message flow in real time. Customer sends on WhatsApp, your team sees and replies in Slack — instantly.</p>
+      <div class="video-frame">
+        <div class="vf-bar"><div class="vf-dots"><div class="vfd" style="background:#ff5f57"></div><div class="vfd" style="background:#ffbd2e"></div><div class="vfd" style="background:#28ca41"></div></div><div class="vf-label">Syncora — Live demo · WhatsApp ↔ Slack</div></div>
+        <div class="video-wrap"><video controls preload="metadata" controlsList="nodownload"><source src="/syncora.mp4" type="video/mp4"/>Your browser does not support the video tag.</video></div>
+      </div>
+    </div>
+
+    <div class="video-block" style="margin-bottom:0">
+      <div class="vb-meta"><div class="vb-num">2</div><div class="vb-tag">Setup walkthrough</div></div>
+      <div class="vb-title">From zero to live in under 5 minutes.</div>
+      <p class="vb-desc">The full onboarding — connecting Slack, getting your claim code, and receiving your first customer message.</p>
+      <div class="video-frame">
+        <div class="vf-bar"><div class="vf-dots"><div class="vfd" style="background:#ff5f57"></div><div class="vfd" style="background:#ffbd2e"></div><div class="vfd" style="background:#28ca41"></div></div><div class="vf-label">Syncora — Full onboarding walkthrough</div></div>
+        <div class="video-wrap"><video controls preload="metadata" controlsList="nodownload"><source src="/syncora-chat.mp4" type="video/mp4"/>Your browser does not support the video tag.</video></div>
+      </div>
     </div>
   </div>
 </div>
@@ -597,38 +537,10 @@ footer p{font-size:13px;color:var(--t4);line-height:1.8}
   </div>
 </div>
 
-<!-- DEMO VIDEOS -->
-<div class="videos-section" id="demo">
-  <div class="videos-inner">
-    <div class="sec-tag">See it in action</div>
-    <div class="sec-title" style="margin-bottom:48px">Watch how it works</div>
-
-    <div class="video-block">
-      <div class="vb-meta"><div class="vb-num">1</div><div class="vb-tag">Live demo</div></div>
-      <div class="vb-title">Both sides of every conversation.</div>
-      <p class="vb-desc">A real message flowing from a customer's WhatsApp into Slack — and the reply going back. In real time.</p>
-      <div class="video-frame">
-        <div class="vf-bar"><div class="vf-dots"><div class="vfd" style="background:#ff5f57"></div><div class="vfd" style="background:#ffbd2e"></div><div class="vfd" style="background:#28ca41"></div></div><div class="vf-label">Syncora — Live demo · WhatsApp ↔ Slack</div></div>
-        <div class="video-wrap"><video controls preload="metadata" controlsList="nodownload"><source src="/syncora.mp4" type="video/mp4"/>Your browser does not support the video tag.</video></div>
-      </div>
-    </div>
-
-    <div class="video-block">
-      <div class="vb-meta"><div class="vb-num">2</div><div class="vb-tag">Setup walkthrough</div></div>
-      <div class="vb-title">From zero to live in under 5 minutes.</div>
-      <p class="vb-desc">The full onboarding — connecting Slack, getting your claim code, and receiving your first customer message.</p>
-      <div class="video-frame">
-        <div class="vf-bar"><div class="vf-dots"><div class="vfd" style="background:#ff5f57"></div><div class="vfd" style="background:#ffbd2e"></div><div class="vfd" style="background:#28ca41"></div></div><div class="vf-label">Syncora — Full onboarding walkthrough</div></div>
-        <div class="video-wrap"><video controls preload="metadata" controlsList="nodownload"><source src="/syncora-chat.mp4" type="video/mp4"/>Your browser does not support the video tag.</video></div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- CTA -->
-<section class="cta-section" id="cta">
+<section class="cta-section" id="cta" style="padding-top:48px">
   <div class="cta-box">
-    <h2>Ready to get started?</h2>
+    <h2>Let's get started 🚀</h2>
     <p>Join teams already managing WhatsApp from Slack. Free to start — no credit card needed.</p>
     <div class="cta-form">
       <input type="email" class="cta-input" placeholder="your@company.com" id="ctaEmail" autocomplete="email"/>
@@ -650,13 +562,6 @@ footer p{font-size:13px;color:var(--t4);line-height:1.8}
 </footer>
 
 <script>
-document.querySelectorAll('a[href^="#"]').forEach(a=>{
-  a.addEventListener('click',e=>{
-    e.preventDefault();
-    const t=document.querySelector(a.getAttribute('href'));
-    if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
-  });
-});
 function toggleQA(el){el.classList.toggle('open')}
 function signup(){
   const e=document.getElementById('ctaEmail');
@@ -664,14 +569,63 @@ function signup(){
   const b=document.querySelector('.cta-form .btn-p');
   b.textContent="✓ You're on the list!";b.style.background='#1aad52';b.disabled=true;e.value='';
 }
+// Animated bridge chat
+(function(){
+  const seq=[
+    {wa:'w1',sl:'s1',delay:600},
+    {wa:null,sl:'s2',delay:1600},
+    {wa:'w2',sl:null,delay:1800},
+    {wa:'w3',sl:'s3',delay:3200},
+    {wa:null,sl:'s4',delay:4400},
+    {wa:'w4',sl:null,delay:4600},
+    {wa:'w5',sl:'s5',delay:6000},
+  ];
+  function run(){
+    // reset
+    ['w1','w2','w3','w4','w5','s1','s2','s3','s4','s5'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){el.classList.remove('show');el.style.opacity='0';el.style.transform='translateY(6px)'}
+    });
+    seq.forEach(({wa,sl,delay})=>{
+      setTimeout(()=>{
+        if(wa){const e=document.getElementById(wa);if(e)e.classList.add('show')}
+        if(sl){const e=document.getElementById(sl);if(e)e.classList.add('show')}
+      },delay);
+    });
+    setTimeout(run, 9000);
+  }
+  run();
+})();
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
 const obs=new IntersectionObserver(entries=>{
   entries.forEach(en=>{if(en.isIntersecting){en.target.style.opacity='1';en.target.style.transform='translateY(0)'}});
 },{threshold:0.08});
-document.querySelectorAll('.how-step,.feat-card,.sec-qa,.video-block,.flow-node,.side-card').forEach(el=>{
+document.querySelectorAll('.feat-card,.sec-qa,.video-block,.side-card').forEach(el=>{
   el.style.opacity='0';el.style.transform='translateY(18px)';
   el.style.transition='opacity .5s ease,transform .5s ease';
   obs.observe(el);
 });
+// Workflow steps staggered animation
+const wfObs=new IntersectionObserver(entries=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting){
+      const steps=en.target.querySelectorAll('.wf-step,.wf-arr');
+      steps.forEach((el,i)=>{
+        el.style.transition=`opacity .45s ${i*0.12}s ease, transform .45s ${i*0.12}s ease`;
+        setTimeout(()=>{el.style.opacity='1';el.style.transform='translateY(0)'},50);
+      });
+      wfObs.unobserve(en.target);
+    }
+  });
+},{threshold:0.1});
+const ww=document.querySelector('.workflow-wrap');
+if(ww)wfObs.observe(ww);
 </script>
 </body>
 </html>
