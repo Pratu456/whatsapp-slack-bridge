@@ -566,8 +566,7 @@ function toggleQA(el){el.classList.toggle('open')}
 function signup(){
   const e=document.getElementById('ctaEmail');
   if(!e.value.includes('@')){e.style.borderColor='rgba(239,68,68,.5)';e.focus();setTimeout(()=>e.style.borderColor='',2000);return}
-  const b=document.querySelector('.cta-form .btn-p');
-  b.textContent="✓ You're on the list!";b.style.background='#1aad52';b.disabled=true;e.value='';
+  window.location.href='/onboarding?email='+encodeURIComponent(e.value);
 }
 // Animated bridge chat
 (function(){
@@ -626,6 +625,17 @@ const wfObs=new IntersectionObserver(entries=>{
 },{threshold:0.1});
 const ww=document.querySelector('.workflow-wrap');
 if(ww)wfObs.observe(ww);
+
+  async function signup(){
+    const e=document.getElementById('ctaEmail');
+    const b=document.querySelector('.cta-form .btn-p');
+    if(!e.value.includes('@')){e.style.borderColor='rgba(239,68,68,.5)';e.focus();setTimeout(()=>e.style.borderColor='',2000);return}
+    b.textContent='Loading...';b.disabled=true;
+    try{
+      await fetch('/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e.value})});
+    }catch(err){}
+    window.location.href='/onboarding?email='+encodeURIComponent(e.value);
+  }
 </script>
 </body>
 </html>

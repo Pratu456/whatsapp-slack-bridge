@@ -291,7 +291,6 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   <div class="sb-link on" id="mob-link-dashboard" onclick="show('dashboard',this);closeDrawer()"><span class="sb-icon">⬛</span>Dashboard</div>
   <div class="sb-link" id="mob-link-companies" onclick="show('companies',this);closeDrawer()"><span class="sb-icon">🏢</span>Companies</div>
   <div class="sb-link" id="mob-link-messages" onclick="show('messages',this);closeDrawer()"><span class="sb-icon">💬</span>Messages</div>
-  <div class="sb-link" id="mob-link-waitlist" onclick="show('waitlist',this);closeDrawer()"><span class="sb-icon">📧</span>Waitlist</div>
 
   <div class="sb-section">Actions</div>
   <div class="sb-link" id="mob-link-add" onclick="show('add',this);closeDrawer()"><span class="sb-icon">＋</span>Add company</div>
@@ -310,7 +309,6 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div class="sb-link on" id="desk-link-dashboard" onclick="show('dashboard',this)"><span class="sb-icon">⬛</span>Dashboard<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-companies" onclick="show('companies',this)"><span class="sb-icon">🏢</span>Companies<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-messages" onclick="show('messages',this)"><span class="sb-icon">💬</span>Messages<span class="sb-dot"></span></div>
-    <div class="sb-link" id="desk-link-waitlist" onclick="show('waitlist',this)"><span class="sb-icon">📧</span>Waitlist<span class="sb-dot"></span></div>
 
     <div class="sb-section">Actions</div>
     <div class="sb-link" id="desk-link-add" onclick="show('add',this)"><span class="sb-icon">＋</span>Add company<span class="sb-dot"></span></div>
@@ -425,31 +423,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
       </div>
       <div id="msg-content" style="color:var(--t4);font-size:13px;padding:20px 0">Loading...</div>
     </div>
-        <!-- WAITLIST -->
-    <div id="p-waitlist" class="panel">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
-        <div>
-          <div style="font-size:18px;font-weight:800;color:var(--t)">Waitlist</div>
-          <div style="font-size:13px;color:var(--t4);margin-top:2px">Everyone who signed up from the landing page</div>
-        </div>
-        <div style="background:var(--bg2);border:1px solid var(--b1);border-radius:12px;padding:14px 20px;text-align:center">
-          <div id="wl-count" style="font-size:28px;font-weight:800;color:var(--g);letter-spacing:-1px">—</div>
-          <div style="font-size:11px;color:var(--t4);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px">Total signups</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-        <button class="btn-primary" onclick="copyWaitlistEmails()">Copy all emails</button>
-        <button class="btn-ghost" onclick="downloadWaitlistCSV()">Download CSV</button>
-        <button class="btn-ghost" onclick="loadWaitlist()">↻ Refresh</button>
-      </div>
-      <div class="tbl-wrap" id="wl-table">
-        <div style="padding:40px;text-align:center;color:rgba(255,255,255,.25);font-size:13px">Loading...</div>
-      </div>
-      <div id="wl-copybox" style="display:none;margin-top:16px">
-        <div style="font-size:12px;color:var(--t3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:1px">All emails</div>
-        <textarea id="wl-emails-text" style="width:100%;background:var(--bg2);border:1px solid var(--b1);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--t3);font-family:monospace;resize:none;line-height:1.7" rows="4" readonly></textarea>
-      </div>
-    </div>
+      
     <!-- ADD COMPANY -->
     <div id="p-add" class="panel">
       <div style="max-width:680px">
@@ -534,11 +508,11 @@ function show(name,el){
   const mobEl=document.getElementById('mob-link-'+name);
   if(deskEl)deskEl.classList.add('on');
   if(mobEl)mobEl.classList.add('on');
-  const titles={dashboard:'Dashboard',companies:'Companies',messages:'Messages',add:'Add Company',waitlist:'Waitlist'};
+  const titles={dashboard:'Dashboard',companies:'Companies',messages:'Messages',add:'Add Company'};
   const pt=document.getElementById('ptitle');
   if(pt)pt.textContent=titles[name]||name;
   if(name==='messages')loadMessages();
-  if(name==='waitlist')loadWaitlist();
+  
   if(name==='add')initAddForm();
 }
 
@@ -822,150 +796,6 @@ router.post('/add', auth, async (req, res) => {
     );
     res.json({ success: true });
   } catch(err){ res.json({ success: false, error: err.message }); }
-});
-// Add this route to your existing admin.js router
-// GET /admin/waitlist
-
-router.get('/waitlist', async (req, res) => {
-  const pwd = req.query.pwd || req.session?.adminAuth;
-  if (pwd !== process.env.ADMIN_PASSWORD) {
-    return res.redirect('/admin?error=auth');
-  }
-
-  let rows = [];
-  try {
-    const result = await db.query(
-      `SELECT id, email, created_at FROM waitlist ORDER BY created_at DESC`
-    );
-    rows = result.rows;
-  } catch (err) {
-    console.error('Waitlist fetch error:', err);
-  }
-
-  const count = rows.length;
-  const emailList = rows.map(r => r.email).join('\n');
-
-  res.send(`<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Waitlist — Syncora Admin</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--g:#25D366;--gd:#1aad52;--bg:#07080a;--bg1:#0c0d10;--bg2:#111318;--b1:rgba(255,255,255,.05);--b2:rgba(255,255,255,.09);--t:#f2f2ee;--t2:rgba(242,242,238,.7);--t3:rgba(242,242,238,.4);--t4:rgba(242,242,238,.2)}
-body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;min-height:100vh}
-nav{height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:var(--bg1);border-bottom:1px solid var(--b1)}
-.nav-brand{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--g);text-decoration:none}
-.nav-links{display:flex;gap:8px}
-.nav-link{padding:7px 16px;border-radius:8px;font-size:13px;color:var(--t3);text-decoration:none;transition:all .2s}
-.nav-link:hover{background:rgba(255,255,255,.06);color:var(--t)}
-.nav-link.active{background:rgba(37,211,102,.1);color:var(--g)}
-.page{max-width:900px;margin:0 auto;padding:40px 24px}
-.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px}
-.page-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px}
-.page-sub{font-size:14px;color:var(--t3);margin-top:4px}
-.stat-card{background:var(--bg1);border:1px solid var(--b1);border-radius:14px;padding:20px 24px;display:inline-flex;flex-direction:column;gap:4px;min-width:140px}
-.stat-num{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--g)}
-.stat-label{font-size:12px;color:var(--t3);text-transform:uppercase;letter-spacing:1.5px}
-.actions{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
-.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
-.btn-primary{background:var(--g);color:#000}
-.btn-primary:hover{background:var(--gd)}
-.btn-ghost{background:transparent;color:var(--t3);border:1px solid var(--b2)}
-.btn-ghost:hover{background:rgba(255,255,255,.06);color:var(--t)}
-.table-wrap{background:var(--bg1);border:1px solid var(--b1);border-radius:14px;overflow:hidden}
-.table-header{padding:14px 20px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between}
-.table-title{font-size:13px;font-weight:600;color:var(--t2)}
-table{width:100%;border-collapse:collapse}
-th{padding:11px 20px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--t3);border-bottom:1px solid var(--b1)}
-td{padding:13px 20px;font-size:13.5px;color:var(--t2);border-bottom:1px solid rgba(255,255,255,.03)}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(255,255,255,.02)}
-.badge{display:inline-flex;align-items:center;gap:5px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.15);color:var(--g);padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600}
-.empty{text-align:center;padding:64px 24px;color:var(--t3)}
-.empty-icon{font-size:36px;margin-bottom:12px}
-.copy-area{background:var(--bg2);border:1px solid var(--b1);border-radius:10px;padding:14px 16px;font-size:12px;color:var(--t3);font-family:monospace;width:100%;resize:none;margin-top:16px;line-height:1.6}
-.export-section{margin-top:24px;background:var(--bg1);border:1px solid var(--b1);border-radius:14px;padding:20px 24px}
-.export-title{font-size:13px;font-weight:600;color:var(--t2);margin-bottom:10px}
-</style>
-</head>
-<body>
-<nav>
-  <a href="/admin?pwd=${pwd}" class="nav-brand">Syncora Admin</a>
-  <div class="nav-links">
-    <a href="/admin?pwd=${pwd}" class="nav-link">Tenants</a>
-    <a href="/admin/waitlist?pwd=${pwd}" class="nav-link active">Waitlist</a>
-  </div>
-</nav>
-<div class="page">
-  <div class="page-header">
-    <div>
-      <div class="page-title">Waitlist</div>
-      <div class="page-sub">Everyone who signed up from the landing page</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num">${count}</div>
-      <div class="stat-label">Total signups</div>
-    </div>
-  </div>
-
-  <div class="actions">
-    <button class="btn btn-primary" onclick="copyAll()">Copy all emails</button>
-    <button class="btn btn-ghost" onclick="downloadCSV()">Download CSV</button>
-  </div>
-
-  <div class="table-wrap">
-    <div class="table-header">
-      <span class="table-title">All signups</span>
-      <span class="badge">${count} total</span>
-    </div>
-    ${rows.length === 0 ? `
-    <div class="empty">
-      <div class="empty-icon">📭</div>
-      <div>No signups yet</div>
-      <div style="font-size:12px;margin-top:6px">Share your landing page to start collecting emails</div>
-    </div>` : `
-    <table>
-      <thead><tr><th>#</th><th>Email</th><th>Signed up</th></tr></thead>
-      <tbody>
-        ${rows.map((r, i) => `
-        <tr>
-          <td style="color:var(--t3);width:48px">${i + 1}</td>
-          <td>${r.email}</td>
-          <td style="color:var(--t3)">${new Date(r.created_at).toLocaleString('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`}
-  </div>
-
-  ${rows.length > 0 ? `
-  <div class="export-section">
-    <div class="export-title">All emails (copy to send a bulk email)</div>
-    <textarea class="copy-area" id="emailDump" rows="4" readonly>${emailList}</textarea>
-  </div>` : ''}
-</div>
-
-<script>
-function copyAll(){
-  const txt=${JSON.stringify(emailList)};
-  navigator.clipboard.writeText(txt).then(()=>{
-    const b=document.querySelector('.btn-primary');
-    const orig=b.textContent;b.textContent='Copied!';
-    setTimeout(()=>b.textContent=orig,2000);
-  });
-}
-function downloadCSV(){
-  const rows=${JSON.stringify(rows.map(r=>({email:r.email,signed_up:new Date(r.created_at).toISOString()})))};
-  const csv='email,signed_up\\n'+rows.map(r=>r.email+','+r.signed_up).join('\\n');
-  const a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download='syncora-waitlist.csv';a.click();
-}
-</script>
-</body>
-</html>`);
 });
 
 module.exports = router;

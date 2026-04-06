@@ -14,14 +14,14 @@ const authRoute = require('./routes/auth');
 const onboardingRoute = require('./routes/onboarding');
 const adminRoute = require('./routes/admin');
 const commandsRoute = require('./routes/commands');
-const waitlistRoutes = require('./routes/waitlist');
+
 
 // ── Express server ────────────────────────────────────────
 const server = express();
 server.use(express.urlencoded({ extended: false }));
 server.use(express.json());
+
 server.use(express.static(path.join(__dirname, '../public')));
-server.use('/waitlist', waitlistRoutes);
 
 // Accept-Ranges for video streaming
 server.use((req, res, next) => {
