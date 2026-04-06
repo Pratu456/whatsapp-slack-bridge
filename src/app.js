@@ -50,6 +50,14 @@ server.use('/commands', commandsRoute);
 server.get('/health', (req, res) => res.json({ status: 'ok' }));
 server.use('/media', express.static(path.join(__dirname, 'tmp')));
 
+// Slack challenge verification
+server.post('/slack/events', (req, res, next) => {
+  if (req.body && req.body.type === 'url_verification') {
+    return res.json({ challenge: req.body.challenge });
+  }
+  next();
+});
+
 // ── Slack message handler ─────────────────────────────────
 slackApp.message(async ({ message }) => {
   try {
