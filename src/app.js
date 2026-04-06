@@ -2,7 +2,7 @@
 require('dotenv').config();
 const { pool } = require('./db');
 const express = require('express');
-const { App } = require('@slack/bolt');
+const { App, ExpressReceiver } = require('@slack/bolt');
 const whatsappRoute = require('./routes/whatsapp');
 const { connect: connectRedis } = require('./cache/redis');
 const { sendWhatsApp, sendWhatsAppMedia } = require('./services/twilioService');
@@ -15,21 +15,29 @@ const onboardingRoute = require('./routes/onboarding');
 const adminRoute = require('./routes/admin');
 const commandsRoute = require('./routes/commands');
 
+// ── Express receiver for Slack HTTP mode ──────────────────
+const receiver = new ExpressReceiver({
+  signingSecret: process.env.SLACK_SIGNING_SECRET,
+  endpoints: '/slack/events',
+});
+
+// ── Slack Bolt App (HTTP mode) ────────────────────────────
+const slackApp = new App({
+  token: process.env.SLACK_BOT_TOKEN,
+  receiver,
+});
 
 // ── Express server ────────────────────────────────────────
-const server = express();
+const server = receiver.app;
 server.use(express.urlencoded({ extended: false }));
 server.use(express.json());
-
 server.use(express.static(path.join(__dirname, '../public')));
 
-// Accept-Ranges for video streaming
 server.use((req, res, next) => {
   res.setHeader('Accept-Ranges', 'bytes');
   next();
 });
 
-// Landing page
 server.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../index.html'));
 });
@@ -40,18 +48,9 @@ server.use('/onboarding', onboardingRoute);
 server.use('/admin', adminRoute);
 server.use('/commands', commandsRoute);
 server.get('/health', (req, res) => res.json({ status: 'ok' }));
-
-// ✅ Fixed: serve from tmp folder (not public)
 server.use('/media', express.static(path.join(__dirname, 'tmp')));
 
-// ── Slack Bolt App ────────────────────────────────────────
-const slackApp = new App({
-  token: process.env.SLACK_BOT_TOKEN,
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
-  socketMode: true,
-  appToken: process.env.SLACK_APP_TOKEN,
-});
-
+// ── Slack message handler ─────────────────────────────────
 slackApp.message(async ({ message }) => {
   try {
     console.log('Slack event received:', message.channel, message.subtype);
@@ -70,7 +69,6 @@ slackApp.message(async ({ message }) => {
     const waNumber = await getWaNumberForTenant(message.channel, tenant.id);
     if (!waNumber) return;
 
-    // Handle file shares
     if (message.files && message.files.length > 0) {
       for (const file of message.files) {
         try {
@@ -78,9 +76,6 @@ slackApp.message(async ({ message }) => {
           const fs = require('fs');
           const { WebClient } = require('@slack/web-api');
 
-          console.log('File shared from Slack:', file.name, file.mimetype);
-
-          // ✅ Fixed: increased timeout to 60s, added 16MB max
           const response = await axios.get(file.url_private_download, {
             headers: { Authorization: `Bearer ${tenant.slack_bot_token}` },
             responseType: 'arraybuffer',
@@ -88,13 +83,10 @@ slackApp.message(async ({ message }) => {
             maxContentLength: 16 * 1024 * 1024,
           });
 
-          // ✅ Check file size before sending
           const fileSizeBytes = response.data.byteLength;
           const fileSizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(2);
-          console.log(`File size: ${fileSizeMB}MB`);
 
           if (fileSizeBytes > 16 * 1024 * 1024) {
-            console.warn(`File too large: ${fileSizeMB}MB — notifying Slack`);
             const slack = new WebClient(tenant.slack_bot_token);
             await slack.chat.postMessage({
               channel: message.channel,
@@ -109,11 +101,8 @@ slackApp.message(async ({ message }) => {
           const tmpPath = path.join(tmpDir, safeFileName);
           fs.writeFileSync(tmpPath, Buffer.from(response.data));
 
-          const publicUrl = `${process.env.NGROK_URL}/media/${encodeURIComponent(safeFileName)}`;
-          console.log('Public media URL:', publicUrl);
-
+          const publicUrl = `${process.env.APP_URL}/media/${encodeURIComponent(safeFileName)}`;
           const sid = await sendWhatsAppMedia(waNumber, publicUrl, message.text || '');
-          console.log('Media sent to WhatsApp, SID:', sid);
 
           await logMessage({
             waNumber, body: file.name, direction: 'outbound',
@@ -121,13 +110,10 @@ slackApp.message(async ({ message }) => {
             mediaType: file.mimetype, tenantId: tenant.id,
           });
 
-          // Clean up tmp file after 60 seconds
           setTimeout(() => { try { fs.unlinkSync(tmpPath); } catch (e) {} }, 60000);
 
         } catch (fileErr) {
           console.error('File handling error:', fileErr.message);
-
-          // Notify Slack if file sending failed
           try {
             const { WebClient } = require('@slack/web-api');
             const slack = new WebClient(tenant.slack_bot_token);
@@ -135,18 +121,14 @@ slackApp.message(async ({ message }) => {
               channel: message.channel,
               text: `⚠️ Failed to send file *${file.name}* to WhatsApp: ${fileErr.message}`,
             });
-          } catch (notifyErr) {
-            console.error('Could not notify Slack of file error:', notifyErr.message);
-          }
+          } catch (e) {}
         }
       }
       return;
     }
 
-    // Handle text
     if (message.text) {
       const sid = await sendWhatsApp(waNumber, message.text);
-      console.log('Sent to WhatsApp, SID:', sid);
       await logMessage({
         waNumber, body: message.text, direction: 'outbound',
         twilioSid: sid, slackTs: message.ts, tenantId: tenant.id,
@@ -157,7 +139,6 @@ slackApp.message(async ({ message }) => {
   }
 });
 
-// /history command
 slackApp.command('/history', async ({ command, ack, respond }) => {
   await ack();
   try {
@@ -169,86 +150,58 @@ slackApp.command('/history', async ({ command, ack, respond }) => {
     );
     if (!tenantResult.rows.length) return respond('❌ This channel is not linked to a WhatsApp contact.');
     const { wa_number, id: tenantId } = tenantResult.rows[0];
-
     const result = await pool.query(
       `SELECT m.body, m.direction, m.status, m.created_at
-       FROM messages m
-       JOIN contacts c ON c.id = m.contact_id
+       FROM messages m JOIN contacts c ON c.id = m.contact_id
        WHERE c.wa_number = $1 AND m.tenant_id = $2
        ORDER BY m.created_at DESC LIMIT 10`,
       [wa_number, tenantId]
     );
-    if (!result.rows.length) return respond('📭 No messages found for this contact.');
-
+    if (!result.rows.length) return respond('📭 No messages found.');
     const lines = result.rows.reverse().map(msg => {
-      const direction = msg.direction === 'inbound' ? '📱 WhatsApp' : '💬 Slack';
-      const time = new Date(msg.created_at).toLocaleTimeString();
-      return `*${direction}* [${msg.status}] ${time}\n${msg.body}`;
+      const dir = msg.direction === 'inbound' ? '📱 WhatsApp' : '💬 Slack';
+      return `*${dir}* ${new Date(msg.created_at).toLocaleTimeString()}\n${msg.body}`;
     });
-    await respond(`📋 *Last ${result.rows.length} messages with ${wa_number}:*\n\n${lines.join('\n\n')}`);
-  } catch (err) {
-    console.error('/history error:', err.message);
-    await respond('❌ Error fetching history.');
-  }
+    await respond(`📋 *Last ${result.rows.length} messages:*\n\n${lines.join('\n\n')}`);
+  } catch (err) { await respond('❌ Error fetching history.'); }
 });
 
-// /block command
 slackApp.command('/block', async ({ command, ack, respond }) => {
   await ack();
   try {
-    const tenantResult = await pool.query(
-      `SELECT t.*, c.wa_number FROM tenants t
-       JOIN contacts c ON c.tenant_id = t.id
+    const r = await pool.query(
+      `SELECT t.*, c.wa_number FROM tenants t JOIN contacts c ON c.tenant_id = t.id
        WHERE c.slack_channel = $1 AND t.is_active = TRUE LIMIT 1`,
       [command.channel_id]
     );
-    if (!tenantResult.rows.length) return respond('❌ Channel not linked to any contact.');
-    const { wa_number, id: tenantId } = tenantResult.rows[0];
-
-    await pool.query(
-      'UPDATE contacts SET blocked = TRUE WHERE wa_number = $1 AND tenant_id = $2',
-      [wa_number, tenantId]
-    );
-    await respond(`🚫 Contact *${wa_number}* has been blocked.`);
-  } catch (err) {
-    console.error('/block error:', err.message);
-    await respond('❌ Error blocking contact.');
-  }
+    if (!r.rows.length) return respond('❌ Channel not linked to any contact.');
+    await pool.query('UPDATE contacts SET blocked = TRUE WHERE wa_number = $1 AND tenant_id = $2',
+      [r.rows[0].wa_number, r.rows[0].id]);
+    await respond(`🚫 Contact *${r.rows[0].wa_number}* has been blocked.`);
+  } catch (err) { await respond('❌ Error blocking contact.'); }
 });
 
-// /unblock command
 slackApp.command('/unblock', async ({ command, ack, respond }) => {
   await ack();
   try {
-    const tenantResult = await pool.query(
-      `SELECT t.*, c.wa_number FROM tenants t
-       JOIN contacts c ON c.tenant_id = t.id
+    const r = await pool.query(
+      `SELECT t.*, c.wa_number FROM tenants t JOIN contacts c ON c.tenant_id = t.id
        WHERE c.slack_channel = $1 AND t.is_active = TRUE LIMIT 1`,
       [command.channel_id]
     );
-    if (!tenantResult.rows.length) return respond('❌ Channel not linked to any contact.');
-    const { wa_number, id: tenantId } = tenantResult.rows[0];
-
-    await pool.query(
-      'UPDATE contacts SET blocked = FALSE WHERE wa_number = $1 AND tenant_id = $2',
-      [wa_number, tenantId]
-    );
-    await respond(`✅ Contact *${wa_number}* has been unblocked.`);
-  } catch (err) {
-    console.error('/unblock error:', err.message);
-    await respond('❌ Error unblocking contact.');
-  }
+    if (!r.rows.length) return respond('❌ Channel not linked to any contact.');
+    await pool.query('UPDATE contacts SET blocked = FALSE WHERE wa_number = $1 AND tenant_id = $2',
+      [r.rows[0].wa_number, r.rows[0].id]);
+    await respond(`✅ Contact *${r.rows[0].wa_number}* has been unblocked.`);
+  } catch (err) { await respond('❌ Error unblocking contact.'); }
 });
 
-// ── Start everything ──────────────────────────────────────
+// ── Start ─────────────────────────────────────────────────
 const start = async () => {
   try {
     await connectRedis();
-    await slackApp.start();
-    console.log('Slack Bolt app started in Socket Mode');
-    server.listen(process.env.PORT || 3000, () => {
-      console.log(`Server running on port ${process.env.PORT || 3000}`);
-    });
+    await slackApp.start(process.env.PORT || 3000);
+    console.log(`Server running on port ${process.env.PORT || 3000} in HTTP mode`);
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);
