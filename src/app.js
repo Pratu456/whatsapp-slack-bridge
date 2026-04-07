@@ -89,6 +89,19 @@ server.use('/commands', commandsRoute);
 server.get('/health', (req, res) => res.json({ status: 'ok' }));
 server.use('/media', express.static(path.join(__dirname, 'tmp')));
 
+  
+  
+  // TEMPORARY — remove after confirming
+  server.get('/debug-env', (req, res) => {
+    res.json({
+      twilio_sid_present:  !!process.env.TWILIO_ACCOUNT_SID,
+      slack_bot_present:   !!process.env.SLACK_BOT_TOKEN,
+      resend_present:      !!process.env.RESEND_API_KEY,
+      database_present:    !!process.env.DATABASE_URL,
+      redis_present:       !!process.env.REDIS_URL,
+    });
+  });
+
 // ── Slack event handler ───────────────────────────────────
 async function handleSlackEvent(event) {
   if (event.type !== 'message') return;
