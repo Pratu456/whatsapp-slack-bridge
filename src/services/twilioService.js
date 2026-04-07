@@ -19,10 +19,18 @@ const withRetry = async (fn, retries = 3, delay = 1000) => {
 };
 
 // Send text message to WhatsApp
-const sendWhatsApp = async (toNumber, body) => {
+const sendWhatsApp = async (toNumber, body, fromNumber) => {
+  // Use passed fromNumber, fall back to env var
+  // Defensively add whatsapp: prefix if missing
+  const from = (fromNumber || process.env.TWILIO_WHATSAPP_NUMBER || '')
+    .replace(/^(?!whatsapp:)/, 'whatsapp:');
+
+  console.log('[TWILIO OUT] from:', from);
+  console.log('[TWILIO OUT] to:  ', `whatsapp:${toNumber}`);
+
   const message = await withRetry(() =>
     client.messages.create({
-      from: process.env.TWILIO_WHATSAPP_NUMBER,
+      from,
       to:   `whatsapp:${toNumber}`,
       body,
     })
@@ -31,10 +39,16 @@ const sendWhatsApp = async (toNumber, body) => {
 };
 
 // Send media message to WhatsApp
-const sendWhatsAppMedia = async (toNumber, mediaUrl, caption = '') => {
+const sendWhatsAppMedia = async (toNumber, mediaUrl, caption = '', fromNumber) => {
+  const from = (fromNumber || process.env.TWILIO_WHATSAPP_NUMBER || '')
+    .replace(/^(?!whatsapp:)/, 'whatsapp:');
+
+  console.log('[TWILIO MEDIA OUT] from:', from);
+  console.log('[TWILIO MEDIA OUT] to:  ', `whatsapp:${toNumber}`);
+
   const message = await withRetry(() =>
     client.messages.create({
-      from:     process.env.TWILIO_WHATSAPP_NUMBER,
+      from,
       to:       `whatsapp:${toNumber}`,
       body:     caption,
       mediaUrl: [mediaUrl],
