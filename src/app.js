@@ -32,56 +32,61 @@ server.use('/commands', commandsRoute);
 server.get('/health', (req, res) => res.json({ status: 'ok' }));
 server.use('/media', express.static(path.join(__dirname, 'tmp')));
 
-// ── Debug route — REMOVE AFTER CONFIRMING FIX ────────────
-server.get('/debug-env', (req, res) => {
-  res.json({
-    twilio_number:       process.env.TWILIO_WHATSAPP_NUMBER,
-    twilio_sid_present:  !!process.env.TWILIO_ACCOUNT_SID,
-    slack_bot_present:   !!process.env.SLACK_BOT_TOKEN,
-    slack_app_present:   !!process.env.SLACK_APP_TOKEN,
-    database_present:    !!process.env.DATABASE_URL,
-    redis_present:       !!process.env.REDIS_URL,
-    node_env:            process.env.NODE_ENV,
-  });
-});
-
 // ── Slack HTTP events endpoint ────────────────────────────
-server.post('/slack/events', express.raw({ type: 'application/json' }), async (req, res) => {
+server.post('/slack/events', express.raw({ type: '*/*' }), async (req, res) => {
   try {
-    const body    = req.body;
-    const rawBody = Buffer.isBuffer(body) ? body.toString() : JSON.stringify(body);
-    const parsed  = JSON.parse(rawBody);
+    const rawBody = Buffer.isBuffer(req.body)
+      ? req.body.toString('utf8')
+      : JSON.stringify(req.body);
 
-    // URL verification challenge
+    const parsed = JSON.parse(rawBody);
+
+    // ✅ URL verification — must respond before anything else
     if (parsed.type === 'url_verification') {
-      return res.json({ challenge: parsed.challenge });
+      console.log('[SLACK] URL verification challenge received');
+      return res.status(200).json({ challenge: parsed.challenge });
     }
 
-    // Verify Slack signature
+    // ✅ Respond to Slack immediately — must be within 3 seconds
+    res.status(200).end();
+
+    // Verify signature after responding
     const timestamp = req.headers['x-slack-request-timestamp'];
     const slackSig  = req.headers['x-slack-signature'];
-    const sigBase   = `v0:${timestamp}:${rawBody}`;
-    const hmac      = crypto.createHmac('sha256', process.env.SLACK_SIGNING_SECRET);
+
+    if (!timestamp || !slackSig) {
+      console.error('[SLACK] Missing signature headers');
+      return;
+    }
+
+    // Reject requests older than 5 minutes
+    const now = Math.floor(Date.now() / 1000);
+    if (Math.abs(now - parseInt(timestamp)) > 300) {
+      console.warn('[SLACK] Stale request rejected');
+      return;
+    }
+
+    const sigBase = `v0:${timestamp}:${rawBody}`;
+    const hmac    = crypto.createHmac('sha256', process.env.SLACK_SIGNING_SECRET);
     hmac.update(sigBase);
     const mySig = `v0=${hmac.digest('hex')}`;
 
     if (mySig !== slackSig) {
       console.error('[SLACK] Signature mismatch');
-      return res.status(401).send('Unauthorized');
+      return;
     }
 
-    // Respond to Slack immediately — must be within 3 seconds
-    res.status(200).send('OK');
+    console.log('[SLACK EVENT]', parsed.event?.type, '| channel:', parsed.event?.channel);
 
-    // Process event async after response
     if (parsed.event) {
       handleSlackEvent(parsed.event).catch(err =>
         console.error('[SLACK EVENT ERROR]', err.message)
       );
     }
+
   } catch (err) {
-    console.error('[SLACK EVENTS ROUTE ERROR]', err);
-    res.status(500).send('Error');
+    console.error('[SLACK EVENTS ROUTE ERROR]', err.message);
+    if (!res.headersSent) res.status(500).end();
   }
 });
 
@@ -128,9 +133,9 @@ async function handleSlackEvent(event) {
         const fs    = require('fs');
 
         const response = await axios.get(file.url_private_download, {
-          headers:         { Authorization: `Bearer ${tenant.slack_bot_token}` },
-          responseType:    'arraybuffer',
-          timeout:         60000,
+          headers:          { Authorization: `Bearer ${tenant.slack_bot_token}` },
+          responseType:     'arraybuffer',
+          timeout:          60000,
           maxContentLength: 16 * 1024 * 1024,
         });
 
@@ -143,7 +148,7 @@ async function handleSlackEvent(event) {
           continue;
         }
 
-        const tmpDir      = path.join(__dirname, 'tmp');
+        const tmpDir       = path.join(__dirname, 'tmp');
         if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
         const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
         const tmpPath      = path.join(tmpDir, safeFileName);
@@ -151,7 +156,6 @@ async function handleSlackEvent(event) {
 
         const publicUrl = `${process.env.APP_URL}/media/${encodeURIComponent(safeFileName)}`;
 
-        // ✅ Pass tenant.twilio_number as fromNumber
         const sid = await sendWhatsAppMedia(
           waNumber,
           publicUrl,
@@ -182,7 +186,6 @@ async function handleSlackEvent(event) {
   // ── Handle text message ───────────────────────────────
   if (event.text) {
     try {
-      // ✅ Pass tenant.twilio_number as fromNumber
       const sid = await sendWhatsApp(waNumber, event.text, tenant.twilio_number);
 
       await logMessage({
