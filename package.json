@@ -21,6 +21,7 @@
     "nodemailer": "^8.0.4",
     "pg": "^8.20.0",
     "redis": "^5.11.0",
+    "resend": "^6.10.0",
     "twilio": "^5.13.0"
   },
   "devDependencies": {
