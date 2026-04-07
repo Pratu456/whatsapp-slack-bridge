@@ -2,7 +2,6 @@
 require('dotenv').config();
 const { pool } = require('./db');
 const express = require('express');
-const { App } = require('@slack/bolt');
 const whatsappRoute = require('./routes/whatsapp');
 const { connect: connectRedis } = require('./cache/redis');
 const { sendWhatsApp, sendWhatsAppMedia } = require('./services/twilioService');
@@ -10,29 +9,16 @@ const { getWaNumberForTenant } = require('./services/tenantService');
 const { logMessage } = require('./services/messageLogger');
 const path = require('path');
 const crypto = require('crypto');
+const { WebClient } = require('@slack/web-api');
 
 const authRoute = require('./routes/auth');
 const onboardingRoute = require('./routes/onboarding');
 const adminRoute = require('./routes/admin');
 const commandsRoute = require('./routes/commands');
 
-// ── Express server ────────────────────────────────────────
 const server = express();
-server.use(express.urlencoded({ extended: false }));
-server.use(express.json());
-server.use(express.static(path.join(__dirname, '../public')));
-server.use((req, res, next) => { res.setHeader('Accept-Ranges', 'bytes'); next(); });
 
-server.get('/', (req, res) => res.sendFile(path.join(__dirname, '../index.html')));
-server.use('/whatsapp', whatsappRoute);
-server.use('/auth', authRoute);
-server.use('/onboarding', onboardingRoute);
-server.use('/admin', adminRoute);
-server.use('/commands', commandsRoute);
-server.get('/health', (req, res) => res.json({ status: 'ok' }));
-server.use('/media', express.static(path.join(__dirname, 'tmp')));
-
-// ── Slack HTTP events endpoint ────────────────────────────
+// ✅ STEP 1 — raw body parser for Slack MUST come before express.json()
 server.post('/slack/events', express.raw({ type: '*/*' }), async (req, res) => {
   try {
     const rawBody = Buffer.isBuffer(req.body)
@@ -41,25 +27,23 @@ server.post('/slack/events', express.raw({ type: '*/*' }), async (req, res) => {
 
     const parsed = JSON.parse(rawBody);
 
-    // ✅ URL verification — must respond before anything else
+    // URL verification — respond immediately
     if (parsed.type === 'url_verification') {
-      console.log('[SLACK] URL verification challenge received');
+      console.log('[SLACK] Challenge received ✓');
       return res.status(200).json({ challenge: parsed.challenge });
     }
 
-    // ✅ Respond to Slack immediately — must be within 3 seconds
+    // Respond to Slack within 3 seconds
     res.status(200).end();
 
-    // Verify signature after responding
+    // Validate signature
     const timestamp = req.headers['x-slack-request-timestamp'];
     const slackSig  = req.headers['x-slack-signature'];
-
     if (!timestamp || !slackSig) {
       console.error('[SLACK] Missing signature headers');
       return;
     }
 
-    // Reject requests older than 5 minutes
     const now = Math.floor(Date.now() / 1000);
     if (Math.abs(now - parseInt(timestamp)) > 300) {
       console.warn('[SLACK] Stale request rejected');
@@ -90,9 +74,22 @@ server.post('/slack/events', express.raw({ type: '*/*' }), async (req, res) => {
   }
 });
 
-// ── Slack event handler ───────────────────────────────────
-const { WebClient } = require('@slack/web-api');
+// ✅ STEP 2 — all other middleware comes AFTER Slack events route
+server.use(express.urlencoded({ extended: false }));
+server.use(express.json());
+server.use(express.static(path.join(__dirname, '../public')));
+server.use((req, res, next) => { res.setHeader('Accept-Ranges', 'bytes'); next(); });
 
+server.get('/', (req, res) => res.sendFile(path.join(__dirname, '../index.html')));
+server.use('/whatsapp', whatsappRoute);
+server.use('/auth', authRoute);
+server.use('/onboarding', onboardingRoute);
+server.use('/admin', adminRoute);
+server.use('/commands', commandsRoute);
+server.get('/health', (req, res) => res.json({ status: 'ok' }));
+server.use('/media', express.static(path.join(__dirname, 'tmp')));
+
+// ── Slack event handler ───────────────────────────────────
 async function handleSlackEvent(event) {
   if (event.type !== 'message') return;
   if (event.subtype === 'bot_message' || event.bot_id) return;
@@ -100,7 +97,6 @@ async function handleSlackEvent(event) {
 
   console.log('[SLACK EVENT] channel:', event.channel, '| text:', event.text?.slice(0, 50));
 
-  // Look up tenant from channel
   const tenantResult = await pool.query(
     `SELECT t.* FROM tenants t
      JOIN contacts c ON c.tenant_id = t.id
@@ -116,7 +112,6 @@ async function handleSlackEvent(event) {
   const tenant = tenantResult.rows[0];
   console.log('[TENANT]', tenant.company_name, '| twilio_number:', tenant.twilio_number);
 
-  // Look up WhatsApp number for this channel + tenant
   const waNumber = await getWaNumberForTenant(event.channel, tenant.id);
   if (!waNumber) {
     console.log('[SLACK EVENT] No WA number for channel:', event.channel, 'tenant:', tenant.id);
