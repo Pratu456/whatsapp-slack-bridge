@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Contact — Syncora</title>
+<link rel="icon" type="image/png" href="/logo.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#060608;color:#fff;min-height:100vh;-webkit-font-smoothing:antialiased}
+nav{height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;background:rgba(6,6,8,.95);border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;z-index:100}
+.nav-logo img{height:24px;filter:brightness(0) invert(1)}
+.nav-back{font-size:13px;color:rgba(255,255,255,.4);text-decoration:none;transition:color .2s}
+.nav-back:hover{color:#25D366}
+.wrap{max-width:600px;margin:0 auto;padding:80px 24px;text-align:center}
+.page-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:#25D366;margin-bottom:12px}
+h1{font-size:36px;font-weight:800;letter-spacing:-1.5px;margin-bottom:12px}
+.subtitle{font-size:16px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:48px}
+.contact-card{background:#0f0f16;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:40px;margin-bottom:24px;position:relative;overflow:hidden}
+.contact-card::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(37,211,102,.4),transparent)}
+.contact-icon{width:56px;height:56px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 16px}
+.contact-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.3);margin-bottom:8px}
+.contact-value{font-size:18px;font-weight:600;color:#25D366}
+.contact-desc{font-size:14px;color:rgba(255,255,255,.4);margin-top:8px;line-height:1.6}
+.faq-section{text-align:left;margin-top:48px}
+.faq-title{font-size:14px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:2px;margin-bottom:20px;text-align:center}
+.faq-item{border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:18px 20px;margin-bottom:10px}
+.faq-q{font-size:14px;font-weight:600;color:rgba(255,255,255,.85);margin-bottom:6px}
+.faq-a{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6}
+footer{border-top:1px solid rgba(255,255,255,.06);padding:24px 40px;text-align:center;font-size:12px;color:rgba(255,255,255,.25)}
+footer a{color:rgba(255,255,255,.35);text-decoration:none}
+footer a:hover{color:#25D366}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo"><img src="/logo_text.png" alt="Syncora"/></div>
+  <a href="/onboarding" class="nav-back">← Back to home</a>
+</nav>
+<div class="wrap">
+  <div class="page-label">Get in touch</div>
+  <h1>Contact us</h1>
+  <p class="subtitle">Have a question or need help getting set up?<br/>We're here to help.</p>
+
+  <div class="contact-card">
+    <div class="contact-icon">✉</div>
+    <div class="contact-label">Email us</div>
+    <div class="contact-value"><a href="mailto:support@syncora.app" style="color:#25D366;text-decoration:none">support@syncora.app</a></div>
+    <div class="contact-desc">We typically respond within 24 hours on business days.</div>
+  </div>
+
+  <div class="faq-section">
+    <div class="faq-title">Common questions</div>
+
+    <div class="faq-item">
+      <div class="faq-q">How long does activation take?</div>
+      <div class="faq-a">Most accounts are activated within 24 hours of registering. You'll receive an email with your claim code once activated.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What is a claim code?</div>
+      <div class="faq-a">A claim code is a unique word your customers send as their first WhatsApp message. It links them to your Slack workspace. You receive it in your activation email.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Can I change my claim code?</div>
+      <div class="faq-a">Yes. Contact us and we can regenerate your claim code. Note that existing contacts will need to send the new code to re-link.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">How do I delete my account?</div>
+      <div class="faq-a">Email us at support@syncora.app with your company name and we'll delete your account and all associated data within 48 hours.</div>
+    </div>
+  </div>
+</div>
+<footer>© 2026 Syncora · <a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a> · <a href="/contact.html">Contact</a></footer>
+</body>
+</html>
