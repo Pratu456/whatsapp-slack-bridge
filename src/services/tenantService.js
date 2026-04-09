@@ -81,7 +81,18 @@ const getOrCreateChannelForTenant = async (tenant, waNumber, displayName) => {
 
   // 2. Create Slack client using tenant's own bot token
   const slack = new WebClient(tenant.slack_bot_token);
-  const channelName = 'wa-' + waNumber.replace(/\D/g, '').slice(-10);
+    // Use display name in channel name if available, fall back to number
+  const safeName = displayName && displayName !== waNumber
+    ? displayName.toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')  // replace special chars with dash
+        .replace(/-+/g, '-')          // collapse multiple dashes
+        .replace(/^-|-$/g, '')        // trim leading/trailing dashes
+        .slice(0, 20)                 // Slack channel name max 80 chars but keep it short
+    : null;
+
+  const channelName = safeName
+    ? `wa-${safeName}`
+    : 'wa-' + waNumber.replace(/\D/g, '').slice(-10);
 
   // 3. Create channel — handle name_taken gracefully
   let channelId;
@@ -91,6 +102,13 @@ const getOrCreateChannelForTenant = async (tenant, waNumber, displayName) => {
       is_private: false,
     });
     channelId = result.channel.id;
+      // Set channel topic to show the WhatsApp number
+  try {
+    await slack.conversations.setTopic({
+      channel: channelId,
+      topic: `WhatsApp: ${waNumber}${displayName ? ' · ' + displayName : ''}`,
+    });
+  } catch (e) { /* non-critical */ }
   } catch (err) {
     if (err.data?.error === 'name_taken') {
       const list = await slack.conversations.list({ limit: 200 });
