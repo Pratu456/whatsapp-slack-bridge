@@ -2,6 +2,7 @@
 require('dotenv').config();
 const { pool } = require('./db');
 const express = require('express');
+const session = require('express-session');
 const whatsappRoute = require('./routes/whatsapp');
 const { connect: connectRedis } = require('./cache/redis');
 const { sendWhatsApp, sendWhatsAppMedia } = require('./services/twilioService');
@@ -17,6 +18,16 @@ const adminRoute = require('./routes/admin');
 const commandsRoute = require('./routes/commands');
 
 const server = express();
+  server.use(session({
+    secret:            process.env.SESSION_SECRET || 'syncora-secret-key',
+    resave:            false,
+    saveUninitialized: false,
+    cookie: {
+      secure:   false,
+      httpOnly: true,
+      maxAge:   8 * 60 * 60 * 1000, // 8 hours
+    },
+  }));
 
 // ✅ STEP 1 — raw body parser for Slack MUST come before express.json()
 server.post('/slack/events', express.raw({ type: '*/*' }), async (req, res) => {

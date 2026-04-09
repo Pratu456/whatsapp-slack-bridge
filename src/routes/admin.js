@@ -4,43 +4,54 @@ const router  = express.Router();
 const { pool } = require('../db');
 const { sendActivationEmail } = require('../services/emailService');
 require('dotenv').config();
+  // ── Auth middleware ───────────────────────────────────────
+  const auth = (req, res, next) => {
+    if (req.session && req.session.isAdmin) return next();
+    return res.send(`<!DOCTYPE html><html><head><title>Syncora Admin</title>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;background:#060608;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
+  .wrap{width:100%;max-width:380px;text-align:center}
+  h1{font-size:24px;font-weight:800;color:#fff;margin-bottom:8px}
+  p{font-size:14px;color:rgba(255,255,255,.35);margin-bottom:32px}
+  .card{background:#0f0f16;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px}
+  input{width:100%;padding:13px 18px;background:#1a1a24;border:1px solid rgba(255,255,255,.1);border-radius:12px;font-size:15px;color:#fff;margin-bottom:14px;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s}
+  input:focus{border-color:rgba(37,211,102,.5);box-shadow:0 0 0 3px rgba(37,211,102,.08)}
+  input::placeholder{color:rgba(255,255,255,.25)}
+  button{width:100%;padding:14px;background:#25D366;color:#000;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
+  button:hover{background:#1aad52}
+  .err{color:#f87171;font-size:13px;margin-bottom:12px}
+  </style></head>
+  <body><div class="wrap">
+  <img src="/logo_full.png" alt="Syncora" style="height:72px;width:auto;margin:0 auto 16px;display:block"/>
+  <h1>Syncora Admin</h1>
+  <p>Sign in to manage your platform</p>
+  <div class="card">
+  ${req.query.error ? '<div class="err">Incorrect password — try again</div>' : ''}
+  <form method="POST" action="/admin/login">
+  <input type="password" name="pwd" placeholder="Admin password" autofocus/>
+  <button type="submit">Sign in →</button>
+  </form>
+  </div></div></body></html>`);
+  };
 
-const auth = (req, res, next) => {
-  try {
-    const pwd = (req.query && req.query.pwd) || (req.body && req.body.pwd) || '';
-    if (pwd !== process.env.ADMIN_PASSWORD) {
-      return res.send(`<!DOCTYPE html><html><head><title>Syncora Admin</title>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#060608;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
-.wrap{width:100%;max-width:380px;text-align:center}
-.logo-mark{width:56px;height:56px;background:#25D366;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#000;margin:0 auto 16px}
-h1{font-size:24px;font-weight:800;color:#fff;margin-bottom:8px}
-p{font-size:14px;color:rgba(255,255,255,.35);margin-bottom:32px}
-.card{background:#0f0f16;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px}
-input{width:100%;padding:13px 18px;background:#1a1a24;border:1px solid rgba(255,255,255,.1);border-radius:12px;font-size:15px;color:#fff;margin-bottom:14px;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s}
-input:focus{border-color:rgba(37,211,102,.5);box-shadow:0 0 0 3px rgba(37,211,102,.08)}
-input::placeholder{color:rgba(255,255,255,.25)}
-button{width:100%;padding:14px;background:#25D366;color:#000;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
-button:hover{background:#1aad52}
-</style></head>
-<body><div class="wrap">
-<img src="/logo_full.png" alt="Syncora" style="height:72px;width:auto;margin:0 auto 16px;display:block"/>
-<h1>Syncora Admin</h1>
-<p>Sign in to manage your platform</p>
-<div class="card">
-<form method="GET" action="/admin">
-<input type="password" name="pwd" placeholder="Admin password" autofocus/>
-<button type="submit">Sign in →</button>
-</form>
-</div></div></body></html>`);
+  // ── Login POST ────────────────────────────────────────────
+  router.post('/login', express.urlencoded({ extended: false }), (req, res) => {
+    if (req.body.pwd === process.env.ADMIN_PASSWORD) {
+      req.session.isAdmin = true;
+      res.redirect('/admin');
+    } else {
+      res.redirect('/admin?error=1');
     }
-    next();
-  } catch (err) { res.status(500).send('Auth error'); }
-};
+  });
 
+  // ── Logout ────────────────────────────────────────────────
+  router.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/admin');
+  });
 const generateClaimCode = () => {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let code = '';
@@ -95,7 +106,7 @@ router.get('/', auth, async (req, res) => {
     const activityData = JSON.stringify(msgActivity.rows.map(r => ({ day: r.day, count: parseInt(r.count) })));
 
     const tenantRows = tenants.map(t => `
-      <tr class="tr-hover" onclick="location.href='/admin/tenant/${t.id}?pwd=${pwd}'" style="cursor:pointer">
+      <tr class="tr-hover" onclick="location.href='/admin/tenant/${t.id}'" style="cursor:pointer">
         <td>
           <div style="display:flex;align-items:center;gap:10px">
             <div style="width:32px;height:32px;border-radius:8px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#25D366;flex-shrink:0">${t.company_name.charAt(0).toUpperCase()}</div>
@@ -295,6 +306,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   <div class="sb-section">Actions</div>
   <div class="sb-link" id="mob-link-add" onclick="show('add',this);closeDrawer()"><span class="sb-icon">＋</span>Add company</div>
   <div class="sb-link" onclick="location.reload();closeDrawer()"><span class="sb-icon">↻</span>Refresh</div>
+  <div class="sb-link" onclick="location.reload();closeDrawer()"><span class="sb-icon">↻</span>Refresh</div>
 </div>
 
 <aside class="sidebar">
@@ -315,11 +327,14 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div class="sb-link" onclick="location.reload()"><span class="sb-icon">↻</span>Refresh<span class="sb-dot"></span></div>
   </nav>
   <div class="sb-bottom">
-    <div class="sb-user">
-      <div class="sb-avatar">A</div>
-      <div><div class="sb-uname">Admin</div><div class="sb-urole">Syncora admin</div></div>
-    </div>
-  </div>
+     <div class="sb-link" onclick="location.href='/admin/logout'" style="margin-bottom:12px">
+       <span class="sb-icon">⎋</span>Logout<span class="sb-dot"></span>
+     </div>
+     <div class="sb-user">
+       <div class="sb-avatar">A</div>
+       <div><div class="sb-uname">Admin</div><div class="sb-urole">Syncora admin</div></div>
+     </div>
+   </div>
 </aside>
 
 <div class="main">
@@ -577,7 +592,7 @@ if(document.getElementById('actChart')){
 
 async function loadMessages(){
   try{
-    const r=await fetch('/admin/messages-data?pwd='+pwd);
+    const r=await fetch('/admin/messages-data);
     const d=await r.json();
     if(!d.messages||!d.messages.length){document.getElementById('msg-content').innerHTML='<div style="text-align:center;padding:48px 24px;color:rgba(255,255,255,.25);font-size:13px">No messages yet</div>';return;}
     document.getElementById('msg-content').innerHTML=\`<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Company</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead><tbody>\${d.messages.map(m=>\`<tr class="tr-hover"><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">\${new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td style="font-weight:600;font-size:13px">\${m.company_name}</td><td style="font-size:12px;color:rgba(255,255,255,.4)">\${m.wa_number}</td><td>\${m.direction==='inbound'?'<span class="badge-green">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>'}</td><td style="font-size:12px;color:rgba(255,255,255,.5);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">\${m.media_type?'['+m.media_type.split('/')[0]+']':(m.body||'').substring(0,80)}</td></tr>\`).join('')}</tbody></table></div>\`;
@@ -618,7 +633,7 @@ async function confirmActivate(){
   const btn=document.getElementById('mConfirmBtn');
   btn.disabled=true;btn.textContent='Activating...';
 
-  const r=await fetch('/admin/activate?pwd='+pwd,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,email,twilio_number:twilio,claim_code:code})});
+  const r=await fetch('/admin/activate,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,email,twilio_number:twilio,claim_code:code})});
   const d=await r.json();
 
   if(d.success){
@@ -627,8 +642,7 @@ async function confirmActivate(){
       status.textContent='✓ Activation email sent to '+d.emailTo;
       status.className='email-status sent';
     }else{
-      status.textContent='⚠ Activated but email could not be sent — check GMAIL settings in Railway Variables';
-      status.className='email-status failed';
+      status.textContent='⚠ Activated but email could not be sent — check RESEND_API_KEY in Render environment variables';      status.className='email-status failed';
     }
     btn.textContent='Done!';
     setTimeout(()=>{closeModal();location.reload()},2500);
@@ -640,14 +654,14 @@ async function confirmActivate(){
 
 async function deactivate(id){
   if(!confirm('Deactivate this company?'))return;
-  const r=await fetch('/admin/deactivate?pwd='+pwd,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  const r=await fetch('/admin/deactivate,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
 
 async function deleteTenant(id){
   if(!confirm('Permanently delete this company and all its data?'))return;
-  const r=await fetch('/admin/delete?pwd='+pwd,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  const r=await fetch('/admin/delete,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
@@ -661,7 +675,7 @@ async function addTenant(){
   const code=customVisible?document.getElementById('nCustomCode').value.trim().toLowerCase():currentAddCode;
   if(!co||!tw||!tok){alert('Please fill in all fields');return}
   if(customVisible&&!validateCustomCode(document.getElementById('nCustomCode'))){return}
-  const r=await fetch('/admin/add?pwd='+pwd,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company:co,email,twilio_number:tw,slack_bot_token:tok,claim_code:code})});
+  const r=await fetch('/admin/add,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company:co,email,twilio_number:tw,slack_bot_token:tok,claim_code:code})});
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
