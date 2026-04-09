@@ -84,7 +84,7 @@ const getStats = async () => {
 
 router.get('/', auth, async (req, res) => {
   try {
-    const pwd = (req.query && req.query.pwd) || '';
+    
     const { tenants, totalMessages, todayMessages, totalContacts } = await getStats();
 
     const inactiveTenants = await pool.query(`
@@ -136,7 +136,7 @@ router.get('/', auth, async (req, res) => {
             <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.8)">${t.company_name}</div>
             <div style="font-size:11px;color:rgba(255,255,255,.3)">${t.last_msg?'Last: '+new Date(t.last_msg).toLocaleDateString():'No messages ever'}</div>
           </div>
-          <button onclick="location.href='/admin/tenant/${t.id}?pwd=${pwd}'" class="btn-xs btn-xs-gray">View</button>
+          <button onclick="location.href='/admin/tenant/${t.id}'" class="btn-xs btn-xs-gray">View</button>
         </div>`).join('');
 
     res.send(`<!DOCTYPE html>
@@ -399,7 +399,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
           ${tenants.map(t=>`
-            <div onclick="location.href='/admin/tenant/${t.id}?pwd=${pwd}'" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid rgba(255,255,255,.06);border-radius:10px;cursor:pointer;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.03)'" onmouseout="this.style.background='transparent'">
+            <div onclick="location.href='/admin/tenant/${t.id}'" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid rgba(255,255,255,.06);border-radius:10px;cursor:pointer;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.03)'" onmouseout="this.style.background='transparent'">
               <div style="display:flex;align-items:center;gap:10px">
                 <div style="width:32px;height:32px;border-radius:8px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.15);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#25D366;flex-shrink:0">${t.company_name.charAt(0)}</div>
                 <div>
@@ -513,7 +513,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 </div>
 
 <script>
-const pwd='${pwd}';
+
 
 function show(name,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
@@ -703,7 +703,7 @@ router.get('/messages-data', auth, async (req, res) => {
 
 router.get('/tenant/:id', auth, async (req, res) => {
   try {
-    const pwd = (req.query && req.query.pwd) || '';
+    
     const { id } = req.params;
     const tenant = await pool.query('SELECT * FROM tenants WHERE id = $1', [id]);
     if (!tenant.rows.length) return res.send('Not found');
@@ -716,7 +716,7 @@ router.get('/tenant/:id', auth, async (req, res) => {
 <title>${t.company_name} — Syncora</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#060608;color:#fff;padding:24px;min-height:100vh}a{color:#25D366;text-decoration:none;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-bottom:24px}.card{background:#111118;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;margin-bottom:16px}h1{font-size:22px;font-weight:800;margin-bottom:6px}.ig{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}.il label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);display:block;margin-bottom:5px}.il span{font-size:14px;font-weight:500;color:rgba(255,255,255,.8)}h2{font-size:15px;font-weight:700;margin-bottom:14px}.tbl{overflow-x:auto;-webkit-overflow-scrolling:touch}table{width:100%;border-collapse:collapse;min-width:500px}th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.8px;background:rgba(255,255,255,.03)}td{padding:10px 14px;border-top:1px solid rgba(255,255,255,.05);font-size:13px;color:rgba(255,255,255,.7)}.bg{background:rgba(37,211,102,.1);color:#4ade80;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(37,211,102,.2)}.by{background:rgba(245,158,11,.1);color:#fbbf24;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(245,158,11,.2)}</style></head><body>
-<a href="/admin?pwd=${pwd}">← Back to admin</a>
+<a href="/admin">← Back to admin</a>
 <div class="card"><h1>${t.company_name}</h1>
 <div style="margin-bottom:18px">${t.is_active?'<span class="bg">Active</span>':'<span class="by">Pending</span>'}<span style="font-size:12px;color:rgba(255,255,255,.3);margin-left:10px">Created ${new Date(t.created_at).toLocaleDateString()}</span></div>
 <div class="ig">
