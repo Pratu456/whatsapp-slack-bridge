@@ -583,7 +583,7 @@ function validateCustomCode(input){
   hint.textContent='✓ Looks good!';hint.className='hint ok';return true;
 }
 
-const ad=${activityData};
+const ad=${activityData || '[]'};
 const labels=ad.length?ad.map(d=>new Date(d.day).toLocaleDateString('en-GB',{weekday:'short',day:'numeric'})):['No data'];
 const counts=ad.length?ad.map(d=>d.count):[0];
 if(document.getElementById('actChart')){
