@@ -633,7 +633,7 @@ async function confirmActivate(){
   const btn=document.getElementById('mConfirmBtn');
   btn.disabled=true;btn.textContent='Activating...';
 
-  const r=await fetch('/admin/activate,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,email,twilio_number:twilio,claim_code:code})});
+  const r=await fetch('/admin/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,email,twilio_number:twilio,claim_code:code})});
   const d=await r.json();
 
   if(d.success){
@@ -654,14 +654,14 @@ async function confirmActivate(){
 
 async function deactivate(id){
   if(!confirm('Deactivate this company?'))return;
-  const r=await fetch('/admin/deactivate,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  const r=await fetch('/admin/deactivate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
 
 async function deleteTenant(id){
   if(!confirm('Permanently delete this company and all its data?'))return;
-  const r=await fetch('/admin/delete,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  const r=await fetch('/admin/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
@@ -675,7 +675,7 @@ async function addTenant(){
   const code=customVisible?document.getElementById('nCustomCode').value.trim().toLowerCase():currentAddCode;
   if(!co||!tw||!tok){alert('Please fill in all fields');return}
   if(customVisible&&!validateCustomCode(document.getElementById('nCustomCode'))){return}
-  const r=await fetch('/admin/add,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company:co,email,twilio_number:tw,slack_bot_token:tok,claim_code:code})});
+  const r=await fetch('/admin/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company:co,email,twilio_number:tw,slack_bot_token:tok,claim_code:code})});
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
