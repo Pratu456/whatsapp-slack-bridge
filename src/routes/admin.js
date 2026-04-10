@@ -880,9 +880,9 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   <nav class="sb-nav">
     <div class="sb-section">Main</div>
     <a href="/admin" class="sb-link"><span class="sb-icon">⬛</span>Dashboard</a>
-    <a href="/admin?panel=companies" class="sb-link"><span class="sb-icon"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(255,255,255,.3)"></span></span>Companies</a>
-    <a href="/admin?panel=messages" class="sb-link"><span class="sb-icon"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.3)"></span></span>Messages</a>
-    <a href="/admin/waitlist" class="sb-link on"><span class="sb-icon"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;border:2px solid rgba(255,255,255,.3)"></span></span>Waitlist</a>
+    <a href="/admin?panel=companies" class="sb-link"><span class="sb-icon">🏢</span>Companies</a>
+    <a href="/admin?panel=messages" class="sb-link"><span class="sb-icon">💬</span>Messages</a>
+    <a href="/admin/waitlist" class="sb-link on"><span class="sb-icon">📧</span>Waitlist</a>
     <div class="sb-section">Actions</div>
     <a href="/admin?panel=add" class="sb-link"><span class="sb-icon">+</span>Add company</a>
     <a href="/admin" class="sb-link"><span class="sb-icon">↺</span>Refresh</a>
