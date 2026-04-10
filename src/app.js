@@ -284,6 +284,28 @@ server.post('/slack/commands', express.urlencoded({ extended: true }), async (re
   }
 });
 
+ 
+ 
+ // ── Waitlist signup ───────────────────────────────────────
+ server.post('/waitlist', async (req, res) => {
+   try {
+     const { email } = req.body;
+     if (!email || !email.includes('@')) {
+       return res.json({ success: false, error: 'Invalid email' });
+     }
+     await pool.query(
+       `INSERT INTO waitlist (email, created_at) 
+        VALUES ($1, NOW()) 
+        ON CONFLICT (email) DO NOTHING`,
+       [email.trim().toLowerCase()]
+     );
+     console.log('[WAITLIST] New signup:', email);
+     res.json({ success: true });
+   } catch (err) {
+     console.error('[WAITLIST ERROR]', err.message);
+     res.json({ success: false, error: err.message });
+   }
+ });
 // ── Start ─────────────────────────────────────────────────
 const start = async () => {
   try {
