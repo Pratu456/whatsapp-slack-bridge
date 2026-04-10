@@ -18,14 +18,14 @@ const adminRoute = require('./routes/admin');
 const commandsRoute = require('./routes/commands');
 
 const server = express();
-  server.use(session({
-    secret:            process.env.SESSION_SECRET || 'syncora-secret-key',
-    resave:            false,
+server.use(session({
+    secret: process.env.SESSION_SECRET || 'syncora-secret-key',
+    resave: false,
     saveUninitialized: false,
     cookie: {
-      secure:   false,
+      secure: false,
       httpOnly: true,
-      maxAge:   8 * 60 * 60 * 1000, // 8 hours
+      maxAge: 8 * 60 * 60 * 1000, // 8 hours
     },
   }));
 
