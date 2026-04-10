@@ -299,7 +299,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 <div class="mob-overlay" id="overlay" onclick="closeDrawer()"></div>
 <div class="mob-drawer" id="drawer">
   <div class="sb-section" style="padding-top:8px">Main</div>
-  <div class="sb-link on" id="mob-link-dashboard" onclick="show('dashboard',this);closeDrawer()"><span class="sb-icon" style="font-size:11px;font-weight:800;color:var(--t3)">DB</span>Dashboard</div>
+  <div class="sb-link on" id="mob-link-dashboard" onclick="show('dashboard',this);closeDrawer()"><span class="sb-icon">⬛</span>Dashboard</div>
   <div class="sb-link" id="mob-link-companies" onclick="show('companies',this);closeDrawer()"><span class="sb-icon">🏢</span>Companies</div>
   <div class="sb-link" id="mob-link-messages" onclick="show('messages',this);closeDrawer()"><span class="sb-icon">💬</span>Messages</div>
 
@@ -318,7 +318,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   </div>
   <nav class="sb-nav">
     <div class="sb-section">Main</div>
-    <div class="sb-link on" id="desk-link-dashboard" onclick="show('dashboard',this)"><span class="sb-icon" style="font-size:11px;font-weight:800;color:var(--t3)">DB</span>Dashboard<span class="sb-dot"></span></div>
+    <div class="sb-link on" id="desk-link-dashboard" onclick="show('dashboard',this)"><span class="sb-icon">⬛</span>Dashboard<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-companies" onclick="show('companies',this)"><span class="sb-icon">🏢</span>Companies<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-messages" onclick="show('messages',this)"><span class="sb-icon">💬</span>Messages<span class="sb-dot"></span></div>
     <div class="sb-link" onclick="location.href='/admin/waitlist'"><span class="sb-icon">📧</span>Waitlist<span class="sb-dot"></span></div>
@@ -879,10 +879,10 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   </div>
   <nav class="sb-nav">
     <div class="sb-section">Main</div>
-    <a href="/admin" class="sb-link"><span class="sb-icon" style="font-size:11px;font-weight:800;color:var(--t3)">DB</span>Dashboard</a>
-    <a href="/admin?panel=companies" class="sb-link"><span class="sb-icon" style="font-size:11px;font-weight:800;color:var(--t3)">CO</span>Companies</a>
-    <a href="/admin?panel=messages" class="sb-link"><span class="sb-icon" style="font-size:11px;font-weight:800;color:var(--t3)">MSG</span>Messages</a>
-    <a href="/admin/waitlist" class="sb-link on"><span class="sb-icon" style="font-size:13px;font-weight:700;color:var(--t3)">@</span>Waitlist</a>
+    <a href="/admin" class="sb-link"><span class="sb-icon">⬛</span>Dashboard</a>
+    <a href="/admin?panel=companies" class="sb-link"><span class="sb-icon"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(255,255,255,.3)"></span></span>Companies</a>
+    <a href="/admin?panel=messages" class="sb-link"><span class="sb-icon"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.3)"></span></span>Messages</a>
+    <a href="/admin/waitlist" class="sb-link on"><span class="sb-icon"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;border:2px solid rgba(255,255,255,.3)"></span></span>Waitlist</a>
     <div class="sb-section">Actions</div>
     <a href="/admin?panel=add" class="sb-link"><span class="sb-icon">+</span>Add company</a>
     <a href="/admin" class="sb-link"><span class="sb-icon">↺</span>Refresh</a>
