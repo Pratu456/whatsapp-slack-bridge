@@ -78,9 +78,9 @@ router.post('/webhook', async (req, res) => {
       // Confirm to the customer
       await sendWhatsApp(
         waNumber,
-        `✅ You're now connected to *${tenant.company_name}*! Send your message and their team will reply shortly.`
-      );
-      return res.status(200).send('<Response></Response>');
+       `👋 Hello!\n\nTo reach a company's support team, you need their *claim code*.\n\n*What is a claim code?*\nIt's a short word the company gave you when they shared this WhatsApp number.\n\n*Example:* If the company told you to send *acme* — just type that word and send it.\n\nOnce connected, you can message normally and their team will reply here on WhatsApp. 💬`
+    );
+  res.status(200).send('<Response></Response>');
     }
 
     // 6. If returning contact switched workspace via claim code — notify and confirm

@@ -103,8 +103,8 @@ footer p{font-size:12px;color:var(--t4)}
   <div class="steps-grid">
     <div class="step-card"><div class="step-num">Step 01</div><div class="step-icon">🏢</div><div class="step-title">Enter your details</div><div class="step-desc">Your company name and work email — that's all we need to get started.</div></div>
     <div class="step-card"><div class="step-num">Step 02</div><div class="step-icon">🟣</div><div class="step-title">Connect Slack</div><div class="step-desc">One-click OAuth — authorize Syncora to post to your Slack workspace.</div></div>
-    <div class="step-card"><div class="step-num">Step 03</div><div class="step-icon">🔑</div><div class="step-title">Get activated</div><div class="step-desc">Our team assigns your WhatsApp number and sends your claim code by email.</div></div>
-    <div class="step-card"><div class="step-num">Step 04</div><div class="step-icon">🚀</div><div class="step-title">Go live</div><div class="step-desc">Customers text your WhatsApp number. Your team replies directly from Slack.</div></div>
+    <div class="step-card"><div class="step-num">Step 03</div><div class="step-icon">🔑</div><div class="step-title">Get activated</div><div class="step-desc">Our team reviews your request, assigns your WhatsApp number, and emails you a unique *claim code* — a short word your customers send to connect with you.</div></div>
+    <div class="step-card"><div class="step-num">Step 04</div><div class="step-icon">🚀</div><div class="step-title">Go live</div><div class="step-desc">Share your WhatsApp number and claim code with customers. They send the code once, then message normally — your team replies from Slack.</div></div>
   </div>
 </section>
 <section class="form-section" id="form">
