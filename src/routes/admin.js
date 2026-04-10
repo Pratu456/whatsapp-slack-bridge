@@ -529,6 +529,14 @@ function show(name,el){
   if(pt)pt.textContent=titles[name]||name;
   if(name==='messages')loadMessages();
   
+}
+(function(){
+  const p=new URLSearchParams(window.location.search).get("panel");
+  if(p){
+    const el=document.getElementById("desk-link-"+p);
+    show(p,el);
+  }
+})();
   if(name==='add')initAddForm();
 }
 
