@@ -229,6 +229,7 @@ footer p{font-size:13px;color:var(--t4);line-height:1.8}
 </style>
 </head>
 <body>
+<style id="cookieBlock">body>*:not(#cookieOverlay):not(#cookieBanner):not(#cookieModal){pointer-events:none!important;user-select:none!important}#cookieModal{display:flex!important}</style>
 
 <div class="bg-glow">
   <div class="glow1"></div>
@@ -615,7 +616,7 @@ function signup(){
   window.location.href='/onboarding?email='+encodeURIComponent(e.value);
 }
 // Animated bridge chat
-(function(){
+(function(){if(localStorage.getItem("cookieConsent")==="accepted"){var s=document.getElementById("cookieBlock");if(s)s.remove();return;}
   const seq=[
     {wa:'w1',sl:'s1',delay:600},
     {wa:null,sl:'s2',delay:1600},
@@ -694,7 +695,7 @@ if(ww)wfObs.observe(ww);
   </div>
 </div>
 <script>
-function acceptCookies(){
+function acceptCookies(){document.getElementById("cookieBlock").remove();
   document.getElementById("cookieBanner").style.display="none";
   document.getElementById("cookieOverlay").style.display="none";
   localStorage.setItem("cookieConsent","accepted");
@@ -703,7 +704,7 @@ function declineCookies(){
   localStorage.setItem("cookieConsent","declined");
   window.location.href="https://www.google.com";
 }
-(function(){
+(function(){if(localStorage.getItem("cookieConsent")==="accepted"){var s=document.getElementById("cookieBlock");if(s)s.remove();return;}
   if(!localStorage.getItem("cookieConsent")){
     document.getElementById("cookieBanner").style.display="flex";
     document.getElementById("cookieOverlay").style.display="block";
