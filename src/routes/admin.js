@@ -832,23 +832,87 @@ router.get('/waitlist', auth, async (req, res) => {
           ${new Date(r.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}
         </td>
       </tr>`).join('');
+    res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Waitlist ‚Äî Syncora Admin</title>
+<link rel="icon" type="image/png" href="/logo.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--g:#25D366;--gd:#1aad52;--bg:#060608;--bg1:#0c0c12;--bg2:#111118;--bg3:#16161f;--b1:rgba(255,255,255,.06);--b2:rgba(255,255,255,.1);--t:#ffffff;--t2:rgba(255,255,255,.75);--t3:rgba(255,255,255,.4);--t4:rgba(255,255,255,.2);--sidebar:240px;--topbar:60px}
+html,body{height:100%}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:flex;-webkit-font-smoothing:antialiased}
+.sidebar{width:var(--sidebar);min-height:100vh;background:var(--bg1);border-right:1px solid var(--b1);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100}
+.sb-top{padding:20px 18px;border-bottom:1px solid var(--b1)}
+.sb-nav{padding:12px 10px;flex:1}
+.sb-section{font-size:10px;font-weight:700;color:var(--t4);letter-spacing:2px;text-transform:uppercase;padding:14px 8px 6px}
+.sb-link{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;color:var(--t3);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;margin-bottom:2px;text-decoration:none}
+.sb-link:hover{background:var(--b1);color:var(--t2)}
+.sb-link.on{background:rgba(37,211,102,.1);color:var(--g)}
+.sb-icon{font-size:15px;width:22px;text-align:center;flex-shrink:0}
+.sb-bottom{padding:16px 18px;border-top:1px solid var(--b1)}
+.sb-user{display:flex;align-items:center;gap:10px}
+.sb-avatar{width:30px;height:30px;border-radius:8px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--g)}
+.sb-uname{font-size:13px;font-weight:600;color:var(--t2)}
+.sb-urole{font-size:11px;color:var(--t4)}
+.main{margin-left:var(--sidebar);flex:1;min-height:100vh}
+.topbar{height:var(--topbar);background:var(--bg1);border-bottom:1px solid var(--b1);padding:0 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:15px;font-weight:700;color:var(--t)}
+.content{padding:24px 28px}
+.card{background:var(--bg2);border:1px solid var(--b1);border-radius:16px;padding:22px}
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--b1)}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--bg3)}
+th{padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.8px}
+td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-align:middle}
+.count-badge{background:rgba(37,211,102,.1);color:#4ade80;padding:4px 12px;border-radius:100px;font-size:12px;font-weight:700;border:1px solid rgba(37,211,102,.2)}
+@media(max-width:960px){.sidebar{display:none}.main{margin-left:0}.content{padding:16px}}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sb-top">
+    <img src="/logo_text.png" alt="Syncora" style="height:26px;width:auto;filter:brightness(0) invert(1)"/>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Main</div>
+    <a href="/admin" class="sb-link"><span class="sb-icon">‚¨õ</span>Dashboard</a>
+    <a href="/admin?panel=companies" class="sb-link"><span class="sb-icon">Ìø¢</span>Companies</a>
+    <a href="/admin?panel=messages" class="sb-link"><span class="sb-icon">Ì≤¨</span>Messages</a>
+    <a href="/admin/waitlist" class="sb-link on"><span class="sb-icon">Ì≥ß</span>Waitlist</a>
+    <div class="sb-section">Actions</div>
+    <a href="/admin?panel=add" class="sb-link"><span class="sb-icon">Ôºã</span>Add company</a>
+    <a href="/admin" class="sb-link"><span class="sb-icon">‚Üª</span>Refresh</a>
+  </nav>
+  <div class="sb-bottom">
+    <a href="/admin/logout" class="sb-link" style="margin-bottom:12px;text-decoration:none"><span class="sb-icon">‚éã</span>Logout</a>
+    <div class="sb-user">
+      <div class="sb-avatar">A</div>
+      <div><div class="sb-uname">Admin</div><div class="sb-urole">Syncora admin</div></div>
+    </div>
+  </div>
+</aside>
 
-    res.send(`<!DOCTYPE html><html><head><title>Waitlist ‚Äî Syncora</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-    <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#060608;color:#fff;padding:32px}
-    h1{font-size:22px;font-weight:800;color:#25D366;margin-bottom:24px}
-    table{width:100%;border-collapse:collapse;background:#111118;border-radius:10px;overflow:hidden}
-    th{background:#25D366;color:#000;padding:12px 16px;text-align:left;font-size:12px;font-weight:700;text-transform:uppercase}
-    td{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06);font-size:14px}
-    .back{color:#25D366;font-size:13px;text-decoration:none;display:inline-block;margin-bottom:20px}
-    .count{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:16px}
-    </style></head><body>
-    <a href="/admin" class="back">‚Üê Back to admin</a>
-    <h1>Waitlist signups</h1>
-    <div class="count">${result.rows.length} total signups</div>
-    <table><thead><tr><th>Email</th><th>Signed up</th></tr></thead>
-    <tbody>${rows || '<tr><td colspan="2" style="color:rgba(255,255,255,.3);text-align:center;padding:24px">No signups yet</td></tr>'}</tbody>
-    </table></body></html>`);
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">Waitlist</div>
+    <span class="count-badge">${result.rows.length} signups</span>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Email</th><th>Signed up</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="2" style="color:rgba(255,255,255,.3);text-align:center;padding:24px">No signups yet</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>`);
   } catch (err) {
     console.error('[WAITLIST ERROR]', err.message);
     res.status(500).send('Error: ' + err.message);
