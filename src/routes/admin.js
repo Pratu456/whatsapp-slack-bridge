@@ -812,38 +812,47 @@ router.post('/add', auth, async (req, res) => {
     res.json({ success: true });
   } catch(err){ res.json({ success: false, error: err.message }); }
   });
-  router.get('/waitlist', auth, async (req, res) => {
-    try {
-      const result = await pool.query(
-        'SELECT email, created_at FROM waitlist ORDER BY created_at DESC'
-      );
-      const rows = result.rows.map(r => `
-        <tr>
-          <td>${r.email}</td>
-          <td style="color:rgba(255,255,255,.4);font-size:12px">
-            ${new Date(r.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}
-          </td>
-        </tr>`).join('');
-      
-      res.send(`<!DOCTYPE html><html><head><title>Waitlist — Syncora</title>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-      <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#060608;color:#fff;padding:32px}
-      h1{font-size:22px;font-weight:800;color:#25D366;margin-bottom:24px}
-      table{width:100%;border-collapse:collapse;background:#111118;border-radius:10px;overflow:hidden}
-      th{background:#25D366;color:#000;padding:12px 16px;text-align:left;font-size:12px;font-weight:700;text-transform:uppercase}
-      td{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06);font-size:14px}
-      .back{color:#25D366;font-size:13px;text-decoration:none;display:inline-block;margin-bottom:20px}
-      .count{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:16px}
-      </style></head><body>
-      <a href="/admin" class="back">← Back to admin</a>
-      <h1>Waitlist signups</h1>
-      <div class="count">${result.rows.length} total signups</div>
-      <table><thead><tr><th>Email</th><th>Signed up</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="2" style="color:rgba(255,255,255,.3);text-align:center;padding:24px">No signups yet</td></tr>'}</tbody>
-      </table></body></html>`);
-    } catch (err) {
-      res.status(500).send('Error: ' + err.message);
-    }
-  });
 
-  module.exports = router;
+router.get('/waitlist', auth, async (req, res) => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS waitlist (
+        id         SERIAL PRIMARY KEY,
+        email      VARCHAR(255) NOT NULL UNIQUE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    const result = await pool.query(
+      'SELECT email, created_at FROM waitlist ORDER BY created_at DESC'
+    );
+    const rows = result.rows.map(r => `
+      <tr>
+        <td>${r.email}</td>
+        <td style="color:rgba(255,255,255,.4);font-size:12px">
+          ${new Date(r.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}
+        </td>
+      </tr>`).join('');
+
+    res.send(`<!DOCTYPE html><html><head><title>Waitlist — Syncora</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#060608;color:#fff;padding:32px}
+    h1{font-size:22px;font-weight:800;color:#25D366;margin-bottom:24px}
+    table{width:100%;border-collapse:collapse;background:#111118;border-radius:10px;overflow:hidden}
+    th{background:#25D366;color:#000;padding:12px 16px;text-align:left;font-size:12px;font-weight:700;text-transform:uppercase}
+    td{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06);font-size:14px}
+    .back{color:#25D366;font-size:13px;text-decoration:none;display:inline-block;margin-bottom:20px}
+    .count{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:16px}
+    </style></head><body>
+    <a href="/admin" class="back">← Back to admin</a>
+    <h1>Waitlist signups</h1>
+    <div class="count">${result.rows.length} total signups</div>
+    <table><thead><tr><th>Email</th><th>Signed up</th></tr></thead>
+    <tbody>${rows || '<tr><td colspan="2" style="color:rgba(255,255,255,.3);text-align:center;padding:24px">No signups yet</td></tr>'}</tbody>
+    </table></body></html>`);
+  } catch (err) {
+    console.error('[WAITLIST ERROR]', err.message);
+    res.status(500).send('Error: ' + err.message);
+  }
+});
+
+module.exports = router;
