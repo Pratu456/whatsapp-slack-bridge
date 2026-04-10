@@ -299,14 +299,14 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 <div class="mob-overlay" id="overlay" onclick="closeDrawer()"></div>
 <div class="mob-drawer" id="drawer">
   <div class="sb-section" style="padding-top:8px">Main</div>
-  <div class="sb-link on" id="mob-link-dashboard" onclick="show('dashboard',this);closeDrawer()"><span class="sb-icon">⬛</span>Dashboard</div>
+  <div class="sb-link on" id="mob-link-dashboard" onclick="show('dashboard',this);closeDrawer()"><span class="sb-icon" style="font-size:11px">■</span>Dashboard</div>
   <div class="sb-link" id="mob-link-companies" onclick="show('companies',this);closeDrawer()"><span class="sb-icon">🏢</span>Companies</div>
   <div class="sb-link" id="mob-link-messages" onclick="show('messages',this);closeDrawer()"><span class="sb-icon">💬</span>Messages</div>
 
   <div class="sb-section">Actions</div>
-  <div class="sb-link" id="mob-link-add" onclick="show('add',this);closeDrawer()"><span class="sb-icon">＋</span>Add company</div>
-  <div class="sb-link" onclick="location.reload();closeDrawer()"><span class="sb-icon">↻</span>Refresh</div>
-  <div class="sb-link" onclick="location.reload();closeDrawer()"><span class="sb-icon">↻</span>Refresh</div>
+  <div class="sb-link" id="mob-link-add" onclick="show('add',this);closeDrawer()"><span class="sb-icon">+</span>Add company</div>
+  <div class="sb-link" onclick="location.reload();closeDrawer()"><span class="sb-icon">↺</span>Refresh</div>
+  <div class="sb-link" onclick="location.reload();closeDrawer()"><span class="sb-icon">↺</span>Refresh</div>
 </div>
 
 <aside class="sidebar">
@@ -318,18 +318,18 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   </div>
   <nav class="sb-nav">
     <div class="sb-section">Main</div>
-    <div class="sb-link on" id="desk-link-dashboard" onclick="show('dashboard',this)"><span class="sb-icon">⬛</span>Dashboard<span class="sb-dot"></span></div>
+    <div class="sb-link on" id="desk-link-dashboard" onclick="show('dashboard',this)"><span class="sb-icon" style="font-size:11px">■</span>Dashboard<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-companies" onclick="show('companies',this)"><span class="sb-icon">🏢</span>Companies<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-messages" onclick="show('messages',this)"><span class="sb-icon">💬</span>Messages<span class="sb-dot"></span></div>
     <div class="sb-link" onclick="location.href='/admin/waitlist'"><span class="sb-icon">📧</span>Waitlist<span class="sb-dot"></span></div>
 
     <div class="sb-section">Actions</div>
-    <div class="sb-link" id="desk-link-add" onclick="show('add',this)"><span class="sb-icon">＋</span>Add company<span class="sb-dot"></span></div>
-    <div class="sb-link" onclick="location.reload()"><span class="sb-icon">↻</span>Refresh<span class="sb-dot"></span></div>
+    <div class="sb-link" id="desk-link-add" onclick="show('add',this)"><span class="sb-icon">+</span>Add company<span class="sb-dot"></span></div>
+    <div class="sb-link" onclick="location.reload()"><span class="sb-icon">↺</span>Refresh<span class="sb-dot"></span></div>
   </nav>
   <div class="sb-bottom">
      <div class="sb-link" onclick="location.href='/admin/logout'" style="margin-bottom:12px">
-       <span class="sb-icon">⎋</span>Logout<span class="sb-dot"></span>
+       <span class="sb-icon">←</span>Logout<span class="sb-dot"></span>
      </div>
      <div class="sb-user">
        <div class="sb-avatar">A</div>
@@ -879,16 +879,16 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   </div>
   <nav class="sb-nav">
     <div class="sb-section">Main</div>
-    <a href="/admin" class="sb-link"><span class="sb-icon">⬛</span>Dashboard</a>
-    <a href="/admin?panel=companies" class="sb-link"><span class="sb-icon">���</span>Companies</a>
-    <a href="/admin?panel=messages" class="sb-link"><span class="sb-icon">���</span>Messages</a>
-    <a href="/admin/waitlist" class="sb-link on"><span class="sb-icon">���</span>Waitlist</a>
+    <a href="/admin" class="sb-link"><span class="sb-icon" style="font-size:11px">■</span>Dashboard</a>
+    <a href="/admin?panel=companies" class="sb-link"><span class="sb-icon">Co.</span>Companies</a>
+    <a href="/admin?panel=messages" class="sb-link"><span class="sb-icon">Msg</span>Messages</a>
+    <a href="/admin/waitlist" class="sb-link on"><span class="sb-icon">@</span>Waitlist</a>
     <div class="sb-section">Actions</div>
-    <a href="/admin?panel=add" class="sb-link"><span class="sb-icon">＋</span>Add company</a>
-    <a href="/admin" class="sb-link"><span class="sb-icon">↻</span>Refresh</a>
+    <a href="/admin?panel=add" class="sb-link"><span class="sb-icon">+</span>Add company</a>
+    <a href="/admin" class="sb-link"><span class="sb-icon">↺</span>Refresh</a>
   </nav>
   <div class="sb-bottom">
-    <a href="/admin/logout" class="sb-link" style="margin-bottom:12px;text-decoration:none"><span class="sb-icon">⎋</span>Logout</a>
+    <a href="/admin/logout" class="sb-link" style="margin-bottom:12px;text-decoration:none"><span class="sb-icon">←</span>Logout</a>
     <div class="sb-user">
       <div class="sb-avatar">A</div>
       <div><div class="sb-uname">Admin</div><div class="sb-urole">Syncora admin</div></div>
