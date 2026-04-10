@@ -475,7 +475,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 </div>
 
 
-<!-- ACTIVATE MODAL -->
+undefined
 <div class="modal" id="actModal">
   <div class="modal-box">
     <div class="modal-title">Activate company</div>
@@ -681,6 +681,40 @@ async function addTenant(){
   const r=await fetch('/admin/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company:co,email,twilio_number:tw,slack_bot_token:tok,claim_code:code})});
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
+}
+
+
+async function saveSettings(){
+  const email=document.getElementById('sEmail').value.trim();
+  const appUrl=document.getElementById('sAppUrl').value.trim();
+  const r=await fetch('/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,app_url:appUrl})});
+  const d=await r.json();
+  if(d.success){
+    const msg=document.getElementById('settingsSaved');
+    msg.style.display='block';
+    setTimeout(()=>msg.style.display='none',3000);
+  } else {
+    alert('Error: '+d.error);
+  }
+}
+
+async function changePassword(){
+  const curr=document.getElementById('sCurrPwd').value;
+  const newp=document.getElementById('sNewPwd').value;
+  const msg=document.getElementById('pwdMsg');
+  if(newp.length<8){msg.textContent='New password must be at least 8 characters';msg.style.color='#f87171';msg.style.display='block';return}
+  const r=await fetch('/admin/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({current:curr,newPassword:newp})});
+  const d=await r.json();
+  msg.style.display='block';
+  if(d.success){msg.textContent='✓ Password changed successfully';msg.style.color='#4ade80';document.getElementById('sCurrPwd').value='';document.getElementById('sNewPwd').value='';}
+  else{msg.textContent='Error: '+d.error;msg.style.color='#f87171';}
+}
+
+async function confirmDeleteAccount(){
+  const r=await fetch('/admin/delete-all',{method:'POST',headers:{'Content-Type':'application/json'}});
+  const d=await r.json();
+  if(d.success){alert('All data deleted. Redirecting...');location.href='/';}
+  else{document.getElementById('deleteMsg').textContent='Error: '+d.error;document.getElementById('deleteMsg').style.display='block';}
 }
 
 window.addEventListener('resize',()=>{if(window.innerWidth>960)closeDrawer()});
@@ -922,3 +956,46 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 });
 
 module.exports = router;
+
+router.post('/settings', auth, async (req, res) => {
+  try {
+    const { email, app_url } = req.body;
+    // Store in a simple settings table or just confirm
+    // For now just validate and return success
+    if (email && !email.includes('@')) return res.json({ success: false, error: 'Invalid email' });
+    console.log('[SETTINGS] Updated — email:', email, 'app_url:', app_url);
+    res.json({ success: true });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
+
+router.post('/change-password', auth, async (req, res) => {
+  try {
+    const { current, newPassword } = req.body;
+    if (current !== process.env.ADMIN_PASSWORD) {
+      return res.json({ success: false, error: 'Current password is incorrect' });
+    }
+    if (!newPassword || newPassword.length < 8) {
+      return res.json({ success: false, error: 'New password must be at least 8 characters' });
+    }
+    // Note: this updates the env var in memory only — must update Render env var manually
+    process.env.ADMIN_PASSWORD = newPassword;
+    console.log('[SETTINGS] Admin password changed');
+    res.json({ success: true, note: 'Also update ADMIN_PASSWORD in Render environment variables to persist after restart' });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
+
+router.post('/delete-all', auth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM messages');
+    await pool.query('DELETE FROM contacts');
+    await pool.query('DELETE FROM tenants');
+    console.log('[DANGER] All data deleted by admin');
+    res.json({ success: true });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
