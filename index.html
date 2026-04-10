@@ -683,6 +683,8 @@ if(ww)wfObs.observe(ww);
     window.location.href='/onboarding?email='+encodeURIComponent(e.value);
   }
 </script>
+<!-- COOKIE OVERLAY -->
+<div id="cookieOverlay" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.85);backdrop-filter:blur(8px)"></div>
 <!-- COOKIE BANNER -->
 <div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#0f0f16;border-top:1px solid rgba(255,255,255,.1);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
   <p style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6;max-width:700px;margin:0">Wir verwenden Cookies, um die Funktionalität unserer Website zu gewährleisten. Durch die weitere Nutzung stimmen Sie der Verwendung von Cookies zu. <a href="/privacy.html" style="color:#25D366;text-decoration:none">Mehr erfahren</a></p>
@@ -692,9 +694,21 @@ if(ww)wfObs.observe(ww);
   </div>
 </div>
 <script>
-function acceptCookies(){document.getElementById("cookieBanner").style.display="none";localStorage.setItem("cookieConsent","accepted")}
-function declineCookies(){document.getElementById("cookieBanner").style.display="none";localStorage.setItem("cookieConsent","declined")}
-(function(){if(!localStorage.getItem("cookieConsent")){document.getElementById("cookieBanner").style.display="flex"}})()
+function acceptCookies(){
+  document.getElementById("cookieBanner").style.display="none";
+  document.getElementById("cookieOverlay").style.display="none";
+  localStorage.setItem("cookieConsent","accepted");
+}
+function declineCookies(){
+  localStorage.setItem("cookieConsent","declined");
+  window.location.href="https://www.google.com";
+}
+(function(){
+  if(!localStorage.getItem("cookieConsent")){
+    document.getElementById("cookieBanner").style.display="flex";
+    document.getElementById("cookieOverlay").style.display="block";
+  }
+})()
 </script>
 </body>
 </html>
