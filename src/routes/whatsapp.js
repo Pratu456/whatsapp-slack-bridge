@@ -7,7 +7,8 @@ const { downloadTwilioMedia, sendWhatsApp } = require('../services/twilioService
 const { isDuplicate, markProcessed }        = require('../cache/redis');
 const { getTenantForIncomingMessage,
         getOrCreateChannelForTenant,
-        postToTenantSlack }                 = require('../services/tenantService');
+        postToTenantSlack,
+        ensureChannelMembers,  }                 = require('../services/tenantService');
 const { uploadMediaToSlack }                = require('../services/slackService');
 require('dotenv').config();
 
@@ -62,6 +63,9 @@ router.post('/webhook', async (req, res) => {
 
     // 4. Get or create Slack channel
     const channelId = await getOrCreateChannelForTenant(tenant, waNumber, ProfileName);
+    ensureChannelMembers(tenant, channelId).catch(err =>
+    console.warn('[CHANNEL] ensureChannelMembers failed:', err.message)
+    );
 
     // 5. If new contact, post welcome banner in Slack
     if (isNew) {

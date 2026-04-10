@@ -185,11 +185,49 @@ const createTenant = async ({ companyName, twilioNumber, slackBotToken, slackTea
   );
   return result.rows[0];
 };
+  /**
+   * Re-invite all workspace members who left the channel.
+   * Called on every inbound message to ensure no one is locked out.
+   */
+  const ensureChannelMembers = async (tenant, channelId) => {
+    try {
+      const slack = new WebClient(tenant.slack_bot_token);
 
+      // Get current channel members
+      const channelInfo = await slack.conversations.members({ channel: channelId });
+      const currentMembers = new Set(channelInfo.members);
+
+      // Get all workspace members
+      const memberList = await slack.users.list();
+      const humanIds = memberList.members
+        .filter(m => !m.is_bot && !m.deleted && m.id !== 'USLACKBOT')
+        .map(m => m.id);
+
+      // Find anyone who left
+      const missing = humanIds.filter(id => !currentMembers.has(id));
+      if (missing.length === 0) return;
+
+      // Re-invite in batches of 30
+      for (let i = 0; i < missing.length; i += 30) {
+        const batch = missing.slice(i, i + 30);
+        try {
+          await slack.conversations.invite({ channel: channelId, users: batch.join(',') });
+          console.log(`[CHANNEL] Re-invited ${batch.length} missing members to ${channelId}`);
+        } catch (err) {
+          if (err.data?.error !== 'already_in_channel') {
+            console.warn('[CHANNEL] Re-invite error:', err.data?.error);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[CHANNEL] ensureChannelMembers error:', err.message);
+    }
+  };
 module.exports = {
   getTenantForIncomingMessage,
   getOrCreateChannelForTenant,
   getWaNumberForTenant,
   postToTenantSlack,
   createTenant,
+  ensureChannelMembers, 
 };
