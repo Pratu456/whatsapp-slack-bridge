@@ -528,18 +528,12 @@ function show(name,el){
   const pt=document.getElementById('ptitle');
   if(pt)pt.textContent=titles[name]||name;
   if(name==='messages')loadMessages();
-  
-}
-(function(){
-  const p=new URLSearchParams(window.location.search).get("panel");
-  if(p){
-    const el=document.getElementById("desk-link-"+p);
-    show(p,el);
-  }
-})();
   if(name==='add')initAddForm();
 }
-
+(function(){
+  const p=new URLSearchParams(window.location.search).get('panel');
+  if(p){const el=document.getElementById('desk-link-'+p);show(p,el);}
+})();
 function toggleDrawer(){
   document.getElementById('hbg').classList.toggle('open');
   document.getElementById('drawer').classList.toggle('open');
