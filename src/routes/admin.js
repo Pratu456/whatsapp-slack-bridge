@@ -880,9 +880,9 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   <nav class="sb-nav">
     <div class="sb-section">Main</div>
     <a href="/admin" class="sb-link"><span class="sb-icon" style="font-size:11px">â– </span>Dashboard</a>
-    <a href="/admin?panel=companies" class="sb-link"><span class="sb-icon">Co.</span>Companies</a>
-    <a href="/admin?panel=messages" class="sb-link"><span class="sb-icon">Msg</span>Messages</a>
-    <a href="/admin/waitlist" class="sb-link on"><span class="sb-icon">@</span>Waitlist</a>
+    <a href="/admin?panel=companies" class="sb-link"><span class="sb-icon">í¿¢</span>Companies</a>
+    <a href="/admin?panel=messages" class="sb-link"><span class="sb-icon">í²¬</span>Messages</a>
+    <a href="/admin/waitlist" class="sb-link on"><span class="sb-icon">âœ‰</span>Waitlist</a>
     <div class="sb-section">Actions</div>
     <a href="/admin?panel=add" class="sb-link"><span class="sb-icon">+</span>Add company</a>
     <a href="/admin" class="sb-link"><span class="sb-icon">â†º</span>Refresh</a>
