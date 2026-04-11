@@ -78,17 +78,17 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
       [waNumber, tenant.id]
     );
     if (existing.rows.length > 0) return existing.rows[0].slack_channel;
-  
+
     const slack = new WebClient(tenant.slack_bot_token);
-  
+
     // 2. Use pre-configured channel if set, otherwise create new one
     let channelId;
-  
+
     if (tenant.default_slack_channel) {
       // Use existing channel configured by admin
       channelId = tenant.default_slack_channel;
       console.log(`[CHANNEL] Using existing channel ${channelId} for ${waNumber}`);
-    
+
       // Make sure bot is in the channel
       try {
         await slack.conversations.join({ channel: channelId });
@@ -109,7 +109,7 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
           : null;
         return safeName ? `wa-${safeName}` : 'wa-' + waNumber.replace(/\D/g, '').slice(-10);
       })();
-    
+
       try {
         const result = await slack.conversations.create({
           name: channelName,
@@ -126,7 +126,7 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
           throw err;
         }
       }
-    
+
       // Set channel topic
       try {
         await slack.conversations.setTopic({
@@ -134,14 +134,14 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
           topic: `WhatsApp: ${waNumber}${displayName ? ' · ' + displayName : ''}`,
         });
       } catch (e) { /* non-critical */ }
-    
+
       // Invite all workspace members
       try {
         const memberList = await slack.users.list();
         const humanIds = memberList.members
           .filter(m => !m.is_bot && !m.deleted && m.id !== 'USLACKBOT')
           .map(m => m.id);
-      
+
         for (let i = 0; i < humanIds.length; i += 30) {
           const batch = humanIds.slice(i, i + 30);
           try {
@@ -156,7 +156,7 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
         console.warn('Could not invite members:', err.message);
       }
     }
-  
+
     // 3. Save contact mapping
     await pool.query(
       `INSERT INTO contacts (wa_number, slack_channel, display_name, tenant_id, last_active)
@@ -164,13 +164,13 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
        ON CONFLICT (wa_number, tenant_id) DO UPDATE SET last_active = NOW()`,
       [waNumber, channelId, displayName || waNumber, tenant.id]
     );
-  
+
     // 4. Post welcome message
     await slack.chat.postMessage({
       channel: channelId,
       text: `:phone: New WhatsApp contact: *${displayName || waNumber}*\nNumber: ${waNumber}`,
     });
-  
+
   return channelId;
 };
 /**
@@ -187,15 +187,37 @@ const getWaNumberForTenant = async (channelId, tenantId) => {
 /**
  * Post message to Slack using tenant's own bot token
  */
-const postToTenantSlack = async (tenant, channelId, text, senderName) => {
-  const slack = new WebClient(tenant.slack_bot_token);
-  const result = await slack.chat.postMessage({
-    channel: channelId,
-    text: `*${senderName}* (WhatsApp):\n${text}`,
-  });
-  return result.ts;
-};
-
+  const postToTenantSlack = async (tenant, channelId, text, senderName, waNumber) => {
+    const slack = new WebClient(tenant.slack_bot_token);
+  
+    const result = await slack.chat.postMessage({
+      channel: channelId,
+      blocks: [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `*${senderName}* (WhatsApp · ${waNumber}):\n${text}`,
+          },
+        },
+        {
+          type: 'actions',
+          elements: [
+            {
+              type: 'button',
+              text: { type: 'plain_text', text: `Reply to ${senderName}` },
+              action_id: 'reply_to_wa',
+              value: waNumber,
+              style: 'primary',
+            },
+          ],
+        },
+      ],
+      text: `${senderName}: ${text}`, // fallback text
+    });
+  
+    return result.ts;
+  };
 /**
  * Register a new tenant manually
  */

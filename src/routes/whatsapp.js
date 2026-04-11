@@ -121,8 +121,8 @@ router.post('/webhook', async (req, res) => {
       });
 
     } else {
-      slackTs = await postToTenantSlack(tenant, channelId, Body, ProfileName || waNumber);
-      await logMessage({
+        slackTs = await postToTenantSlack(tenant, channelId, Body, ProfileName || waNumber, waNumber);   
+        await logMessage({
         waNumber, body: Body, direction: 'inbound',
         twilioSid: MessageSid, slackTs, tenantId: tenant.id,
       });

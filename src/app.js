@@ -307,6 +307,110 @@ server.post('/slack/commands', express.urlencoded({ extended: true }), async (re
      res.json({ success: false, error: err.message });
    }
  });
+
+ // ── Slack interactions (button clicks) ───────────────────
+server.post('/slack/interactions', express.urlencoded({ extended: true }), async (req, res) => {
+  try {
+    const payload = JSON.parse(req.body.payload);
+
+    // Respond immediately to Slack
+    res.status(200).end();
+
+    if (payload.type === 'view_submission') {
+      // Handle modal submission
+      const values = payload.view.state.values;
+      const replyText = values.reply_input.reply_text.value;
+      const waNumber = payload.view.private_metadata;
+      const channelId = payload.view.callback_id.replace('reply_modal_', '');
+
+      // Get tenant for this channel
+      const tenantResult = await pool.query(
+        `SELECT t.* FROM tenants t
+         JOIN contacts c ON c.tenant_id = t.id
+         WHERE c.slack_channel = $1 AND t.is_active = TRUE LIMIT 1`,
+        [channelId]
+      );
+      if (!tenantResult.rows.length) return;
+      const tenant = tenantResult.rows[0];
+
+      // Send to WhatsApp
+      const sid = await sendWhatsApp(waNumber, replyText, tenant.twilio_number);
+      await logMessage({
+        waNumber,
+        body: replyText,
+        direction: 'outbound',
+        twilioSid: sid,
+        tenantId: tenant.id,
+      });
+
+      console.log('[REPLY MODAL] Sent to', waNumber, ':', replyText);
+
+      // Post confirmation in Slack
+      const { WebClient } = require('@slack/web-api');
+      const slack = new WebClient(tenant.slack_bot_token);
+      await slack.chat.postMessage({
+        channel: channelId,
+        text: `✅ *Reply sent to ${waNumber}:*\n${replyText}`,
+      });
+
+    } else if (payload.type === 'block_actions') {
+      const action = payload.actions[0];
+      if (action.action_id === 'reply_to_wa') {
+        const waNumber = action.value;
+        const channelId = payload.channel.id;
+        const triggerId = payload.trigger_id;
+
+        // Get tenant bot token
+        const tenantResult = await pool.query(
+          `SELECT t.* FROM tenants t
+           JOIN contacts c ON c.tenant_id = t.id
+           WHERE c.slack_channel = $1 AND t.is_active = TRUE LIMIT 1`,
+          [channelId]
+        );
+        if (!tenantResult.rows.length) return;
+        const tenant = tenantResult.rows[0];
+
+        const { WebClient } = require('@slack/web-api');
+        const slack = new WebClient(tenant.slack_bot_token);
+
+        // Open reply modal
+        await slack.views.open({
+          trigger_id: triggerId,
+          view: {
+            type: 'modal',
+            callback_id: `reply_modal_${channelId}`,
+            private_metadata: waNumber,
+            title: { type: 'plain_text', text: 'Reply to WhatsApp' },
+            submit: { type: 'plain_text', text: 'Send' },
+            close: { type: 'plain_text', text: 'Cancel' },
+            blocks: [
+              {
+                type: 'section',
+                text: {
+                  type: 'mrkdwn',
+                  text: `Replying to *${waNumber}* on WhatsApp`,
+                },
+              },
+              {
+                type: 'input',
+                block_id: 'reply_input',
+                element: {
+                  type: 'plain_text_input',
+                  action_id: 'reply_text',
+                  multiline: true,
+                  placeholder: { type: 'plain_text', text: 'Type your reply...' },
+                },
+                label: { type: 'plain_text', text: 'Message' },
+              },
+            ],
+          },
+        });
+      }
+    }
+  } catch (err) {
+    console.error('[INTERACTIONS ERROR]', err.message);
+  }
+});
 // ── Start ─────────────────────────────────────────────────
 const start = async () => {
   try {
