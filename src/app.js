@@ -117,6 +117,7 @@ server.use('/media', express.static(path.join(__dirname, 'tmp')));
 async function handleSlackEvent(event) {
   if (event.type !== 'message') return;
   if (event.subtype === 'bot_message' || event.bot_id) return;
+  if (event.subtype === 'channel_join' || event.subtype === 'channel_leave' || event.subtype === 'channel_topic' || event.subtype === 'channel_purpose') return;
   if (!event.text && (!event.files || event.files.length === 0)) return;
 
   console.log('[SLACK EVENT] channel:', event.channel, '| text:', event.text?.slice(0, 50));
