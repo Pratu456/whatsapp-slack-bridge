@@ -945,7 +945,28 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 </style>
 </head>
 <body>
-
+<aside class="sidebar">
+  <div class="sb-top">
+    <img src="/logo_text.png" alt="Syncora" style="height:26px;width:auto;filter:brightness(0) invert(1)"/>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Main</div>
+    <a href="/admin" class="sb-link"><span class="sb-icon">⬛</span>Dashboard</a>
+    <a href="/admin?panel=companies" class="sb-link"><span class="sb-icon">🏢</span>Companies</a>
+    <a href="/admin?panel=messages" class="sb-link"><span class="sb-icon">💬</span>Messages</a>
+    <a href="/admin/waitlist" class="sb-link on"><span class="sb-icon">📧</span>Waitlist</a>
+    <div class="sb-section">Actions</div>
+    <a href="/admin?panel=add" class="sb-link"><span class="sb-icon">+</span>Add company</a>
+    <a href="/admin" class="sb-link"><span class="sb-icon">↺</span>Refresh</a>
+  </nav>
+  <div class="sb-bottom">
+    <a href="/admin/logout" class="sb-link" style="margin-bottom:12px;text-decoration:none"><span class="sb-icon">←</span>Logout</a>
+    <div class="sb-user">
+      <div class="sb-avatar">A</div>
+      <div><div class="sb-uname">Admin</div><div class="sb-urole">Syncora admin</div></div>
+    </div>
+  </div>
+</aside>
 
 <div class="main">
   <div class="topbar">
