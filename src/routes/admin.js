@@ -309,35 +309,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   <div class="sb-link" onclick="location.reload();closeDrawer()"><span class="sb-icon">↺</span>Refresh</div>
 </div>
 
-// <aside class="sidebar">
-//   <div class="sb-top">
-//     <div class="sb-logo">
-//       <img src="/logo_text.png" alt="Syncora" style="height:26px;width:auto;filter:brightness(0) invert(1)"/>
 
-//     </div>
-//   </div>
-//   <nav class="sb-nav">
-//     <div class="sb-section">Main</div>
-//     <div class="sb-link on" id="desk-link-dashboard" onclick="show('dashboard',this)"><span class="sb-icon">⬛</span>Dashboard<span class="sb-dot"></span></div>
-//     <div class="sb-link" id="desk-link-companies" onclick="show('companies',this)"><span class="sb-icon">🏢</span>Companies<span class="sb-dot"></span></div>
-//     <div class="sb-link" id="desk-link-messages" onclick="show('messages',this)"><span class="sb-icon">💬</span>Messages<span class="sb-dot"></span></div>
-//     <div class="sb-link" onclick="location.href='/admin/waitlist'"><span class="sb-icon">📧</span>Waitlist<span class="sb-dot"></span></div>
-
-//     <div class="sb-section">Actions</div>
-//     <div class="sb-link" id="desk-link-settings" onclick="show('settings',this)"><span class="sb-icon">⚙</span>Settings<span class="sb-dot"></span></div>
-//     <div class="sb-link" id="desk-link-add" onclick="show('add',this)"><span class="sb-icon">+</span>Add company<span class="sb-dot"></span></div>
-//     <div class="sb-link" onclick="location.reload()"><span class="sb-icon">↺</span>Refresh<span class="sb-dot"></span></div>
-//   </nav>
-//   <div class="sb-bottom">
-//      <div class="sb-link" onclick="location.href='/admin/logout'" style="margin-bottom:12px">
-//        <span class="sb-icon">←</span>Logout<span class="sb-dot"></span>
-//      </div>
-//      <div class="sb-user">
-//        <div class="sb-avatar">A</div>
-//        <div><div class="sb-uname">Admin</div><div class="sb-urole">Syncora admin</div></div>
-//      </div>
-//    </div>
-// </aside>
 
 <div class="main">
   <div class="topbar">
