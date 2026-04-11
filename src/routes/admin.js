@@ -324,6 +324,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div class="sb-link" onclick="location.href='/admin/waitlist'"><span class="sb-icon">📧</span>Waitlist<span class="sb-dot"></span></div>
 
     <div class="sb-section">Actions</div>
+    <div class="sb-link" id="desk-link-settings" onclick="show('settings',this)"><span class="sb-icon">S</span>Settings<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-add" onclick="show('add',this)"><span class="sb-icon">+</span>Add company<span class="sb-dot"></span></div>
     <div class="sb-link" onclick="location.reload()"><span class="sb-icon">↺</span>Refresh<span class="sb-dot"></span></div>
   </nav>
