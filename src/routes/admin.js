@@ -484,7 +484,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
         <div style="width:44px;height:44px;border-radius:12px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:20px">⚙</div>
       </div>
       <div style="max-width:680px;margin:0 auto 0 0;">
-        <div class="card" style="margin-bottom:16px">
+        <div class="card" style="margin-bottom:16px;max-width:680px">
           <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(37,211,102,.1);color:#25D366;font-weight:800">✦</div><div><div class="card-hd-title">Platform info</div><div class="card-hd-sub">Update your platform details</div></div></div></div>
           <div class="form-grid" style="margin-top:16px">
             <div class="fg"><label>Admin email</label><input type="email" id="sEmail" placeholder="admin@company.com"/></div>
@@ -493,7 +493,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <button class="btn-primary" onclick="saveSettings()">Save changes</button>
           <div id="settingsSaved" style="display:none;font-size:13px;color:#4ade80;margin-top:10px">Changes saved successfully</div>
         </div>
-        <div class="card" style="margin-bottom:16px">
+        <div class="card" style="margin-bottom:16px;max-width:680px">
           <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(59,130,246,.1);color:#60a5fa;font-weight:800">⚿</div><div><div class="card-hd-title">Change password</div><div class="card-hd-sub">Update your admin password</div></div></div></div>
           <div class="form-grid" style="margin-top:16px">
             <div class="fg"><label>Current password</label><input type="password" id="sCurrPwd" placeholder="Current password"/></div>
@@ -502,7 +502,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <button class="btn-primary" onclick="changePassword()">Change password</button>
           <div id="pwdMsg" style="display:none;font-size:13px;margin-top:10px"></div>
         </div>
-        <div class="card" style="border-color:rgba(239,68,68,.2)">
+        <div class="card" style="border-color:rgba(239,68,68,.2);max-width:680px">
           <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(239,68,68,.1)">!</div><div><div class="card-hd-title" style="color:#f87171">Danger zone</div><div class="card-hd-sub">Irreversible actions</div></div></div></div>
           <p style="font-size:13px;color:var(--t4);margin:16px 0;line-height:1.6">Deleting all data will permanently remove all companies, contacts, and message history. This cannot be undone.</p>
           <button class="btn-xs btn-xs-red" style="padding:8px 16px;font-size:13px" onclick="confirmDeleteAccount()">Delete all data</button>
