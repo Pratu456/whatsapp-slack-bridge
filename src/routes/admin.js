@@ -475,7 +475,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   </div>
 </div>
 
-    <div id="p-settings" class="panel">
+    <div id="p-settings" class="panel" style="padding-left:0">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
         <div>
           <div style="font-size:18px;font-weight:800;color:var(--t)">Settings</div>
