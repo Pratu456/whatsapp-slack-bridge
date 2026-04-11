@@ -324,7 +324,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div class="sb-link" onclick="location.href='/admin/waitlist'"><span class="sb-icon">📧</span>Waitlist<span class="sb-dot"></span></div>
 
     <div class="sb-section">Actions</div>
-    <div class="sb-link" id="desk-link-settings" onclick="show('settings',this)"><span class="sb-icon">S</span>Settings<span class="sb-dot"></span></div>
+    <div class="sb-link" id="desk-link-settings" onclick="show('settings',this)"><span class="sb-icon">⚙</span>Settings<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-add" onclick="show('add',this)"><span class="sb-icon">+</span>Add company<span class="sb-dot"></span></div>
     <div class="sb-link" onclick="location.reload()"><span class="sb-icon">↺</span>Refresh<span class="sb-dot"></span></div>
   </nav>
@@ -476,11 +476,16 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 </div>
 
     <div id="p-settings" class="panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:18px;font-weight:800;color:var(--t)">Settings</div>
+          <div style="font-size:13px;color:var(--t4);margin-top:2px">Manage your Syncora admin account</div>
+        </div>
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:20px">⚙</div>
+      </div>
       <div style="max-width:680px">
-        <div style="font-size:18px;font-weight:800;color:var(--t);margin-bottom:4px">Settings</div>
-        <div style="font-size:13px;color:var(--t4);margin-bottom:24px">Manage your Syncora admin account</div>
         <div class="card" style="margin-bottom:16px">
-          <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(37,211,102,.1)">S</div><div><div class="card-hd-title">Platform info</div><div class="card-hd-sub">Update your platform details</div></div></div></div>
+          <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(37,211,102,.1);color:#25D366;font-weight:800">✦</div><div><div class="card-hd-title">Platform info</div><div class="card-hd-sub">Update your platform details</div></div></div></div>
           <div class="form-grid" style="margin-top:16px">
             <div class="fg"><label>Admin email</label><input type="email" id="sEmail" placeholder="admin@company.com"/></div>
             <div class="fg"><label>App URL</label><input type="text" id="sAppUrl" placeholder="https://yourapp.onrender.com"/><div class="hint">Used for media forwarding</div></div>
@@ -489,7 +494,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <div id="settingsSaved" style="display:none;font-size:13px;color:#4ade80;margin-top:10px">Changes saved successfully</div>
         </div>
         <div class="card" style="margin-bottom:16px">
-          <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(59,130,246,.1)">P</div><div><div class="card-hd-title">Change password</div><div class="card-hd-sub">Update your admin password</div></div></div></div>
+          <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(59,130,246,.1);color:#60a5fa;font-weight:800">⚿</div><div><div class="card-hd-title">Change password</div><div class="card-hd-sub">Update your admin password</div></div></div></div>
           <div class="form-grid" style="margin-top:16px">
             <div class="fg"><label>Current password</label><input type="password" id="sCurrPwd" placeholder="Current password"/></div>
             <div class="fg"><label>New password</label><input type="password" id="sNewPwd" placeholder="New password (min 8 chars)"/></div>
