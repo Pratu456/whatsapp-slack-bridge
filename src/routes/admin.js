@@ -526,6 +526,7 @@ undefined
     <div class="fg"><label>Twilio WhatsApp number</label>
       <input type="text" id="mTwilio" placeholder="+14155238886"/>
     </div>
+    <div class="fg"><label>Default Slack channel <span style="font-weight:400;color:rgba(255,255,255,.3)">(optional)</span></label><input type="text" id="mSlackChannel" placeholder="e.g. C0XXXXXXXXX"/><div class="hint">Leave blank to auto-create per contact. For shared channel: right-click channel in Slack, View channel details, copy Channel ID</div></div>
 
 
     <div class="divider"></div>
