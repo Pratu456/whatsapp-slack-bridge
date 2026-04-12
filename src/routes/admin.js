@@ -662,7 +662,6 @@ async function confirmActivate(){
   const email=document.getElementById('mEmail').value.trim();
   const twilio=document.getElementById("mTwilio").value.trim();
   const slackChannel=document.getElementById("mSlackChannel").value.trim();
-  const slackChannel=document.getElementById("mSlackChannel").value.trim();
   const customVisible=document.getElementById('mCustomWrap').style.display!=='none';
   const code=customVisible?document.getElementById('mCustomCode').value.trim().toLowerCase():currentModalCode;
 
