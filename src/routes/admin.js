@@ -660,7 +660,9 @@ document.getElementById('actModal').addEventListener('click',function(e){if(e.ta
 async function confirmActivate(){
   const id=document.getElementById('mId').value;
   const email=document.getElementById('mEmail').value.trim();
-  const twilio=document.getElementById('mTwilio').value.trim();
+  const twilio=document.getElementById("mTwilio").value.trim();
+  const slackChannel=document.getElementById("mSlackChannel").value.trim();
+  const slackChannel=document.getElementById("mSlackChannel").value.trim();
   const customVisible=document.getElementById('mCustomWrap').style.display!=='none';
   const code=customVisible?document.getElementById('mCustomCode').value.trim().toLowerCase():currentModalCode;
 
@@ -673,7 +675,7 @@ async function confirmActivate(){
   const btn=document.getElementById('mConfirmBtn');
   btn.disabled=true;btn.textContent='Activating...';
 
-  const r=await fetch('/admin/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,email,twilio_number:twilio,claim_code:code})});
+  const r=await fetch('/admin/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,email,twilio_number:twilio,claim_code:code,default_slack_channel:slackChannel})});
   const d=await r.json();
 
   if(d.success){
@@ -812,7 +814,7 @@ router.get('/tenant/:id', auth, async (req, res) => {
 // ── Activate (saves email + sends activation email) ─────────
 router.post('/activate', auth, async (req, res) => {
   try {
-    const { id, email, twilio_number, claim_code } = req.body;
+    const { id, email, twilio_number, claim_code, default_slack_channel } = req.body;
 
     const validationError = validateClaimCode(claim_code);
     if (validationError) return res.json({ success: false, error: validationError });
@@ -828,8 +830,8 @@ router.post('/activate', auth, async (req, res) => {
 
     // Save email + activate
     await pool.query(
-      'UPDATE tenants SET is_active = TRUE, twilio_number = $1, claim_code = $2, email = $3 WHERE id = $4',
-      [twilio_number, claim_code.toLowerCase().trim(), email.trim(), id]
+      'UPDATE tenants SET is_active = TRUE, twilio_number = $1, claim_code = $2, email = $3, default_slack_channel = $4 WHERE id = $5',
+      [twilio_number, claim_code.toLowerCase().trim(), email.trim(), default_slack_channel || null, id]
     );
 
     // Send activation email
