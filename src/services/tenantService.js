@@ -77,7 +77,18 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
       'SELECT slack_channel FROM contacts WHERE wa_number = $1 AND tenant_id = $2',
       [waNumber, tenant.id]
     );
-    if (existing.rows.length > 0) return existing.rows[0].slack_channel;
+    if (existing.rows.length > 0) {
+    // If tenant has a default channel set, update existing contact to use it
+    if (tenant.default_slack_channel && existing.rows[0].slack_channel !== tenant.default_slack_channel) {
+      await pool.query(
+        'UPDATE contacts SET slack_channel = $1 WHERE wa_number = $2 AND tenant_id = $3',
+        [tenant.default_slack_channel, waNumber, tenant.id]
+      );
+      console.log('[CHANNEL] Updated contact', waNumber, 'to shared channel', tenant.default_slack_channel);
+      return tenant.default_slack_channel;
+    }
+    return existing.rows[0].slack_channel;
+  }
 
     const slack = new WebClient(tenant.slack_bot_token);
 
