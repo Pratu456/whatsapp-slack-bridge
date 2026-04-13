@@ -899,6 +899,11 @@ router.get('/waitlist', auth, async (req, res) => {
         <td style="color:rgba(255,255,255,.4);font-size:12px">
           ${new Date(r.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}
         </td>
+        <td>
+          <button onclick="sendInvite('${r.email}',this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">
+            Send invite →
+          </button>
+        </td>
       </tr>`).join('');
     res.send(`<!DOCTYPE html>
 <html lang="en">
@@ -973,13 +978,35 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div class="card">
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Email</th><th>Signed up</th></tr></thead>
+          <thead><tr><th>Email</th><th>Signed up</th><th>Action</th></tr></thead>
           <tbody>${rows || '<tr><td colspan="2" style="color:rgba(255,255,255,.3);text-align:center;padding:24px">No signups yet</td></tr>'}</tbody>
         </table>
       </div>
     </div>
   </div>
 </div>
+<script>
+async function sendInvite(email, btn) {
+  if(!confirm('Send invite to ' + email + '?')) return;
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  const r = await fetch('/admin/waitlist-invite', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ email })
+  });
+  const d = await r.json();
+  if(d.success) {
+    btn.textContent = '✓ Sent';
+    btn.style.color = '#4ade80';
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'Send invite →';
+    alert('Error: ' + d.error);
+  }
+}
+</script>
+
 </body></html>`);
   } catch (err) {
     console.error('[WAITLIST ERROR]', err.message);
@@ -1023,6 +1050,19 @@ router.post('/delete-all', auth, async (req, res) => {
     console.log('[DANGER] All data deleted by admin');
     res.json({ success: true });
   } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
+router.post('/waitlist-invite', auth, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.json({ success: false, error: 'Email required' });
+    const { sendWaitlistInviteEmail } = require('../services/emailService');
+    await sendWaitlistInviteEmail({ to: email });
+    console.log('[WAITLIST] Invite sent to:', email);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[WAITLIST INVITE ERROR]', err.message);
     res.json({ success: false, error: err.message });
   }
 });

@@ -289,24 +289,33 @@ server.post('/slack/commands', express.urlencoded({ extended: true }), async (re
  
  // ── Waitlist signup ───────────────────────────────────────
  server.post('/waitlist', async (req, res) => {
-   try {
-     const { email } = req.body;
-     if (!email || !email.includes('@')) {
-       return res.json({ success: false, error: 'Invalid email' });
-     }
-     await pool.query(
-       `INSERT INTO waitlist (email, created_at) 
-        VALUES ($1, NOW()) 
-        ON CONFLICT (email) DO NOTHING`,
-       [email.trim().toLowerCase()]
-     );
-     console.log('[WAITLIST] New signup:', email);
-     res.json({ success: true });
-   } catch (err) {
-     console.error('[WAITLIST ERROR]', err.message);
-     res.json({ success: false, error: err.message });
-   }
- });
+    try {
+      const { email } = req.body;
+      if (!email || !email.includes('@')) {
+        return res.json({ success: false, error: 'Invalid email' });
+      }
+      const result = await pool.query(
+        `INSERT INTO waitlist (email, created_at)
+         VALUES ($1, NOW())
+         ON CONFLICT (email) DO NOTHING
+         RETURNING id`,
+        [email.trim().toLowerCase()]
+      );
+      if (result.rows.length) {
+        // New signup — send confirmation email
+        try {
+          await sendWaitlistConfirmationEmail({ to: email.trim().toLowerCase() });
+        } catch (emailErr) {
+          console.error('[WAITLIST EMAIL ERROR]', emailErr.message);
+        }
+        console.log('[WAITLIST] New signup:', email);
+      }
+      res.json({ success: true });
+    } catch (err) {
+      console.error('[WAITLIST ERROR]', err.message);
+      res.json({ success: false, error: err.message });
+    }
+  });
 
  // ── Slack interactions (button clicks) ───────────────────
 server.post('/slack/interactions', express.urlencoded({ extended: true }), async (req, res) => {
