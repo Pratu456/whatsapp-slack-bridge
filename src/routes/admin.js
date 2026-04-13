@@ -442,7 +442,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
       
     <!-- ADD COMPANY -->
     <div id="p-add" class="panel">
-      <div style="max-width:680px;margin:0 auto 0 0;">
+      <div style="max-width:100%;">
         <div style="font-size:18px;font-weight:800;color:var(--t);margin-bottom:4px">Add new company</div>
         <div style="font-size:13px;color:var(--t4);margin-bottom:24px">Manually onboard a company to the platform</div>
         <div class="card">
@@ -480,7 +480,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
         </div>
         <div style="width:44px;height:44px;border-radius:12px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:20px">⚙</div>
       </div>
-      <div style="max-width:680px;margin:0 auto 0 0;">
+      <div style="max-width:100%;">
         <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(37,211,102,.1);color:#25D366;font-weight:800">✦</div><div><div class="card-hd-title">Platform info</div><div class="card-hd-sub">Update your platform details</div></div></div></div>
           <div class="form-grid" style="margin-top:16px">
