@@ -347,7 +347,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     </div>
   </div>
 
-  <div class="content">
+ 
 
     <!-- DASHBOARD -->
     <div id="p-dashboard" class="panel on">
