@@ -304,8 +304,8 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   <div class="sb-link" id="mob-link-messages" onclick="show('messages',this);closeDrawer()"><span class="sb-icon">💬</span>Messages</div>
 
   <div class="sb-section">Actions</div>
+  <div class="sb-link" id="mob-link-settings" onclick="show('settings',this);closeDrawer()"><span class="sb-icon">⚙</span>Settings</div>
   <div class="sb-link" id="mob-link-add" onclick="show('add',this);closeDrawer()"><span class="sb-icon">+</span>Add company</div>
-  <div class="sb-link" onclick="location.reload();closeDrawer()"><span class="sb-icon">↺</span>Refresh</div>
   <div class="sb-link" onclick="location.reload();closeDrawer()"><span class="sb-icon">↺</span>Refresh</div>
 </div>
 
@@ -313,7 +313,6 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   <div class="sb-top">
     <div class="sb-logo">
       <img src="/logo_text.png" alt="Syncora" style="height:26px;width:auto;filter:brightness(0) invert(1)"/>
-
     </div>
   </div>
   <nav class="sb-nav">
@@ -472,10 +471,8 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
       </div>
     </div>
 
-  </div>
-</div>
-
-    <div id="p-settings" class="panel" style="padding-left:0">
+    <!-- SETTINGS -->
+    <div id="p-settings" class="panel">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
         <div>
           <div style="font-size:18px;font-weight:800;color:var(--t)">Settings</div>
@@ -484,7 +481,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
         <div style="width:44px;height:44px;border-radius:12px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:20px">⚙</div>
       </div>
       <div style="max-width:680px;margin:0 auto 0 0;">
-        <div class="card" style="margin-bottom:16px;max-width:680px">
+        <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(37,211,102,.1);color:#25D366;font-weight:800">✦</div><div><div class="card-hd-title">Platform info</div><div class="card-hd-sub">Update your platform details</div></div></div></div>
           <div class="form-grid" style="margin-top:16px">
             <div class="fg"><label>Admin email</label><input type="email" id="sEmail" placeholder="admin@company.com"/></div>
@@ -493,7 +490,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <button class="btn-primary" onclick="saveSettings()">Save changes</button>
           <div id="settingsSaved" style="display:none;font-size:13px;color:#4ade80;margin-top:10px">Changes saved successfully</div>
         </div>
-        <div class="card" style="margin-bottom:16px;max-width:680px">
+        <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(59,130,246,.1);color:#60a5fa;font-weight:800">⚿</div><div><div class="card-hd-title">Change password</div><div class="card-hd-sub">Update your admin password</div></div></div></div>
           <div class="form-grid" style="margin-top:16px">
             <div class="fg"><label>Current password</label><input type="password" id="sCurrPwd" placeholder="Current password"/></div>
@@ -502,7 +499,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <button class="btn-primary" onclick="changePassword()">Change password</button>
           <div id="pwdMsg" style="display:none;font-size:13px;margin-top:10px"></div>
         </div>
-        <div class="card" style="border-color:rgba(239,68,68,.2);max-width:680px">
+        <div class="card" style="border-color:rgba(239,68,68,.2)">
           <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(239,68,68,.1)">!</div><div><div class="card-hd-title" style="color:#f87171">Danger zone</div><div class="card-hd-sub">Irreversible actions</div></div></div></div>
           <p style="font-size:13px;color:var(--t4);margin:16px 0;line-height:1.6">Deleting all data will permanently remove all companies, contacts, and message history. This cannot be undone.</p>
           <button class="btn-xs btn-xs-red" style="padding:8px 16px;font-size:13px" onclick="confirmDeleteAccount()">Delete all data</button>
@@ -511,12 +508,13 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
       </div>
     </div>
 
-undefined
+  </div><!-- end .content -->
+</div><!-- end .main -->
+
 <div class="modal" id="actModal">
   <div class="modal-box">
     <div class="modal-title">Activate company</div>
     <div class="modal-sub">Email is pre-filled from onboarding. Update if needed — activation email will be sent automatically.</div>
-
 
     <div class="fg"><label>Company email</label>
       <input type="email" id="mEmail" placeholder="hello@company.com"/>
@@ -527,7 +525,6 @@ undefined
       <input type="text" id="mTwilio" placeholder="+14155238886"/>
     </div>
     <div class="fg"><label>Default Slack channel <span style="font-weight:400;color:rgba(255,255,255,.3)">(optional)</span></label><input type="text" id="mSlackChannel" placeholder="e.g. C0XXXXXXXXX"/><div class="hint">Leave blank to auto-create per contact. For shared channel: right-click channel in Slack, View channel details, copy Channel ID</div></div>
-
 
     <div class="divider"></div>
 
@@ -553,7 +550,6 @@ undefined
 
 <script>
 
-
 function show(name,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('on'));
@@ -562,7 +558,7 @@ function show(name,el){
   const mobEl=document.getElementById('mob-link-'+name);
   if(deskEl)deskEl.classList.add('on');
   if(mobEl)mobEl.classList.add('on');
-  const titles={dashboard:'Dashboard',companies:'Companies',messages:'Messages',add:'Add Company'};
+  const titles={dashboard:'Dashboard',companies:'Companies',messages:'Messages',add:'Add Company',settings:'Settings'};
   const pt=document.getElementById('ptitle');
   if(pt)pt.textContent=titles[name]||name;
   if(name==='messages')loadMessages();
@@ -684,7 +680,8 @@ async function confirmActivate(){
       status.textContent='✓ Activation email sent to '+d.emailTo;
       status.className='email-status sent';
     }else{
-      status.textContent='⚠ Activated but email could not be sent — check RESEND_API_KEY in Render environment variables';      status.className='email-status failed';
+      status.textContent='⚠ Activated but email could not be sent — check RESEND_API_KEY in Render environment variables';
+      status.className='email-status failed';
     }
     btn.textContent='Done!';
     setTimeout(()=>{closeModal();location.reload()},2500);
@@ -722,7 +719,6 @@ async function addTenant(){
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
 
-
 async function saveSettings(){
   const email=document.getElementById('sEmail').value.trim();
   const appUrl=document.getElementById('sAppUrl').value.trim();
@@ -750,6 +746,7 @@ async function changePassword(){
 }
 
 async function confirmDeleteAccount(){
+  if(!confirm('Are you absolutely sure? This will permanently delete ALL companies, contacts, and messages.'))return;
   const r=await fetch('/admin/delete-all',{method:'POST',headers:{'Content-Type':'application/json'}});
   const d=await r.json();
   if(d.success){alert('All data deleted. Redirecting...');location.href='/';}
@@ -779,7 +776,6 @@ router.get('/messages-data', auth, async (req, res) => {
 
 router.get('/tenant/:id', auth, async (req, res) => {
   try {
-    
     const { id } = req.params;
     const tenant = await pool.query('SELECT * FROM tenants WHERE id = $1', [id]);
     if (!tenant.rows.length) return res.send('Not found');
@@ -811,7 +807,7 @@ router.get('/tenant/:id', auth, async (req, res) => {
   } catch(err){ res.status(500).send('Error: '+err.message); }
 });
 
-// ── Activate (saves email + sends activation email) ─────────
+// ── Activate ─────────────────────────────────────────────────
 router.post('/activate', auth, async (req, res) => {
   try {
     const { id, email, twilio_number, claim_code, default_slack_channel } = req.body;
@@ -821,20 +817,17 @@ router.post('/activate', auth, async (req, res) => {
 
     if (!email || !email.includes('@')) return res.json({ success: false, error: 'Valid email is required' });
 
-    // Check claim code uniqueness
     const existing = await pool.query(
       'SELECT id FROM tenants WHERE LOWER(claim_code) = $1 AND id != $2',
       [claim_code.toLowerCase().trim(), id]
     );
     if (existing.rows.length) return res.json({ success: false, error: 'This claim code is already taken — try a different one' });
 
-    // Save email + activate
     await pool.query(
       'UPDATE tenants SET is_active = TRUE, twilio_number = $1, claim_code = $2, email = $3, default_slack_channel = $4 WHERE id = $5',
       [twilio_number, claim_code.toLowerCase().trim(), email.trim(), default_slack_channel || null, id]
     );
 
-    // Send activation email
     let emailSent = false;
     try {
       await sendActivationEmail({
@@ -994,13 +987,9 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   }
 });
 
-module.exports = router;
-
 router.post('/settings', auth, async (req, res) => {
   try {
     const { email, app_url } = req.body;
-    // Store in a simple settings table or just confirm
-    // For now just validate and return success
     if (email && !email.includes('@')) return res.json({ success: false, error: 'Invalid email' });
     console.log('[SETTINGS] Updated — email:', email, 'app_url:', app_url);
     res.json({ success: true });
@@ -1018,7 +1007,6 @@ router.post('/change-password', auth, async (req, res) => {
     if (!newPassword || newPassword.length < 8) {
       return res.json({ success: false, error: 'New password must be at least 8 characters' });
     }
-    // Note: this updates the env var in memory only — must update Render env var manually
     process.env.ADMIN_PASSWORD = newPassword;
     console.log('[SETTINGS] Admin password changed');
     res.json({ success: true, note: 'Also update ADMIN_PASSWORD in Render environment variables to persist after restart' });
@@ -1038,3 +1026,5 @@ router.post('/delete-all', auth, async (req, res) => {
     res.json({ success: false, error: err.message });
   }
 });
+
+module.exports = router;
