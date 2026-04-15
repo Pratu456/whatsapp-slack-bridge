@@ -748,16 +748,12 @@ function acceptCookies(){
   localStorage.setItem("cookieConsent","accepted");
 }
 function declineCookies(){
-  localStorage.setItem("cookieConsent","declined");
-  document.getElementById("cookieBanner").style.display="none";
-  document.getElementById("cookieOverlay").style.display="none";
-  var s=document.getElementById("cookieBlock");if(s)s.remove();
-  // Show declined notice popup
   var popup=document.createElement("div");
   popup.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;background:#0f0f16;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:32px;max-width:380px;width:90%;text-align:center";
-  popup.innerHTML='<div style="font-size:20px;margin-bottom:12px">⚠️</div><div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px">Cookies abgelehnt</div><div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:20px">Einige Funktionen der Website sind möglicherweise eingeschränkt.</div><button onclick="this.parentElement.remove()" style="padding:10px 24px;background:#25D366;border:none;border-radius:8px;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">OK, verstanden</button>';
+  popup.innerHTML='<div style="font-size:20px;margin-bottom:12px">🍪</div><div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px">Cookies erforderlich</div><div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:20px">Um diese Website nutzen zu können, müssen Sie Cookies akzeptieren.</div><button onclick="this.parentElement.remove()" style="padding:10px 24px;background:#25D366;border:none;border-radius:8px;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">OK</button>';
   document.body.appendChild(popup);
 }
+  
 (function(){if(localStorage.getItem("cookieConsent")==="accepted"){var s=document.getElementById("cookieBlock");if(s)s.remove();return;}
   if(!localStorage.getItem("cookieConsent")){
     document.getElementById("cookieBanner").style.display="flex";
