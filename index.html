@@ -758,7 +758,7 @@ function declineCookies(){
   popup.innerHTML='<div style="font-size:20px;margin-bottom:12px">⚠️</div><div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px">Cookies abgelehnt</div><div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:20px">Einige Funktionen der Website sind möglicherweise eingeschränkt.</div><button onclick="this.parentElement.remove()" style="padding:10px 24px;background:#25D366;border:none;border-radius:8px;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">OK, verstanden</button>';
   document.body.appendChild(popup);
 }
-function(){if(localStorage.getItem("cookieConsent")==="accepted"){var s=document.getElementById("cookieBlock");if(s)s.remove();return;}
+(function(){if(localStorage.getItem("cookieConsent")==="accepted"){var s=document.getElementById("cookieBlock");if(s)s.remove();return;}
   if(!localStorage.getItem("cookieConsent")){
     document.getElementById("cookieBanner").style.display="flex";
     document.getElementById("cookieOverlay").style.display="block";
