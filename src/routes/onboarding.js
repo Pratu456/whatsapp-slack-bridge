@@ -25,7 +25,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);min-heig
 @keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,-30px)}}
 .bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:80px 80px}
 nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;background:rgba(6,6,8,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--b1)}
-.nav-logo img{height:28px;width:auto;filter:brightness(0) invert(1)}
+.nav-logo img{height:28px;width:auto;filter:brightness(0) invert(1) grayscale(1)}
 .wrap{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px 24px 60px}
 .hero-logo{margin-bottom:24px;text-align:center}
 .hero-logo img{height:72px;width:auto;filter:brightness(0) invert(1)}
@@ -64,7 +64,7 @@ footer p{font-size:13px;color:var(--t4);line-height:1.8}
 </nav>
 
 <div class="wrap">
-<div class="hero-logo"><img src="/logo_text.png" alt="Syncora" style="height:28px;width:auto;filter:brightness(0) invert(1)"/></div>
+<div class="hero-logo"><img src="/logo_text.png" alt="Syncora" style="height:28px;width:auto;filter:brightness(0) invert(1) grayscale(1)"/></div>
   <div class="hero-badge"><span class="badge-dot"></span>Free to get started</div>
   <h1 class="hero-title">WhatsApp messages.<br/><span>Right in Slack.</span></h1>
   <p class="hero-sub">Customers message you on WhatsApp. Your team replies from Slack — no app switching, no missed conversations, ever.</p>
