@@ -272,6 +272,42 @@ const sendWaitlistInviteEmail = async ({ to }) => {
   }
 
   console.log(`Waitlist invite sent to ${to} — id: ${data.id}`);
-};
-
-module.exports = { sendActivationEmail, sendWaitlistConfirmationEmail, sendWaitlistInviteEmail };
+  };
+  // ── Email verification ────────────────────────────────────
+  const sendVerificationEmail = async ({ to, fullName, verifyToken }) => {
+    const verifyUrl = `${process.env.APP_URL || 'https://syncora-ar26.onrender.com'}/auth/verify-email?token=${verifyToken}`;
+    const { data, error } = await resend.emails.send({
+      from: 'Syncora <onboarding@resend.dev>',
+      to,
+      subject: 'Verify your Syncora account',
+      html: `<!DOCTYPE html><html><head><meta charset="UTF-8"/></head>
+  <body style="margin:0;padding:0;background:#f0f0f0;font-family:Arial,sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f0f0;padding:32px 16px">
+  <tr><td align="center">
+  <table width="560" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:12px;overflow:hidden;max-width:560px;width:100%">
+    <tr><td style="background:#060608;padding:28px 32px;text-align:center">
+      <div style="font-size:28px;font-weight:900;color:#25D366;letter-spacing:-1px;margin-bottom:12px;font-family:Arial,sans-serif">SYNC<span style="color:#ffffff">ORA</span></div>
+      <div style="color:#ffffff;font-size:20px;font-weight:700;margin-bottom:4px">Verify your email</div>
+      <div style="color:rgba(255,255,255,.45);font-size:14px">One click to get started</div>
+    </td></tr>
+    <tr><td style="padding:32px">
+      <p style="font-size:15px;color:#333;margin:0 0 20px;line-height:1.7">Hi <strong>${fullName}</strong>,<br/><br/>Thanks for signing up for Syncora. Click the button below to verify your email address and continue to onboarding.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px">
+        <tr><td align="center">
+          <a href="${verifyUrl}" style="display:inline-block;background:#25D366;color:#000;font-size:15px;font-weight:800;padding:14px 32px;border-radius:10px;text-decoration:none;font-family:Arial,sans-serif">Verify my email →</a>
+        </td></tr>
+      </table>
+      <p style="font-size:13px;color:#888;line-height:1.6;margin:0">If the button doesn't work, copy this link:<br/><a href="${verifyUrl}" style="color:#25D366">${verifyUrl}</a></p>
+    </td></tr>
+    <tr><td style="background:#f5f5f5;padding:20px 32px;text-align:center;border-top:1px solid #e0e0e0">
+      <p style="font-size:12px;color:#888;line-height:1.6;margin:0">© 2026 Syncora · WhatsApp ↔ Slack Bridge</p>
+    </td></tr>
+  </table>
+  </td></tr>
+  </table>
+  </body></html>`,
+    });
+    if (error) throw new Error(error.message);
+    console.log(`Verification email sent to ${to}`);
+  };
+module.exports = { sendActivationEmail, sendWaitlistConfirmationEmail, sendWaitlistInviteEmail, sendVerificationEmail };
