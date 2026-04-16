@@ -760,6 +760,53 @@ function declineCookies(){
     document.getElementById("cookieOverlay").style.display="block";
   }
 })()
+// Bridge chat animation
+(function(){
+  var seq=[
+    {el:'w1',delay:400},
+    {el:'s1',delay:900},
+    {el:'w2',delay:1800},
+    {el:'s2',delay:2300},
+    {el:'w3',delay:3200},
+    {el:'s3',delay:3700},
+    {el:'w4',delay:4600},
+    {el:'s4',delay:5100},
+    {el:'w5',delay:6000},
+    {el:'s5',delay:6500},
+  ];
+  function runSeq(){
+    // reset all
+    seq.forEach(function(s){
+      var el=document.getElementById(s.el);
+      if(el){el.classList.remove('show');}
+    });
+    // play sequence
+    seq.forEach(function(s){
+      setTimeout(function(){
+        var el=document.getElementById(s.el);
+        if(el)el.classList.add('show');
+      },s.delay);
+    });
+    // restart after last message + pause
+    setTimeout(runSeq, 8500);
+  }
+
+  // Only start when bridge is visible
+  var bridge=document.querySelector('.bridge-anim');
+  if(!bridge){return;}
+  if('IntersectionObserver' in window){
+    var started=false;
+    var obs=new IntersectionObserver(function(entries){
+      if(entries[0].isIntersecting && !started){
+        started=true;
+        runSeq();
+      }
+    },{threshold:0.3});
+    obs.observe(bridge);
+  } else {
+    runSeq();
+  }
+})();
 </script>
 </body>
 </html>
