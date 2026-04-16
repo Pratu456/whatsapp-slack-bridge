@@ -545,6 +545,13 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 </div>
 
 <script>
+// Intercept back button — always stay on admin
+window.addEventListener('popstate', function(){
+  window.history.pushState({},'','/admin');
+  show('dashboard', document.getElementById('desk-link-dashboard'));
+});
+window.history.pushState({},'','/admin');
+
 function show(name,el){
   if(window.history.replaceState)window.history.replaceState({},'','/admin');
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
