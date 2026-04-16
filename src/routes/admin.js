@@ -328,7 +328,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   <div class="sb-bottom">
   <div class="sb-user">
     <div class="sb-avatar">A</div>
-    <div style="flex:1"><div class="sb-uname">Admin</div><div class="sb-urole">Syncora admin</div></div>
+    <div style="flex:1"><div class="sb-uname">Admin</div><div class="sb-urole"></div></div>
     <div onclick="location.href='/admin/logout'" style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;font-size:12px;font-weight:600;color:rgba(255,255,255,.35);transition:all .2s" onmouseover="this.style.background='rgba(239,68,68,.1)';this.style.borderColor='rgba(239,68,68,.2)';this.style.color='#f87171'" onmouseout="this.style.background='rgba(255,255,255,.04)';this.style.borderColor='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.35)'">→ Logout</div>
   </div>
 </div>
