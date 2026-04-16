@@ -36,7 +36,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;ali
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(37,211,102,.4)}70%{box-shadow:0 0 0 6px rgba(37,211,102,0)}}
 .hero h1{font-size:clamp(36px,6vw,72px);font-weight:900;line-height:1.0;letter-spacing:-3px;margin-bottom:20px}
 .hero h1 span{color:var(--g)}
-.hero-sub{font-size:clamp(15px,2vw,18px);color:var(--t2);max-width:500px;margin:0 auto 48px;line-height:1.7}
+.hero-sub{font-size:clamp(15px,2vw,18px);color:var(--t2);max-width:500px;margin:0 auto 0;
 .scroll-hint{margin-top:40px;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--t4);font-size:12px}
 .scroll-line{width:1px;height:40px;background:linear-gradient(var(--g),transparent);animation:scrollFade 2s ease-in-out infinite}
 @keyframes scrollFade{0%,100%{opacity:.3}50%{opacity:1}}
@@ -55,7 +55,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;ali
 .step-icon{font-size:28px;margin-bottom:12px}
 .step-title{font-size:15px;font-weight:700;color:var(--t);margin-bottom:8px}
 .step-desc{font-size:13px;color:var(--t3);line-height:1.6}
-.form-section{padding:0 24px 100px;position:relative;z-index:1}
+.form-section{padding:0 24px 60px;position:relative;z-index:1}
 .form-wrap{max-width:520px;margin:0 auto}
 .form-label{text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:var(--g);margin-bottom:16px}
 .form-title{text-align:center;font-size:clamp(24px,3vw,34px);font-weight:800;letter-spacing:-1.5px;margin-bottom:8px}
@@ -99,7 +99,6 @@ footer p{font-size:12px;color:var(--t4)}
  
 <section class="form-section" id="form">
   <div class="form-wrap">
-    <div class="form-label">Get started</div>
     <div class="form-title">Connect your workspace</div>
     <p class="form-sub">Takes under 2 minutes. No credit card required.</p>
     <div class="form-card">
