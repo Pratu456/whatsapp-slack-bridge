@@ -4,54 +4,56 @@ const router  = express.Router();
 const { pool } = require('../db');
 const { sendActivationEmail } = require('../services/emailService');
 require('dotenv').config();
-  // ── Auth middleware ───────────────────────────────────────
-  const auth = (req, res, next) => {
-    if (req.session && req.session.isAdmin) return next();
-    return res.send(`<!DOCTYPE html><html><head><title>Syncora Admin</title>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Inter',sans-serif;background:#060608;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
-  .wrap{width:100%;max-width:380px;text-align:center}
-  h1{font-size:24px;font-weight:800;color:#fff;margin-bottom:8px}
-  p{font-size:14px;color:rgba(255,255,255,.35);margin-bottom:32px}
-  .card{background:#0f0f16;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px}
-  input{width:100%;padding:13px 18px;background:#1a1a24;border:1px solid rgba(255,255,255,.1);border-radius:12px;font-size:15px;color:#fff;margin-bottom:14px;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s}
-  input:focus{border-color:rgba(37,211,102,.5);box-shadow:0 0 0 3px rgba(37,211,102,.08)}
-  input::placeholder{color:rgba(255,255,255,.25)}
-  button{width:100%;padding:14px;background:#25D366;color:#000;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
-  button:hover{background:#1aad52}
-  .err{color:#f87171;font-size:13px;margin-bottom:12px}
-  </style></head>
-  <body><div class="wrap">
-  <img src="/logo_full.png" alt="Syncora" style="height:72px;width:auto;margin:0 auto 16px;display:block"/>
-  <h1>Syncora Admin</h1>
-  <p>Sign in to manage your platform</p>
-  <div class="card">
-  ${req.query.error ? '<div class="err">Incorrect password — try again</div>' : ''}
-  <form method="POST" action="/admin/login">
-  <input type="password" name="pwd" placeholder="Admin password" autofocus/>
-  <button type="submit">Sign in →</button>
-  </form>
-  </div></div></body></html>`);
-  };
 
-  // ── Login POST ────────────────────────────────────────────
-  router.post('/login', express.urlencoded({ extended: false }), (req, res) => {
-    if (req.body.pwd === process.env.ADMIN_PASSWORD) {
-      req.session.isAdmin = true;
-      res.redirect('/admin');
-    } else {
-      res.redirect('/admin?error=1');
-    }
-  });
+// ── Auth middleware ───────────────────────────────────────
+const auth = (req, res, next) => {
+  if (req.session && req.session.isAdmin) return next();
+  return res.send(`<!DOCTYPE html><html><head><title>Syncora Admin</title>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#060608;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
+.wrap{width:100%;max-width:380px;text-align:center}
+h1{font-size:24px;font-weight:800;color:#fff;margin-bottom:8px}
+p{font-size:14px;color:rgba(255,255,255,.35);margin-bottom:32px}
+.card{background:#0f0f16;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px}
+input{width:100%;padding:13px 18px;background:#1a1a24;border:1px solid rgba(255,255,255,.1);border-radius:12px;font-size:15px;color:#fff;margin-bottom:14px;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s}
+input:focus{border-color:rgba(37,211,102,.5);box-shadow:0 0 0 3px rgba(37,211,102,.08)}
+input::placeholder{color:rgba(255,255,255,.25)}
+button{width:100%;padding:14px;background:#25D366;color:#000;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
+button:hover{background:#1aad52}
+.err{color:#f87171;font-size:13px;margin-bottom:12px}
+</style></head>
+<body><div class="wrap">
+<img src="/logo_full.png" alt="Syncora" style="height:72px;width:auto;margin:0 auto 16px;display:block"/>
+<h1>Syncora Admin</h1>
+<p>Sign in to manage your platform</p>
+<div class="card">
+${req.query.error ? '<div class="err">Incorrect password — try again</div>' : ''}
+<form method="POST" action="/admin/login">
+<input type="password" name="pwd" placeholder="Admin password" autofocus/>
+<button type="submit">Sign in →</button>
+</form>
+</div></div></body></html>`);
+};
 
-  // ── Logout ────────────────────────────────────────────────
-  router.get('/logout', (req, res) => {
-    req.session.destroy();
+// ── Login POST ────────────────────────────────────────────
+router.post('/login', express.urlencoded({ extended: false }), (req, res) => {
+  if (req.body.pwd === process.env.ADMIN_PASSWORD) {
+    req.session.isAdmin = true;
     res.redirect('/admin');
-  });
+  } else {
+    res.redirect('/admin?error=1');
+  }
+});
+
+// ── Logout ────────────────────────────────────────────────
+router.get('/logout', (req, res) => {
+  req.session.destroy();
+  res.redirect('/admin');
+});
+
 const generateClaimCode = () => {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let code = '';
@@ -84,7 +86,6 @@ const getStats = async () => {
 
 router.get('/', auth, async (req, res) => {
   try {
-    
     const { tenants, totalMessages, todayMessages, totalContacts } = await getStats();
 
     const inactiveTenants = await pool.query(`
@@ -161,10 +162,6 @@ html,body{height:100%}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:flex;-webkit-font-smoothing:antialiased}
 .sidebar{width:var(--sidebar);min-height:100vh;background:var(--bg1);border-right:1px solid var(--b1);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100}
 .sb-top{padding:20px 18px;border-bottom:1px solid var(--b1)}
-.sb-logo{display:flex;align-items:center;gap:10px}
-.sb-mark{width:36px;height:36px;background:var(--g);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#000;flex-shrink:0}
-.sb-name{font-size:15px;font-weight:800;color:var(--t);letter-spacing:-.3px}
-.sb-sub{font-size:10px;color:var(--t4);margin-top:1px;font-weight:500;letter-spacing:.5px;text-transform:uppercase}
 .sb-nav{padding:12px 10px;flex:1;overflow-y:auto}
 .sb-section{font-size:10px;font-weight:700;color:var(--t4);letter-spacing:2px;text-transform:uppercase;padding:14px 8px 6px}
 .sb-link{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;color:var(--t3);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;margin-bottom:2px;user-select:none}
@@ -179,8 +176,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
 .sb-uname{font-size:13px;font-weight:600;color:var(--t2)}
 .sb-urole{font-size:11px;color:var(--t4)}
 .mob-bar{display:none;position:fixed;top:0;left:0;right:0;height:var(--mob-topbar);background:var(--bg1);border-bottom:1px solid var(--b1);z-index:200;padding:0 16px;align-items:center;justify-content:space-between}
-.mob-logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:var(--t)}
-.mob-mark{width:28px;height:28px;background:var(--g);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#000}
 .mob-right{display:flex;align-items:center;gap:8px}
 .mob-live{display:flex;align-items:center;gap:5px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.2);color:var(--g);padding:4px 10px;border-radius:100px;font-size:11px;font-weight:600}
 .mob-live-dot{width:5px;height:5px;background:var(--g);border-radius:50%;animation:lp 2s infinite}
@@ -291,8 +286,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 <body>
 
 <div class="mob-bar">
-  <div class="mob-logo"><img src="/logo_text.png" alt="Syncora" style="height:20px;width:auto;filter:brightness(0) invert(1)"/>
-</div>
+  <div class="mob-logo"><img src="/logo_text.png" alt="Syncora" style="height:20px;width:auto;filter:brightness(0) invert(1)"/></div>
   <div class="mob-right">
     <div class="mob-live"><span class="mob-live-dot"></span>Live</div>
     <button class="hamburger" id="hbg" onclick="toggleDrawer()"><span></span><span></span><span></span></button>
@@ -304,7 +298,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   <div class="sb-link on" id="mob-link-dashboard" onclick="show('dashboard',this);closeDrawer()"><span class="sb-icon">⬛</span>Dashboard</div>
   <div class="sb-link" id="mob-link-companies" onclick="show('companies',this);closeDrawer()"><span class="sb-icon">🏢</span>Companies</div>
   <div class="sb-link" id="mob-link-messages" onclick="show('messages',this);closeDrawer()"><span class="sb-icon">💬</span>Messages</div>
-
+  <div class="sb-link" id="mob-link-waitlist" onclick="show('waitlist',this);closeDrawer()"><span class="sb-icon">📧</span>Waitlist</div>
   <div class="sb-section">Actions</div>
   <div class="sb-link" id="mob-link-settings" onclick="show('settings',this);closeDrawer()"><span class="sb-icon">⚙</span>Settings</div>
   <div class="sb-link" id="mob-link-add" onclick="show('add',this);closeDrawer()"><span class="sb-icon">+</span>Add company</div>
@@ -321,19 +315,18 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div class="sb-link on" id="desk-link-dashboard" onclick="show('dashboard',this)"><span class="sb-icon">⬛</span>Dashboard<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-companies" onclick="show('companies',this)"><span class="sb-icon">🏢</span>Companies<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-messages" onclick="show('messages',this)"><span class="sb-icon">💬</span>Messages<span class="sb-dot"></span></div>
-    <div class="sb-link" onclick="location.href='/admin/waitlist'"><span class="sb-icon">📧</span>Waitlist<span class="sb-dot"></span></div>
-
+    <div class="sb-link" id="desk-link-waitlist" onclick="show('waitlist',this)"><span class="sb-icon">📧</span>Waitlist<span class="sb-dot"></span></div>
     <div class="sb-section">Actions</div>
     <div class="sb-link" id="desk-link-settings" onclick="show('settings',this)"><span class="sb-icon">⚙</span>Settings<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-add" onclick="show('add',this)"><span class="sb-icon">+</span>Add company<span class="sb-dot"></span></div>
   </nav>
   <div class="sb-bottom">
-  <div class="sb-user">
-    <div class="sb-avatar">A</div>
-    <div style="flex:1"><div class="sb-uname">Admin</div><div class="sb-urole"></div></div>
-    <div onclick="location.href='/admin/logout'" style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;font-size:12px;font-weight:600;color:rgba(255,255,255,.35);transition:all .2s" onmouseover="this.style.background='rgba(239,68,68,.1)';this.style.borderColor='rgba(239,68,68,.2)';this.style.color='#f87171'" onmouseout="this.style.background='rgba(255,255,255,.04)';this.style.borderColor='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.35)'">→ Logout</div>
+    <div class="sb-user">
+      <div class="sb-avatar">A</div>
+      <div style="flex:1"><div class="sb-uname">Admin</div><div class="sb-urole">Syncora admin</div></div>
+      <div onclick="location.href='/admin/logout'" style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;font-size:12px;font-weight:600;color:rgba(255,255,255,.35);transition:all .2s" onmouseover="this.style.background='rgba(239,68,68,.1)';this.style.borderColor='rgba(239,68,68,.2)';this.style.color='#f87171'" onmouseout="this.style.background='rgba(255,255,255,.04)';this.style.borderColor='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.35)'">→ Logout</div>
+    </div>
   </div>
-</div>
 </aside>
 
 <div class="main">
@@ -437,10 +430,10 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
       </div>
       <div id="msg-content" style="color:var(--t4);font-size:13px;padding:20px 0">Loading...</div>
     </div>
-      
+
     <!-- ADD COMPANY -->
     <div id="p-add" class="panel">
-      <div style="max-width:680px;margin:0 auto 0 0;">
+      <div style="max-width:100%;">
         <div style="font-size:18px;font-weight:800;color:var(--t);margin-bottom:4px">Add new company</div>
         <div style="font-size:13px;color:var(--t4);margin-bottom:24px">Manually onboard a company to the platform</div>
         <div class="card">
@@ -478,7 +471,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
         </div>
         <div style="width:44px;height:44px;border-radius:12px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:20px">⚙</div>
       </div>
-      <div style="max-width:680px;margin:0 auto 0 0;">
+      <div style="max-width:100%;">
         <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(37,211,102,.1);color:#25D366;font-weight:800">✦</div><div><div class="card-hd-title">Platform info</div><div class="card-hd-sub">Update your platform details</div></div></div></div>
           <div class="form-grid" style="margin-top:16px">
@@ -506,6 +499,17 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
       </div>
     </div>
 
+    <!-- WAITLIST -->
+    <div id="p-waitlist" class="panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:18px;font-weight:800;color:var(--t)">Waitlist</div>
+          <div style="font-size:13px;color:var(--t4);margin-top:2px">All early access signups</div>
+        </div>
+      </div>
+      <div id="waitlist-content" style="color:var(--t4);font-size:13px">Loading...</div>
+    </div>
+
   </div><!-- end .content -->
 </div><!-- end .main -->
 
@@ -513,19 +517,15 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   <div class="modal-box">
     <div class="modal-title">Activate company</div>
     <div class="modal-sub">Email is pre-filled from onboarding. Update if needed — activation email will be sent automatically.</div>
-
     <div class="fg"><label>Company email</label>
       <input type="email" id="mEmail" placeholder="hello@company.com"/>
       <div class="hint">Required — activation email will be sent here</div>
     </div>
-
     <div class="fg"><label>Twilio WhatsApp number</label>
       <input type="text" id="mTwilio" placeholder="+14155238886"/>
     </div>
     <div class="fg"><label>Default Slack channel <span style="font-weight:400;color:rgba(255,255,255,.3)">(optional)</span></label><input type="text" id="mSlackChannel" placeholder="e.g. C0XXXXXXXXX"/><div class="hint">Leave blank to auto-create per contact. For shared channel: right-click channel in Slack, View channel details, copy Channel ID</div></div>
-
     <div class="divider"></div>
-
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t4);margin-bottom:8px">Claim code</div>
     <div class="code-preview">
       <div><div style="font-size:11px;color:var(--t4);margin-bottom:4px">Auto-generated</div><div class="code-preview-val" id="mCodePreview">------</div></div>
@@ -535,10 +535,8 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div id="mCustomWrap" style="display:none;margin-top:8px">
       <div class="fg"><label>Custom claim code</label><input type="text" id="mCustomCode" placeholder="e.g. mycompany" oninput="validateCustomCode(this)"/><div class="hint" id="mCustomHint">3–20 chars · lowercase letters, numbers and _ only</div></div>
     </div>
-
     <div id="emailStatus" class="email-status"></div>
     <input type="hidden" id="mId"/>
-
     <div class="modal-btns">
       <button class="mbtn-cancel" onclick="closeModal()">Cancel</button>
       <button class="mbtn-confirm" id="mConfirmBtn" onclick="confirmActivate()">Activate + Send email →</button>
@@ -547,8 +545,8 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 </div>
 
 <script>
-
 function show(name,el){
+  if(window.history.replaceState)window.history.replaceState({},'','/admin');
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('on'));
   document.getElementById('p-'+name).classList.add('on');
@@ -556,19 +554,17 @@ function show(name,el){
   const mobEl=document.getElementById('mob-link-'+name);
   if(deskEl)deskEl.classList.add('on');
   if(mobEl)mobEl.classList.add('on');
-  const titles={dashboard:'Dashboard',companies:'Companies',messages:'Messages',add:'Add Company',settings:'Settings'};
+  const titles={dashboard:'Dashboard',companies:'Companies',messages:'Messages',add:'Add Company',settings:'Settings',waitlist:'Waitlist'};
   const pt=document.getElementById('ptitle');
   if(pt)pt.textContent=titles[name]||name;
   if(name==='messages')loadMessages();
   if(name==='add')initAddForm();
+  if(name==='waitlist')loadWaitlist();
 }
 (function(){
   const p=new URLSearchParams(window.location.search).get('panel');
   if(p){const el=document.getElementById('desk-link-'+p);show(p,el);}
-  // Clear URL params without reload so back button goes to dashboard
-  if(window.history.replaceState){
-    window.history.replaceState({},'','/admin');
-  }
+  if(window.history.replaceState)window.history.replaceState({},'','/admin');
 })();
 function toggleDrawer(){
   document.getElementById('hbg').classList.toggle('open');
@@ -582,14 +578,12 @@ function closeDrawer(){
   document.getElementById('overlay').classList.remove('show');
   document.body.style.overflow='';
 }
-
 function genCode(){
   const c='abcdefghijklmnopqrstuvwxyz0123456789';
   let s='';for(let i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s;
 }
 let currentAddCode=genCode();
 let currentModalCode=genCode();
-
 function initAddForm(){
   currentAddCode=genCode();
   document.getElementById('codePreview').textContent=currentAddCode;
@@ -609,7 +603,6 @@ function toggleModalCustom(){
   wrap.style.display=shown?'none':'block';
   document.getElementById('mToggleCustom').textContent=shown?'Use a custom claim code →':'Use auto-generated code instead →';
 }
-
 function validateCustomCode(input){
   const val=input.value.toLowerCase().trim();
   input.value=val;
@@ -621,14 +614,12 @@ function validateCustomCode(input){
   if(!/^[a-z0-9_]+$/.test(val)){hint.textContent='Only lowercase letters, numbers and underscores allowed';hint.className='hint err';return false}
   hint.textContent='✓ Looks good!';hint.className='hint ok';return true;
 }
-
 const ad=${activityData || '[]'};
 const labels=ad.length?ad.map(d=>new Date(d.day).toLocaleDateString('en-GB',{weekday:'short',day:'numeric'})):['No data'];
 const counts=ad.length?ad.map(d=>d.count):[0];
 if(document.getElementById('actChart')){
   new Chart(document.getElementById('actChart'),{type:'bar',data:{labels,datasets:[{data:counts,backgroundColor:'rgba(37,211,102,.12)',borderColor:'#25D366',borderWidth:2,borderRadius:8,hoverBackgroundColor:'rgba(37,211,102,.2)'}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'#111118',borderColor:'rgba(37,211,102,.2)',borderWidth:1,titleColor:'#fff',bodyColor:'rgba(255,255,255,.6)',padding:10,cornerRadius:8}},scales:{y:{beginAtZero:true,ticks:{color:'rgba(255,255,255,.3)',stepSize:1,font:{size:11}},grid:{color:'rgba(255,255,255,.04)'},border:{display:false}},x:{ticks:{color:'rgba(255,255,255,.3)',font:{size:11}},grid:{display:false},border:{display:false}}}}});
 }
-
 async function loadMessages(){
   try{
     const r=await fetch('/admin/messages-data');
@@ -637,7 +628,25 @@ async function loadMessages(){
     document.getElementById('msg-content').innerHTML=\`<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Company</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead><tbody>\${d.messages.map(m=>\`<tr class="tr-hover"><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">\${new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td style="font-weight:600;font-size:13px">\${m.company_name}</td><td style="font-size:12px;color:rgba(255,255,255,.4)">\${m.wa_number}</td><td>\${m.direction==='inbound'?'<span class="badge-green">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>'}</td><td style="font-size:12px;color:rgba(255,255,255,.5);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">\${m.media_type?'['+m.media_type.split('/')[0]+']':(m.body||'').substring(0,80)}</td></tr>\`).join('')}</tbody></table></div>\`;
   }catch(e){document.getElementById('msg-content').innerHTML='<div style="color:#f87171;font-size:13px">Error loading messages</div>';}
 }
-
+async function loadWaitlist(){
+  try{
+    const r=await fetch('/admin/waitlist-data');
+    const d=await r.json();
+    if(!d.rows||!d.rows.length){
+      document.getElementById('waitlist-content').innerHTML='<div style="text-align:center;padding:48px 24px;color:rgba(255,255,255,.25);font-size:13px">No signups yet</div>';
+      return;
+    }
+    document.getElementById('waitlist-content').innerHTML=\`<div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Signed up</th><th>Action</th></tr></thead><tbody>\${d.rows.map(r=>\`<tr class="tr-hover"><td style="font-size:13px">\${r.email}</td><td style="font-size:12px;color:rgba(255,255,255,.4)">\${new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td><td><button onclick="sendInvite('\${r.email}',this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Send invite →</button></td></tr>\`).join('')}</tbody></table></div>\`;
+  }catch(e){document.getElementById('waitlist-content').innerHTML='<div style="color:#f87171;font-size:13px">Error loading waitlist</div>';}
+}
+async function sendInvite(email,btn){
+  if(!confirm('Send invite to '+email+'?'))return;
+  btn.disabled=true;btn.textContent='Sending...';
+  const r=await fetch('/admin/waitlist-invite',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+  const d=await r.json();
+  if(d.success){btn.textContent='✓ Sent';btn.style.color='#4ade80';}
+  else{btn.disabled=false;btn.textContent='Send invite →';alert('Error: '+d.error);}
+}
 function activate(id,email){
   document.getElementById('mId').value=id;
   document.getElementById('mEmail').value=email||'';
@@ -652,10 +661,8 @@ function activate(id,email){
   document.getElementById('mConfirmBtn').textContent='Activate + Send email →';
   document.getElementById('actModal').classList.add('show');
 }
-
 function closeModal(){document.getElementById('actModal').classList.remove('show')}
 document.getElementById('actModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
-
 async function confirmActivate(){
   const id=document.getElementById('mId').value;
   const email=document.getElementById('mEmail').value.trim();
@@ -663,50 +670,35 @@ async function confirmActivate(){
   const slackChannel=document.getElementById("mSlackChannel").value.trim();
   const customVisible=document.getElementById('mCustomWrap').style.display!=='none';
   const code=customVisible?document.getElementById('mCustomCode').value.trim().toLowerCase():currentModalCode;
-
   if(!email){alert('Please enter the company email address');return}
   if(!email.includes('@')){alert('Please enter a valid email address');return}
   if(!twilio){alert('Please enter a Twilio number');return}
   if(!code){alert('Please enter a claim code');return}
   if(customVisible&&!validateCustomCode(document.getElementById('mCustomCode'))){return}
-
   const btn=document.getElementById('mConfirmBtn');
   btn.disabled=true;btn.textContent='Activating...';
-
   const r=await fetch('/admin/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,email,twilio_number:twilio,claim_code:code,default_slack_channel:slackChannel})});
   const d=await r.json();
-
   if(d.success){
     const status=document.getElementById('emailStatus');
-    if(d.emailSent){
-      status.textContent='✓ Activation email sent to '+d.emailTo;
-      status.className='email-status sent';
-    }else{
-      status.textContent='⚠ Activated but email could not be sent — check RESEND_API_KEY in Render environment variables';
-      status.className='email-status failed';
-    }
+    if(d.emailSent){status.textContent='✓ Activation email sent to '+d.emailTo;status.className='email-status sent';}
+    else{status.textContent='⚠ Activated but email could not be sent — check RESEND_API_KEY in Render environment variables';status.className='email-status failed';}
     btn.textContent='Done!';
     setTimeout(()=>{closeModal();location.reload()},2500);
-  }else{
-    btn.disabled=false;btn.textContent='Activate + Send email →';
-    alert('Error: '+d.error);
-  }
+  }else{btn.disabled=false;btn.textContent='Activate + Send email →';alert('Error: '+d.error);}
 }
-
 async function deactivate(id){
   if(!confirm('Deactivate this company?'))return;
   const r=await fetch('/admin/deactivate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
-
 async function deleteTenant(id){
   if(!confirm('Permanently delete this company and all its data?'))return;
   const r=await fetch('/admin/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
-
 async function addTenant(){
   const co=document.getElementById('nCo').value.trim();
   const email=document.getElementById('nEmail').value.trim();
@@ -720,21 +712,14 @@ async function addTenant(){
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
-
 async function saveSettings(){
   const email=document.getElementById('sEmail').value.trim();
   const appUrl=document.getElementById('sAppUrl').value.trim();
   const r=await fetch('/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,app_url:appUrl})});
   const d=await r.json();
-  if(d.success){
-    const msg=document.getElementById('settingsSaved');
-    msg.style.display='block';
-    setTimeout(()=>msg.style.display='none',3000);
-  } else {
-    alert('Error: '+d.error);
-  }
+  if(d.success){const msg=document.getElementById('settingsSaved');msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);}
+  else alert('Error: '+d.error);
 }
-
 async function changePassword(){
   const curr=document.getElementById('sCurrPwd').value;
   const newp=document.getElementById('sNewPwd').value;
@@ -746,7 +731,6 @@ async function changePassword(){
   if(d.success){msg.textContent='✓ Password changed successfully';msg.style.color='#4ade80';document.getElementById('sCurrPwd').value='';document.getElementById('sNewPwd').value='';}
   else{msg.textContent='Error: '+d.error;msg.style.color='#f87171';}
 }
-
 async function confirmDeleteAccount(){
   if(!confirm('Are you absolutely sure? This will permanently delete ALL companies, contacts, and messages.'))return;
   const r=await fetch('/admin/delete-all',{method:'POST',headers:{'Content-Type':'application/json'}});
@@ -754,7 +738,6 @@ async function confirmDeleteAccount(){
   if(d.success){alert('All data deleted. Redirecting...');location.href='/';}
   else{document.getElementById('deleteMsg').textContent='Error: '+d.error;document.getElementById('deleteMsg').style.display='block';}
 }
-
 window.addEventListener('resize',()=>{if(window.innerWidth>960)closeDrawer()});
 initAddForm();
 </script>
@@ -774,6 +757,13 @@ router.get('/messages-data', auth, async (req, res) => {
     `);
     res.json({ messages: result.rows });
   } catch(err){ res.json({ messages: [] }); }
+});
+
+router.get('/waitlist-data', auth, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT email, created_at FROM waitlist ORDER BY created_at DESC');
+    res.json({ rows: result.rows });
+  } catch(err){ res.json({ rows: [] }); }
 });
 
 router.get('/tenant/:id', auth, async (req, res) => {
@@ -809,56 +799,35 @@ router.get('/tenant/:id', auth, async (req, res) => {
   } catch(err){ res.status(500).send('Error: '+err.message); }
 });
 
-// ── Activate ─────────────────────────────────────────────────
 router.post('/activate', auth, async (req, res) => {
   try {
     const { id, email, twilio_number, claim_code, default_slack_channel } = req.body;
-
     const validationError = validateClaimCode(claim_code);
     if (validationError) return res.json({ success: false, error: validationError });
-
     if (!email || !email.includes('@')) return res.json({ success: false, error: 'Valid email is required' });
-
-    const existing = await pool.query(
-      'SELECT id FROM tenants WHERE LOWER(claim_code) = $1 AND id != $2',
-      [claim_code.toLowerCase().trim(), id]
-    );
+    const existing = await pool.query('SELECT id FROM tenants WHERE LOWER(claim_code) = $1 AND id != $2', [claim_code.toLowerCase().trim(), id]);
     if (existing.rows.length) return res.json({ success: false, error: 'This claim code is already taken — try a different one' });
-
-    await pool.query(
-      'UPDATE tenants SET is_active = TRUE, twilio_number = $1, claim_code = $2, email = $3, default_slack_channel = $4 WHERE id = $5',
-      [twilio_number, claim_code.toLowerCase().trim(), email.trim(), default_slack_channel || null, id]
-    );
-
+    await pool.query('UPDATE tenants SET is_active = TRUE, twilio_number = $1, claim_code = $2, email = $3, default_slack_channel = $4 WHERE id = $5',
+      [twilio_number, claim_code.toLowerCase().trim(), email.trim(), default_slack_channel || null, id]);
     let emailSent = false;
     try {
-      await sendActivationEmail({
-        to: email.trim(),
-        companyName: (await pool.query('SELECT company_name FROM tenants WHERE id = $1', [id])).rows[0].company_name,
-        claimCode: claim_code.toLowerCase().trim(),
-        twilioNumber: twilio_number,
-      });
+      await sendActivationEmail({ to: email.trim(), companyName: (await pool.query('SELECT company_name FROM tenants WHERE id = $1', [id])).rows[0].company_name, claimCode: claim_code.toLowerCase().trim(), twilioNumber: twilio_number });
       emailSent = true;
-    } catch (emailErr) {
-      console.error('Email send failed:', emailErr.message);
-    }
-
+    } catch (emailErr) { console.error('Email send failed:', emailErr.message); }
     res.json({ success: true, emailSent, emailTo: email.trim() });
   } catch(err){ res.json({ success: false, error: err.message }); }
 });
 
 router.post('/deactivate', auth, async (req, res) => {
   try {
-    const { id } = req.body;
-    await pool.query('UPDATE tenants SET is_active = FALSE WHERE id = $1', [id]);
+    await pool.query('UPDATE tenants SET is_active = FALSE WHERE id = $1', [req.body.id]);
     res.json({ success: true });
   } catch(err){ res.json({ success: false, error: err.message }); }
 });
 
 router.post('/delete', auth, async (req, res) => {
   try {
-    const { id } = req.body;
-    await pool.query('DELETE FROM tenants WHERE id = $1', [id]);
+    await pool.query('DELETE FROM tenants WHERE id = $1', [req.body.id]);
     res.json({ success: true });
   } catch(err){ res.json({ success: false, error: err.message }); }
 });
@@ -867,153 +836,14 @@ router.post('/add', auth, async (req, res) => {
   try {
     const { company, email, twilio_number, slack_bot_token, claim_code } = req.body;
     if (!company || !twilio_number || !slack_bot_token) return res.json({ success: false, error: 'Please fill in all required fields' });
-
     const validationError = validateClaimCode(claim_code);
     if (validationError) return res.json({ success: false, error: validationError });
-
     const existing = await pool.query('SELECT id FROM tenants WHERE LOWER(claim_code) = $1', [claim_code.toLowerCase().trim()]);
     if (existing.rows.length) return res.json({ success: false, error: 'This claim code is already taken' });
-
-    await pool.query(
-      `INSERT INTO tenants (company_name, email, twilio_number, slack_bot_token, slack_team_id, slack_team_name, claim_code, is_active)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE)`,
-      [company, email || null, twilio_number, slack_bot_token, 'MANUAL', company, claim_code.toLowerCase().trim()]
-    );
+    await pool.query(`INSERT INTO tenants (company_name, email, twilio_number, slack_bot_token, slack_team_id, slack_team_name, claim_code, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE)`,
+      [company, email || null, twilio_number, slack_bot_token, 'MANUAL', company, claim_code.toLowerCase().trim()]);
     res.json({ success: true });
   } catch(err){ res.json({ success: false, error: err.message }); }
-});
-
-router.get('/waitlist', auth, async (req, res) => {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS waitlist (
-        id         SERIAL PRIMARY KEY,
-        email      VARCHAR(255) NOT NULL UNIQUE,
-        created_at TIMESTAMPTZ DEFAULT NOW()
-      )
-    `);
-    const result = await pool.query(
-      'SELECT email, created_at FROM waitlist ORDER BY created_at DESC'
-    );
-    const rows = result.rows.map(r => `
-      <tr>
-        <td>${r.email}</td>
-        <td style="color:rgba(255,255,255,.4);font-size:12px">
-          ${new Date(r.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}
-        </td>
-        <td>
-          <button onclick="sendInvite('${r.email}',this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">
-            Send invite →
-          </button>
-        </td>
-      </tr>`).join('');
-    res.send(`<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Waitlist — Syncora Admin</title>
-<link rel="icon" type="image/png" href="/logo.png"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--g:#25D366;--gd:#1aad52;--bg:#060608;--bg1:#0c0c12;--bg2:#111118;--bg3:#16161f;--b1:rgba(255,255,255,.06);--b2:rgba(255,255,255,.1);--t:#ffffff;--t2:rgba(255,255,255,.75);--t3:rgba(255,255,255,.4);--t4:rgba(255,255,255,.2);--sidebar:240px;--topbar:60px}
-html,body{height:100%}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:flex;-webkit-font-smoothing:antialiased}
-.sidebar{width:var(--sidebar);min-height:100vh;background:var(--bg1);border-right:1px solid var(--b1);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100}
-.sb-top{padding:20px 18px;border-bottom:1px solid var(--b1)}
-.sb-nav{padding:12px 10px;flex:1}
-.sb-section{font-size:10px;font-weight:700;color:var(--t4);letter-spacing:2px;text-transform:uppercase;padding:14px 8px 6px}
-.sb-link{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;color:var(--t3);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;margin-bottom:2px;text-decoration:none}
-.sb-link:hover{background:var(--b1);color:var(--t2)}
-.sb-link.on{background:rgba(37,211,102,.1);color:var(--g)}
-.sb-icon{font-size:15px;width:22px;text-align:center;flex-shrink:0}
-.sb-bottom{padding:16px 18px;border-top:1px solid var(--b1)}
-.sb-user{display:flex;align-items:center;gap:10px}
-.sb-avatar{width:30px;height:30px;border-radius:8px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--g)}
-.sb-uname{font-size:13px;font-weight:600;color:var(--t2)}
-.sb-urole{font-size:11px;color:var(--t4)}
-.main{margin-left:var(--sidebar);flex:1;min-height:100vh}
-.topbar{height:var(--topbar);background:var(--bg1);border-bottom:1px solid var(--b1);padding:0 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.topbar-title{font-size:15px;font-weight:700;color:var(--t)}
-.content{padding:24px 28px}
-.card{background:var(--bg2);border:1px solid var(--b1);border-radius:16px;padding:22px}
-.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--b1)}
-table{width:100%;border-collapse:collapse}
-thead tr{background:var(--bg3)}
-th{padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.8px}
-td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-align:middle}
-.count-badge{background:rgba(37,211,102,.1);color:#4ade80;padding:4px 12px;border-radius:100px;font-size:12px;font-weight:700;border:1px solid rgba(37,211,102,.2)}
-@media(max-width:960px){.sidebar{display:none}.main{margin-left:0}.content{padding:16px}}
-</style>
-</head>
-<body>
-<aside class="sidebar">
-  <div class="sb-top">
-    <img src="/logo_text.png" alt="Syncora" style="height:26px;width:auto;filter:brightness(0) invert(1)"/>
-  </div>
-  <nav class="sb-nav">
-    <div class="sb-section">Main</div>
-    <a href="/admin" class="sb-link"><span class="sb-icon">⬛</span>Dashboard</a>
-    <a href="/admin?panel=companies" class="sb-link"><span class="sb-icon">🏢</span>Companies</a>
-    <a href="/admin?panel=messages" class="sb-link"><span class="sb-icon">💬</span>Messages</a>
-    <a href="/admin/waitlist" class="sb-link on"><span class="sb-icon">📧</span>Waitlist</a>
-    <div class="sb-section">Actions</div>
-    <a href="/admin?panel=add" class="sb-link"><span class="sb-icon">+</span>Add company</a>
-    <a href="/admin" class="sb-link"><span class="sb-icon">↺</span>Refresh</a>
-  </nav>
-  <div class="sb-bottom">
-    <a href="/admin/logout" class="sb-link" style="margin-bottom:12px;text-decoration:none"><span class="sb-icon">←</span>Logout</a>
-    <div class="sb-user">
-      <div class="sb-avatar">A</div>
-      <div><div class="sb-uname">Admin</div><div class="sb-urole">Syncora admin</div></div>
-    </div>
-  </div>
-</aside>
-
-<div class="main">
-  <div class="topbar">
-    <div class="topbar-title">Waitlist</div>
-    <span class="count-badge">${result.rows.length} signups</span>
-  </div>
-  <div class="content">
-    <div class="card">
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>Email</th><th>Signed up</th><th>Action</th></tr></thead>
-          <tbody>${rows || '<tr><td colspan="2" style="color:rgba(255,255,255,.3);text-align:center;padding:24px">No signups yet</td></tr>'}</tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-<script>
-async function sendInvite(email, btn) {
-  if(!confirm('Send invite to ' + email + '?')) return;
-  btn.disabled = true;
-  btn.textContent = 'Sending...';
-  const r = await fetch('/admin/waitlist-invite', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ email })
-  });
-  const d = await r.json();
-  if(d.success) {
-    btn.textContent = '✓ Sent';
-    btn.style.color = '#4ade80';
-  } else {
-    btn.disabled = false;
-    btn.textContent = 'Send invite →';
-    alert('Error: ' + d.error);
-  }
-}
-</script>
-
-</body></html>`);
-  } catch (err) {
-    console.error('[WAITLIST ERROR]', err.message);
-    res.status(500).send('Error: ' + err.message);
-  }
 });
 
 router.post('/settings', auth, async (req, res) => {
@@ -1022,26 +852,17 @@ router.post('/settings', auth, async (req, res) => {
     if (email && !email.includes('@')) return res.json({ success: false, error: 'Invalid email' });
     console.log('[SETTINGS] Updated — email:', email, 'app_url:', app_url);
     res.json({ success: true });
-  } catch (err) {
-    res.json({ success: false, error: err.message });
-  }
+  } catch (err) { res.json({ success: false, error: err.message }); }
 });
 
 router.post('/change-password', auth, async (req, res) => {
   try {
     const { current, newPassword } = req.body;
-    if (current !== process.env.ADMIN_PASSWORD) {
-      return res.json({ success: false, error: 'Current password is incorrect' });
-    }
-    if (!newPassword || newPassword.length < 8) {
-      return res.json({ success: false, error: 'New password must be at least 8 characters' });
-    }
+    if (current !== process.env.ADMIN_PASSWORD) return res.json({ success: false, error: 'Current password is incorrect' });
+    if (!newPassword || newPassword.length < 8) return res.json({ success: false, error: 'New password must be at least 8 characters' });
     process.env.ADMIN_PASSWORD = newPassword;
-    console.log('[SETTINGS] Admin password changed');
-    res.json({ success: true, note: 'Also update ADMIN_PASSWORD in Render environment variables to persist after restart' });
-  } catch (err) {
-    res.json({ success: false, error: err.message });
-  }
+    res.json({ success: true });
+  } catch (err) { res.json({ success: false, error: err.message }); }
 });
 
 router.post('/delete-all', auth, async (req, res) => {
@@ -1049,12 +870,10 @@ router.post('/delete-all', auth, async (req, res) => {
     await pool.query('DELETE FROM messages');
     await pool.query('DELETE FROM contacts');
     await pool.query('DELETE FROM tenants');
-    console.log('[DANGER] All data deleted by admin');
     res.json({ success: true });
-  } catch (err) {
-    res.json({ success: false, error: err.message });
-  }
+  } catch (err) { res.json({ success: false, error: err.message }); }
 });
+
 router.post('/waitlist-invite', auth, async (req, res) => {
   try {
     const { email } = req.body;
