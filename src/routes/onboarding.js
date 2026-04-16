@@ -97,16 +97,8 @@ footer p{font-size:12px;color:var(--t4)}
   <p class="hero-sub">Customers message you on WhatsApp. Your team replies from Slack — no app switching, no missed conversations, ever.</p>
   <div class="scroll-hint"><span>Scroll to get started</span><div class="scroll-line"></div></div>
 </section>
-<section class="steps-section">
-  <div class="section-label">How it works</div>
-  <div class="section-title">Up and running in 4 steps</div>
-  <div class="steps-grid">
-  <div class="step-card"><div class="step-num">Step 01</div><div class="step-icon">🏢</div><div class="step-title">Enter your details</div><div class="step-desc">Your company name and work email — that's all we need to get started.</div></div>
-  <div class="step-card"><div class="step-num">Step 02</div><div class="step-icon">🟣</div><div class="step-title">Connect Slack</div><div class="step-desc">One-click OAuth — authorize Syncora to post messages to your Slack workspace.</div></div>
-  <div class="step-card"><div class="step-num">Step 03</div><div class="step-icon">🔑</div><div class="step-title">Get your claim code</div><div class="step-desc">We assign you a dedicated WhatsApp number and email you a short claim code (e.g. <strong style="color:#25D366">acme42</strong>). Share this code with your customers so Syncora knows which Slack workspace to route them to.</div></div>
-  <div class="step-card"><div class="step-num">Step 04</div><div class="step-icon">🚀</div><div class="step-title">Go live</div><div class="step-desc">Tell customers: <em style="color:rgba(255,255,255,.6)">"WhatsApp us at +1234 and send <strong style="color:#25D366">acme42</strong> to start."</em> They send it once — after that, just chat normally. Your team replies from Slack.</div></div>
-</div>
-</section>
+
+ 
 <section class="form-section" id="form">
   <div class="form-wrap">
     <div class="form-label">Get started</div>
