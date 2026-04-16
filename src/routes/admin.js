@@ -326,10 +326,10 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div class="sb-link" id="desk-link-add" onclick="show('add',this)"><span class="sb-icon">+</span>Add company<span class="sb-dot"></span></div>
   </nav>
   <div class="sb-bottom">
-  <div class="sb-user" onclick="location.href='/admin/logout'" style="cursor:pointer;padding:8px;border-radius:10px;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.04)'" onmouseout="this.style.background='transparent'">
+  <div class="sb-user">
     <div class="sb-avatar">A</div>
     <div style="flex:1"><div class="sb-uname">Admin</div><div class="sb-urole">Syncora admin</div></div>
-    <div style="font-size:13px;color:rgba(255,255,255,.2)">→</div>
+    <div onclick="location.href='/admin/logout'" title="Logout" style="width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all .2s" onmouseover="this.style.background='rgba(239,68,68,.1)';this.style.borderColor='rgba(239,68,68,.2)';this.style.color='#f87171'" onmouseout="this.style.background='rgba(255,255,255,.04)';this.style.borderColor='rgba(255,255,255,.08)';this.style.color=''">→</div>
   </div>
 </div>
 </aside>
