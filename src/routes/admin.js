@@ -565,6 +565,10 @@ function show(name,el){
 (function(){
   const p=new URLSearchParams(window.location.search).get('panel');
   if(p){const el=document.getElementById('desk-link-'+p);show(p,el);}
+  // Clear URL params without reload so back button goes to dashboard
+  if(window.history.replaceState){
+    window.history.replaceState({},'','/admin');
+  }
 })();
 function toggleDrawer(){
   document.getElementById('hbg').classList.toggle('open');
