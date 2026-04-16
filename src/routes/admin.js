@@ -306,7 +306,6 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   <div class="sb-section">Actions</div>
   <div class="sb-link" id="mob-link-settings" onclick="show('settings',this);closeDrawer()"><span class="sb-icon">⚙</span>Settings</div>
   <div class="sb-link" id="mob-link-add" onclick="show('add',this);closeDrawer()"><span class="sb-icon">+</span>Add company</div>
-  <div class="sb-link" onclick="location.reload();closeDrawer()"><span class="sb-icon">↺</span>Refresh</div>
 </div>
 
 <aside class="sidebar">
@@ -325,17 +324,14 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div class="sb-section">Actions</div>
     <div class="sb-link" id="desk-link-settings" onclick="show('settings',this)"><span class="sb-icon">⚙</span>Settings<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-add" onclick="show('add',this)"><span class="sb-icon">+</span>Add company<span class="sb-dot"></span></div>
-    <div class="sb-link" onclick="location.reload()"><span class="sb-icon">↺</span>Refresh<span class="sb-dot"></span></div>
   </nav>
   <div class="sb-bottom">
-     <div class="sb-link" onclick="location.href='/admin/logout'" style="margin-bottom:12px">
-       <span class="sb-icon">←</span>Logout<span class="sb-dot"></span>
-     </div>
-     <div class="sb-user">
-       <div class="sb-avatar">A</div>
-       <div><div class="sb-uname">Admin</div><div class="sb-urole">Syncora admin</div></div>
-     </div>
-   </div>
+  <div class="sb-user" onclick="location.href='/admin/logout'" style="cursor:pointer;padding:8px;border-radius:10px;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.04)'" onmouseout="this.style.background='transparent'">
+    <div class="sb-avatar">A</div>
+    <div style="flex:1"><div class="sb-uname">Admin</div><div class="sb-urole">Syncora admin</div></div>
+    <div style="font-size:13px;color:rgba(255,255,255,.2)">→</div>
+  </div>
+</div>
 </aside>
 
 <div class="main">
