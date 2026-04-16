@@ -64,7 +64,7 @@ footer p{font-size:13px;color:var(--t4);line-height:1.8}
 </nav>
 
 <div class="wrap">
-  <div class="hero-logo"><img src="/logo_full.png" alt="Syncora"/></div>
+<div class="hero-logo"><img src="/logo_text.png" alt="Syncora" style="height:28px;width:auto;filter:brightness(0) invert(1)"/></div>
   <div class="hero-badge"><span class="badge-dot"></span>Free to get started</div>
   <h1 class="hero-title">WhatsApp messages.<br/><span>Right in Slack.</span></h1>
   <p class="hero-sub">Customers message you on WhatsApp. Your team replies from Slack — no app switching, no missed conversations, ever.</p>
