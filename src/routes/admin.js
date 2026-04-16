@@ -206,6 +206,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
 .content{padding:24px 28px;flex:1}
 .panel{display:none}.panel.on{display:block}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+@media(max-width:1100px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.stats-row{grid-template-columns:1fr}}
 .scard{background:var(--bg2);border:1px solid var(--b1);border-radius:16px;padding:20px 22px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s}
 .scard:hover{transform:translateY(-2px);border-color:var(--b2)}
 .scard-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
