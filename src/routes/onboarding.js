@@ -93,13 +93,11 @@ footer p{font-size:12px;color:var(--t4)}
 <section class="hero">
   <div class="hero-logo"><img src="/logo_full.png" alt="Syncora"/></div>
   <div class="hero-badge"><span class="badge-dot"></span>Free to get started</div>
-  <h1>WhatsApp messages.<br/><span>Right in Slack.</span></h1>
 </section>
 
  
 <section class="form-section" id="form">
   <div class="form-wrap">
-    <div class="form-label">Get started</div>
     <div class="form-title">Connect your workspace</div>
     <p class="form-sub">Takes under 2 minutes. No credit card required.</p>
     <div class="form-card">
