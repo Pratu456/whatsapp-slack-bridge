@@ -16,7 +16,7 @@ const authRoute = require('./routes/auth');
 const onboardingRoute = require('./routes/onboarding');
 const adminRoute = require('./routes/admin');
 const commandsRoute = require('./routes/commands');
-
+const { sendWaitlistConfirmationEmail } = require('./services/emailService');
 const server = express();
 server.use(session({
     secret: process.env.SESSION_SECRET || 'syncora-secret-key',
@@ -418,6 +418,18 @@ server.post('/slack/interactions', express.urlencoded({ extended: true }), async
     }
   } catch (err) {
     console.error('[INTERACTIONS ERROR]', err.message);
+  }
+});
+// ── Contact form ──────────────────────────────────────────
+server.post('/contact', async (req, res) => {
+  try {
+    const { firstName, lastName, email, subject, message } = req.body;
+    if (!email || !email.includes('@')) return res.json({ success: false });
+    console.log('[CONTACT]', { firstName, lastName, email, subject, message });
+    // TODO: send email via Resend when official email is ready
+    res.json({ success: true });
+  } catch(err){
+    res.json({ success: false });
   }
 });
 // ── Start ─────────────────────────────────────────────────
