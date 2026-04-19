@@ -674,24 +674,27 @@ function saveProfile(){
 function toggleNotif(id){
   const cb=document.getElementById(id);
   cb.checked=!cb.checked;
-  applyToggleStyle(id, cb.checked);
-  localStorage.setItem('notif_'+id, cb.checked?'1':'0');
+  applyToggleStyle(id,cb.checked);
+  localStorage.setItem('notif_'+id,cb.checked?'1':'0');
 }
-
-function applyToggleStyle(id, isOn){
+function applyToggleStyle(id,isOn){
   const toggle=document.getElementById('toggle-'+id);
   const thumb=document.getElementById('thumb-'+id);
-  if(!toggle||!thumb) return;
-  if(isOn){
-    toggle.style.background='rgba(37,211,102,.3)';
-    thumb.style.background='#25D366';
-    thumb.style.left='21px';
-  } else {
-    toggle.style.background='rgba(255,255,255,.1)';
-    thumb.style.background='rgba(255,255,255,.3)';
-    thumb.style.left='3px';
-  }
+  if(!toggle||!thumb)return;
+  toggle.style.background=isOn?'rgba(37,211,102,.3)':'rgba(255,255,255,.1)';
+  thumb.style.background=isOn?'#25D366':'rgba(255,255,255,.3)';
+  thumb.style.left=isOn?'21px':'3px';
 }
+(function(){
+  var defs={notifNewCompany:true,notifWaitlist:false,notifInactive:true};
+  Object.keys(defs).forEach(function(id){
+    var saved=localStorage.getItem('notif_'+id);
+    var isOn=saved!==null?saved==='1':defs[id];
+    var cb=document.getElementById(id);
+    if(cb)cb.checked=isOn;
+    applyToggleStyle(id,isOn);
+  });
+})();
 
 (function loadNotifStates(){
   ['notifNewCompany','notifWaitlist','notifInactive'].forEach(id=>{
