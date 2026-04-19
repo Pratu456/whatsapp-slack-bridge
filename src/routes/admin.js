@@ -240,7 +240,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 .btn-primary:hover{background:var(--gd);transform:translateY(-1px)}
 .btn-ghost{background:var(--b1);color:var(--t2);padding:9px 18px;border:1px solid var(--b2);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
 .btn-ghost:hover{background:var(--b2)}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;max-width:680px}
 .fg label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t4);margin-bottom:6px}
 .fg input{width:100%;padding:11px 14px;background:var(--bg3);border:1px solid var(--b1);border-radius:10px;font-size:14px;color:var(--t);outline:none;font-family:'Inter',sans-serif;transition:border-color .2s}
 .fg input:focus{border-color:rgba(37,211,102,.4);box-shadow:0 0 0 3px rgba(37,211,102,.06)}
@@ -433,7 +433,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 
     <!-- ADD COMPANY -->
     <div id="p-add" class="panel">
-      <div style="max-width:100%;">
+      <div style="max-width:680px;">
         <div style="font-size:18px;font-weight:800;color:var(--t);margin-bottom:4px">Add new company</div>
         <div style="font-size:13px;color:var(--t4);margin-bottom:24px">Manually onboard a company to the platform</div>
         <div class="card">
