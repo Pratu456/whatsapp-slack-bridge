@@ -660,6 +660,24 @@ function saveProfile(){
   msg.style.display='block';
   setTimeout(()=>msg.style.display='none',3000);
 }
+function applyToggleStyle(id,isOn){
+  const toggle=document.getElementById('toggle-'+id);
+  const thumb=document.getElementById('thumb-'+id);
+  if(!toggle||!thumb)return;
+  toggle.style.background=isOn?'rgba(37,211,102,.3)':'rgba(255,255,255,.1)';
+  thumb.style.background=isOn?'#25D366':'rgba(255,255,255,.3)';
+  thumb.style.left=isOn?'21px':'3px';
+}
+(function(){
+  var defs={notifNewCompany:true,notifWaitlist:false,notifInactive:true};
+  Object.keys(defs).forEach(function(id){
+    var saved=localStorage.getItem('notif_'+id);
+    var isOn=saved!==null?saved==='1':defs[id];
+    var cb=document.getElementById(id);
+    if(cb)cb.checked=isOn;
+    applyToggleStyle(id,isOn);
+  });
+})();
 
 (function loadNotifStates(){
   ['notifNewCompany','notifWaitlist','notifInactive'].forEach(id=>{
