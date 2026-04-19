@@ -488,18 +488,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <div id="profileSaved" style="display:none;font-size:13px;color:#4ade80;margin-top:10px">Profile saved successfully</div>
         </div>
 
-        <!-- NOTIFICATION SETTINGS -->
-        <div class="card" style="margin-bottom:16px">
-          <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(139,92,246,.1)">🔔</div><div><div class="card-hd-title">Notification settings</div><div class="card-hd-sub">Control email alerts</div></div></div></div>
-          <div style="margin-top:16px;display:flex;flex-direction:column;gap:14px">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--b1)">
-              <div><div style="font-size:13px;font-weight:600;color:var(--t)">New company registration</div><div style="font-size:12px;color:var(--t4);margin-top:2px">Email when a new company signs up</div></div>
-              <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0">
-                <input type="checkbox" id="notifNewCompany" checked style="opacity:0;width:0;height:0;position:absolute"/>
-                <span onclick="toggleNotif('notifNewCompany')" style="position:absolute;cursor:pointer;inset:0;background:rgba(37,211,102,.3);border-radius:100px;transition:.3s" id="toggle-notifNewCompany"></span>
-                <span id="thumb-notifNewCompany" onclick="toggleNotif('notifNewCompany')" style="position:absolute;left:3px;top:3px;width:16px;height:16px;background:#25D366;border-radius:50%;transition:.3s;cursor:pointer"></span>
-              </label>
-            </div>
+      
             <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--b1)">
               <div><div style="font-size:13px;font-weight:600;color:var(--t)">Waitlist signup</div><div style="font-size:12px;color:var(--t4);margin-top:2px">Email when someone joins the waitlist</div></div>
               <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0">
@@ -671,30 +660,6 @@ function saveProfile(){
   msg.style.display='block';
   setTimeout(()=>msg.style.display='none',3000);
 }
-function toggleNotif(id){
-  const cb=document.getElementById(id);
-  cb.checked=!cb.checked;
-  applyToggleStyle(id,cb.checked);
-  localStorage.setItem('notif_'+id,cb.checked?'1':'0');
-}
-function applyToggleStyle(id,isOn){
-  const toggle=document.getElementById('toggle-'+id);
-  const thumb=document.getElementById('thumb-'+id);
-  if(!toggle||!thumb)return;
-  toggle.style.background=isOn?'rgba(37,211,102,.3)':'rgba(255,255,255,.1)';
-  thumb.style.background=isOn?'#25D366':'rgba(255,255,255,.3)';
-  thumb.style.left=isOn?'21px':'3px';
-}
-(function(){
-  var defs={notifNewCompany:true,notifWaitlist:false,notifInactive:true};
-  Object.keys(defs).forEach(function(id){
-    var saved=localStorage.getItem('notif_'+id);
-    var isOn=saved!==null?saved==='1':defs[id];
-    var cb=document.getElementById(id);
-    if(cb)cb.checked=isOn;
-    applyToggleStyle(id,isOn);
-  });
-})();
 
 (function loadNotifStates(){
   ['notifNewCompany','notifWaitlist','notifInactive'].forEach(id=>{
