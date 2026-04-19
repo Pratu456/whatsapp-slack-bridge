@@ -198,7 +198,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
 .live-dot{width:6px;height:6px;background:var(--g);border-radius:50%;animation:lp 2s infinite}
 @keyframes lp{0%,100%{box-shadow:0 0 0 2px rgba(37,211,102,.2)}50%{box-shadow:0 0 0 5px rgba(37,211,102,0)}}
 .topbar-date{font-size:12px;color:var(--t4);font-weight:500}
-.content{padding:24px 28px;flex:1;max-width:1400px;width:100%}
+.content{padding:24px 28px;flex:1;max-width:1100px;width:100%;margin:0 auto}
 .panel{display:none}.panel.on{display:block}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
 @media(max-width:1100px){.stats-row{grid-template-columns:repeat(2,1fr)}}
