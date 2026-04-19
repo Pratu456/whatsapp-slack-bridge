@@ -488,37 +488,6 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <div id="profileSaved" style="display:none;font-size:13px;color:#4ade80;margin-top:10px">Profile saved successfully</div>
         </div>
 
-        <!-- NOTIFICATION SETTINGS -->
-        <div class="card" style="margin-bottom:16px">
-          <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(139,92,246,.1)">🔔</div><div><div class="card-hd-title">Notification settings</div><div class="card-hd-sub">Control email alerts</div></div></div></div>
-          <div style="margin-top:16px;display:flex;flex-direction:column;gap:14px">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--b1)">
-              <div><div style="font-size:13px;font-weight:600;color:var(--t)">New company registration</div><div style="font-size:12px;color:var(--t4);margin-top:2px">Email when a new company signs up</div></div>
-              <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0">
-                <input type="checkbox" id="notifNewCompany" checked style="opacity:0;width:0;height:0;position:absolute"/>
-                <span onclick="toggleNotif('notifNewCompany')" style="position:absolute;cursor:pointer;inset:0;background:rgba(37,211,102,.3);border-radius:100px;transition:.3s" id="toggle-notifNewCompany"></span>
-                <span id="thumb-notifNewCompany" onclick="toggleNotif('notifNewCompany')" style="position:absolute;left:3px;top:3px;width:16px;height:16px;background:#25D366;border-radius:50%;transition:.3s;cursor:pointer"></span>
-              </label>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--b1)">
-              <div><div style="font-size:13px;font-weight:600;color:var(--t)">Waitlist signup</div><div style="font-size:12px;color:var(--t4);margin-top:2px">Email when someone joins the waitlist</div></div>
-              <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0">
-                <input type="checkbox" id="notifWaitlist" style="opacity:0;width:0;height:0;position:absolute"/>
-                <span onclick="toggleNotif('notifWaitlist')" style="position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,.1);border-radius:100px;transition:.3s" id="toggle-notifWaitlist"></span>
-                <span id="thumb-notifWaitlist" onclick="toggleNotif('notifWaitlist')" style="position:absolute;left:3px;top:3px;width:16px;height:16px;background:rgba(255,255,255,.3);border-radius:50%;transition:.3s;cursor:pointer"></span>
-              </label>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--b1)">
-              <div><div style="font-size:13px;font-weight:600;color:var(--t)">Inactive company alert</div><div style="font-size:12px;color:var(--t4);margin-top:2px">Email when a company has no messages for 14 days</div></div>
-              <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0">
-                <input type="checkbox" id="notifInactive" checked style="opacity:0;width:0;height:0;position:absolute"/>
-                <span onclick="toggleNotif('notifInactive')" style="position:absolute;cursor:pointer;inset:0;background:rgba(37,211,102,.3);border-radius:100px;transition:.3s" id="toggle-notifInactive"></span>
-                <span id="thumb-notifInactive" onclick="toggleNotif('notifInactive')" style="position:absolute;left:3px;top:3px;width:16px;height:16px;background:#25D366;border-radius:50%;transition:.3s;cursor:pointer"></span>
-              </label>
-            </div>
-          </div>
-        </div>
-
         <!-- DEFAULT CLAIM CODE LENGTH -->
         <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(245,158,11,.1)">🔑</div><div><div class="card-hd-title">Default claim code length</div><div class="card-hd-sub">Set how long auto-generated codes are</div></div></div></div>
@@ -671,61 +640,6 @@ function saveProfile(){
   msg.style.display='block';
   setTimeout(()=>msg.style.display='none',3000);
 }
-  function toggleNotif(id){
-    const cb=document.getElementById(id);
-    cb.checked=!cb.checked;
-    applyToggleStyle(id, cb.checked);
-    localStorage.setItem('notif_'+id, cb.checked?'1':'0');
-  }
-              
-  function applyToggleStyle(id, isOn){
-    const toggle=document.getElementById('toggle-'+id);
-    const thumb=document.getElementById('thumb-'+id);
-    if(!toggle||!thumb) return;
-    if(isOn){
-      toggle.style.background='rgba(37,211,102,.3)';
-      thumb.style.background='#25D366';
-      thumb.style.left='21px';
-    } else {
-      toggle.style.background='rgba(255,255,255,.1)';
-      thumb.style.background='rgba(255,255,255,.3)';
-      thumb.style.left='3px';
-    }
-  }
-
-(function loadNotifStates(){
-  ['notifNewCompany','notifWaitlist','notifInactive'].forEach(id=>{
-    const cb=document.getElementById(id);
-    if(!cb) return;
-    const saved=localStorage.getItem('notif_'+id);
-    // default: notifNewCompany and notifInactive ON, notifWaitlist OFF
-    const defaults={'notifNewCompany':true,'notifWaitlist':false,'notifInactive':true};
-    cb.checked = saved!==null ? saved==='1' : defaults[id];
-    applyToggleStyle(id, cb.checked);
-  });
-})();
-
-// Load saved notification states on page load
-(function loadNotifStates(){
-  ['notifNewCompany','notifWaitlist','notifInactive'].forEach(id=>{
-    const saved=localStorage.getItem('notif_'+id);
-    if(saved===null) return;
-    const cb=document.getElementById(id);
-    const toggle=document.getElementById('toggle-'+id);
-    const thumb=document.getElementById('thumb-'+id);
-    if(!cb||!toggle||!thumb) return;
-    cb.checked=saved==='1';
-    if(cb.checked){
-      toggle.style.background='rgba(37,211,102,.3)';
-      thumb.style.background='#25D366';
-      thumb.style.transform='translateX(18px)';
-    } else {
-      toggle.style.background='rgba(255,255,255,.1)';
-      thumb.style.background='rgba(255,255,255,.3)';
-      thumb.style.transform='translateX(0px)';
-    }
-  });
-})();
 let currentCodeLen=6;
 function setCodeLen(len,btn){
   currentCodeLen=len;
