@@ -674,20 +674,36 @@ function saveProfile(){
 function toggleNotif(id){
   const cb=document.getElementById(id);
   cb.checked=!cb.checked;
+  applyToggleStyle(id, cb.checked);
+  localStorage.setItem('notif_'+id, cb.checked?'1':'0');
+}
+
+function applyToggleStyle(id, isOn){
   const toggle=document.getElementById('toggle-'+id);
   const thumb=document.getElementById('thumb-'+id);
-  if(cb.checked){
+  if(!toggle||!thumb) return;
+  if(isOn){
     toggle.style.background='rgba(37,211,102,.3)';
     thumb.style.background='#25D366';
-    thumb.style.transform='translateX(18px)';
+    thumb.style.left='21px';
   } else {
     toggle.style.background='rgba(255,255,255,.1)';
     thumb.style.background='rgba(255,255,255,.3)';
-    thumb.style.transform='translateX(0px)';
+    thumb.style.left='3px';
   }
-  // Save to localStorage
-  localStorage.setItem('notif_'+id, cb.checked?'1':'0');
 }
+
+(function loadNotifStates(){
+  ['notifNewCompany','notifWaitlist','notifInactive'].forEach(id=>{
+    const cb=document.getElementById(id);
+    if(!cb) return;
+    const saved=localStorage.getItem('notif_'+id);
+    // default: notifNewCompany and notifInactive ON, notifWaitlist OFF
+    const defaults={'notifNewCompany':true,'notifWaitlist':false,'notifInactive':true};
+    cb.checked = saved!==null ? saved==='1' : defaults[id];
+    applyToggleStyle(id, cb.checked);
+  });
+})();
 
 // Load saved notification states on page load
 (function loadNotifStates(){
