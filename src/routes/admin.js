@@ -469,7 +469,6 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <div style="font-size:18px;font-weight:800;color:var(--t)">Settings</div>
           <div style="font-size:13px;color:var(--t4);margin-top:2px">Manage your Syncora admin account</div>
         </div>
-        <div style="width:44px;height:44px;border-radius:12px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:20px">⚙</div>
       </div>
       <div style="max-width:680px;">
 
@@ -680,13 +679,37 @@ function toggleNotif(id){
   if(cb.checked){
     toggle.style.background='rgba(37,211,102,.3)';
     thumb.style.background='#25D366';
-    thumb.style.left='3px';
+    thumb.style.transform='translateX(18px)';
   } else {
     toggle.style.background='rgba(255,255,255,.1)';
     thumb.style.background='rgba(255,255,255,.3)';
-    thumb.style.left='3px';
+    thumb.style.transform='translateX(0px)';
   }
+  // Save to localStorage
+  localStorage.setItem('notif_'+id, cb.checked?'1':'0');
 }
+
+// Load saved notification states on page load
+(function loadNotifStates(){
+  ['notifNewCompany','notifWaitlist','notifInactive'].forEach(id=>{
+    const saved=localStorage.getItem('notif_'+id);
+    if(saved===null) return;
+    const cb=document.getElementById(id);
+    const toggle=document.getElementById('toggle-'+id);
+    const thumb=document.getElementById('thumb-'+id);
+    if(!cb||!toggle||!thumb) return;
+    cb.checked=saved==='1';
+    if(cb.checked){
+      toggle.style.background='rgba(37,211,102,.3)';
+      thumb.style.background='#25D366';
+      thumb.style.transform='translateX(18px)';
+    } else {
+      toggle.style.background='rgba(255,255,255,.1)';
+      thumb.style.background='rgba(255,255,255,.3)';
+      thumb.style.transform='translateX(0px)';
+    }
+  });
+})();
 let currentCodeLen=6;
 function setCodeLen(len,btn){
   currentCodeLen=len;
