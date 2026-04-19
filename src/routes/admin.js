@@ -660,6 +660,12 @@ function saveProfile(){
   msg.style.display='block';
   setTimeout(()=>msg.style.display='none',3000);
 }
+function toggleNotif(id){
+  const cb=document.getElementById(id);
+  cb.checked=!cb.checked;
+  applyToggleStyle(id,cb.checked);
+  localStorage.setItem('notif_'+id,cb.checked?'1':'0');
+}
 function applyToggleStyle(id,isOn){
   const toggle=document.getElementById('toggle-'+id);
   const thumb=document.getElementById('thumb-'+id);
