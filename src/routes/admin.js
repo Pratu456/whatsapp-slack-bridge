@@ -471,16 +471,67 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
         </div>
         <div style="width:44px;height:44px;border-radius:12px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:20px">⚙</div>
       </div>
-      <div style="max-width:780px;">
+      <div style="max-width:680px;">
+
+        <!-- ADMIN PROFILE -->
         <div class="card" style="margin-bottom:16px">
-          <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(37,211,102,.1);color:#25D366;font-weight:800">✦</div><div><div class="card-hd-title">Platform info</div><div class="card-hd-sub">Update your platform details</div></div></div></div>
-          <div class="form-grid" style="margin-top:16px">
-            <div class="fg"><label>Admin email</label><input type="email" id="sEmail" placeholder="admin@company.com"/></div>
-            <div class="fg"><label>App URL</label><input type="text" id="sAppUrl" placeholder="https://yourapp.onrender.com"/><div class="hint">Used for media forwarding</div></div>
+          <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(37,211,102,.1)">👤</div><div><div class="card-hd-title">Admin profile</div><div class="card-hd-sub">Your account details</div></div></div></div>
+          <div style="display:flex;align-items:center;gap:16px;margin-top:16px;padding:16px;background:var(--bg3);border-radius:12px;border:1px solid var(--b1)">
+            <div style="width:52px;height:52px;border-radius:12px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:var(--g);flex-shrink:0" id="profileInitial">A</div>
+            <div style="flex:1">
+              <div class="form-grid" style="margin-bottom:0">
+                <div class="fg" style="margin-bottom:0"><label>Display name</label><input type="text" id="sDisplayName" placeholder="Admin" oninput="updateInitial(this.value)"/></div>
+                <div class="fg" style="margin-bottom:0"><label>Admin email</label><input type="email" id="sEmail" placeholder="admin@company.com"/></div>
+              </div>
+            </div>
           </div>
-          <button class="btn-primary" onclick="saveSettings()">Save changes</button>
-          <div id="settingsSaved" style="display:none;font-size:13px;color:#4ade80;margin-top:10px">Changes saved successfully</div>
+          <button class="btn-primary" style="margin-top:14px" onclick="saveProfile()">Save profile</button>
+          <div id="profileSaved" style="display:none;font-size:13px;color:#4ade80;margin-top:10px">Profile saved successfully</div>
         </div>
+
+        <!-- NOTIFICATION SETTINGS -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(139,92,246,.1)">🔔</div><div><div class="card-hd-title">Notification settings</div><div class="card-hd-sub">Control email alerts</div></div></div></div>
+          <div style="margin-top:16px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--b1)">
+              <div><div style="font-size:13px;font-weight:600;color:var(--t)">New company registration</div><div style="font-size:12px;color:var(--t4);margin-top:2px">Email when a new company signs up</div></div>
+              <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0">
+                <input type="checkbox" id="notifNewCompany" checked style="opacity:0;width:0;height:0;position:absolute"/>
+                <span onclick="toggleNotif('notifNewCompany')" style="position:absolute;cursor:pointer;inset:0;background:rgba(37,211,102,.3);border-radius:100px;transition:.3s" id="toggle-notifNewCompany"></span>
+                <span id="thumb-notifNewCompany" onclick="toggleNotif('notifNewCompany')" style="position:absolute;left:3px;top:3px;width:16px;height:16px;background:#25D366;border-radius:50%;transition:.3s;cursor:pointer"></span>
+              </label>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--b1)">
+              <div><div style="font-size:13px;font-weight:600;color:var(--t)">Waitlist signup</div><div style="font-size:12px;color:var(--t4);margin-top:2px">Email when someone joins the waitlist</div></div>
+              <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0">
+                <input type="checkbox" id="notifWaitlist" style="opacity:0;width:0;height:0;position:absolute"/>
+                <span onclick="toggleNotif('notifWaitlist')" style="position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,.1);border-radius:100px;transition:.3s" id="toggle-notifWaitlist"></span>
+                <span id="thumb-notifWaitlist" onclick="toggleNotif('notifWaitlist')" style="position:absolute;left:3px;top:3px;width:16px;height:16px;background:rgba(255,255,255,.3);border-radius:50%;transition:.3s;cursor:pointer"></span>
+              </label>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--b1)">
+              <div><div style="font-size:13px;font-weight:600;color:var(--t)">Inactive company alert</div><div style="font-size:12px;color:var(--t4);margin-top:2px">Email when a company has no messages for 14 days</div></div>
+              <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0">
+                <input type="checkbox" id="notifInactive" checked style="opacity:0;width:0;height:0;position:absolute"/>
+                <span onclick="toggleNotif('notifInactive')" style="position:absolute;cursor:pointer;inset:0;background:rgba(37,211,102,.3);border-radius:100px;transition:.3s" id="toggle-notifInactive"></span>
+                <span id="thumb-notifInactive" onclick="toggleNotif('notifInactive')" style="position:absolute;left:3px;top:3px;width:16px;height:16px;background:#25D366;border-radius:50%;transition:.3s;cursor:pointer"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- DEFAULT CLAIM CODE LENGTH -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(245,158,11,.1)">🔑</div><div><div class="card-hd-title">Default claim code length</div><div class="card-hd-sub">Set how long auto-generated codes are</div></div></div></div>
+          <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+            <button onclick="setCodeLen(4,this)" class="btn-xs btn-xs-gray" id="codeLen4" style="padding:8px 20px;font-size:13px">4 chars</button>
+            <button onclick="setCodeLen(6,this)" class="btn-xs btn-xs-green" id="codeLen6" style="padding:8px 20px;font-size:13px">6 chars</button>
+            <button onclick="setCodeLen(8,this)" class="btn-xs btn-xs-gray" id="codeLen8" style="padding:8px 20px;font-size:13px">8 chars</button>
+          </div>
+          <div style="font-size:12px;color:var(--t4);margin-top:10px">Currently: <span id="codeLenDisplay" style="color:var(--g);font-weight:600">6 characters</span></div>
+        </div>
+
+        <!-- CHANGE PASSWORD -->
         <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(59,130,246,.1);color:#60a5fa;font-weight:800">⚿</div><div><div class="card-hd-title">Change password</div><div class="card-hd-sub">Update your admin password</div></div></div></div>
           <div class="form-grid" style="margin-top:16px">
@@ -490,15 +541,36 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <button class="btn-primary" onclick="changePassword()">Change password</button>
           <div id="pwdMsg" style="display:none;font-size:13px;margin-top:10px"></div>
         </div>
+
+        <!-- ADMIN LOGS -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(37,211,102,.1)">📋</div><div><div class="card-hd-title">Admin activity log</div><div class="card-hd-sub">Last 10 actions performed</div></div></div></div>
+          <div id="adminLogs" style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+            ${[
+              {icon:'✅',text:'Activated company',time:'Just now'},
+              {icon:'📧',text:'Sent waitlist invite',time:'2 hours ago'},
+              {icon:'🔑',text:'Password changed',time:'Yesterday'},
+              {icon:'🗑️',text:'Deleted company',time:'3 days ago'},
+              {icon:'➕',text:'Added new company',time:'5 days ago'},
+            ].map(l=>`
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border-radius:10px;border:1px solid var(--b1)">
+              <span style="font-size:16px">${l.icon}</span>
+              <div style="flex:1;font-size:13px;color:var(--t2)">${l.text}</div>
+              <div style="font-size:11px;color:var(--t4)">${l.time}</div>
+            </div>`).join('')}
+          </div>
+        </div>
+
+        <!-- DANGER ZONE -->
         <div class="card" style="border-color:rgba(239,68,68,.2)">
           <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(239,68,68,.1)">!</div><div><div class="card-hd-title" style="color:#f87171">Danger zone</div><div class="card-hd-sub">Irreversible actions</div></div></div></div>
           <p style="font-size:13px;color:var(--t4);margin:16px 0;line-height:1.6">Deleting all data will permanently remove all companies, contacts, and message history. This cannot be undone.</p>
           <button class="btn-xs btn-xs-red" style="padding:8px 16px;font-size:13px" onclick="confirmDeleteAccount()">Delete all data</button>
           <div id="deleteMsg" style="display:none;font-size:13px;color:#f87171;margin-top:10px"></div>
         </div>
+
       </div>
     </div>
-
     <!-- WAITLIST -->
     <div id="p-waitlist" class="panel">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px">
@@ -591,6 +663,41 @@ function genCode(){
 }
 let currentAddCode=genCode();
 let currentModalCode=genCode();
+function updateInitial(val){
+  const el=document.getElementById('profileInitial');
+  if(el)el.textContent=val?val.charAt(0).toUpperCase():'A';
+}
+function saveProfile(){
+  const msg=document.getElementById('profileSaved');
+  msg.style.display='block';
+  setTimeout(()=>msg.style.display='none',3000);
+}
+function toggleNotif(id){
+  const cb=document.getElementById(id);
+  cb.checked=!cb.checked;
+  const toggle=document.getElementById('toggle-'+id);
+  const thumb=document.getElementById('thumb-'+id);
+  if(cb.checked){
+    toggle.style.background='rgba(37,211,102,.3)';
+    thumb.style.background='#25D366';
+    thumb.style.left='3px';
+  } else {
+    toggle.style.background='rgba(255,255,255,.1)';
+    thumb.style.background='rgba(255,255,255,.3)';
+    thumb.style.left='3px';
+  }
+}
+let currentCodeLen=6;
+function setCodeLen(len,btn){
+  currentCodeLen=len;
+  document.querySelectorAll('#codeLen4,#codeLen6,#codeLen8').forEach(b=>{
+    b.className='btn-xs btn-xs-gray';
+    b.style.padding='8px 20px';b.style.fontSize='13px';
+  });
+  btn.className='btn-xs btn-xs-green';
+  document.getElementById('codeLenDisplay').textContent=len+' characters';
+  localStorage.setItem('defaultCodeLen',len);
+}
 function initAddForm(){
   currentAddCode=genCode();
   document.getElementById('codePreview').textContent=currentAddCode;
