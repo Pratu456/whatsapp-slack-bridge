@@ -748,7 +748,7 @@ function renderMessages(){
 async function loadLogs(){
   try{
     const r=await fetch('/admin/logs-data');const d=await r.json();
-    const icons={'Activated company':'✅','Deleted company':'�️','Added company':'➕','Password changed':'�','Sent waitlist invite':'�'};
+    const icons={'Activated company':'✅','Deleted company':'�','Added company':'➕','Password changed':'�','Sent waitlist invite':'�'};
     const el=document.getElementById('adminLogs');
     el.innerHTML=d.logs.map(l=>{const ago=timeAgo(new Date(l.created_at));const icon=icons[l.action]||'�';return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border-radius:10px;border:1px solid var(--b1)"><span style="font-size:16px">'+icon+'</span><div style="flex:1;font-size:13px;color:var(--t2)">'+l.action+(l.detail?' · <span style="color:var(--t4)">'+l.detail+'</span>':'')+'</div><div style="font-size:11px;color:var(--t4)">'+ago+'</div></div>';}).join('');
   }catch(e){document.getElementById('adminLogs').innerHTML='<div style="color:#f87171;font-size:13px">Error loading logs</div>';}
