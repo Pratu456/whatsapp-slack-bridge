@@ -707,6 +707,15 @@ async function loadMessages(){
     document.getElementById('msg-content').innerHTML=\`<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Company</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead><tbody>\${d.messages.map(m=>\`<tr class="tr-hover"><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">\${new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td style="font-weight:600;font-size:13px">\${m.company_name}</td><td style="font-size:12px;color:rgba(255,255,255,.4)">\${m.wa_number}</td><td>\${m.direction==='inbound'?'<span class="badge-green">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>'}</td><td style="font-size:12px;color:rgba(255,255,255,.5);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">\${m.media_type?'['+m.media_type.split('/')[0]+']':(m.body||'').substring(0,80)}</td></tr>\`).join('')}</tbody></table></div>\`;
   }catch(e){document.getElementById('msg-content').innerHTML='<div style="color:#f87171;font-size:13px">Error loading messages</div>';}
 }
+async function loadLogs(){
+  try{
+    const r=await fetch('/admin/logs-data');const d=await r.json();
+    const icons={'Activated company':'✅','Deleted company':'�️','Added company':'➕','Password changed':'�','Sent waitlist invite':'�'};
+    const el=document.getElementById('adminLogs');
+    el.innerHTML=d.logs.map(l=>{const ago=timeAgo(new Date(l.created_at));const icon=icons[l.action]||'�';return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border-radius:10px;border:1px solid var(--b1)"><span style="font-size:16px">'+icon+'</span><div style="flex:1;font-size:13px;color:var(--t2)">'+l.action+(l.detail?' · <span style="color:var(--t4)">'+l.detail+'</span>':'')+'</div><div style="font-size:11px;color:var(--t4)">'+ago+'</div></div>';}).join('');
+  }catch(e){document.getElementById('adminLogs').innerHTML='<div style="color:#f87171;font-size:13px">Error loading logs</div>';}
+}
+function timeAgo(date){const s=Math.floor((Date.now()-date)/1000);if(s<60)return 'Just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';}
 async function loadWaitlist(){
   try{
     const r=await fetch('/admin/waitlist-data');
