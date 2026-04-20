@@ -82,8 +82,21 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;text-a
   </form>
   <div class="divider"><span>already have an account?</span></div>
   <p class="note"><a href="/auth/login">Sign in →</a></p>
-  <p class="note" style="margin-top:12px">By registering you agree to our <a href="/terms.html">Terms of Service</a> and <a href="/privacy.html">Privacy Policy</a>.</p>
 </div>
+</div>
+
+<footer style="position:relative;z-index:1;text-align:center;padding:32px 24px;margin-top:24px">
+  <p style="font-size:13px;color:rgba(255,255,255,.25);line-height:1.8">© 2026 Syncora · WhatsApp ↔ Slack Bridge</p>
+  <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap">
+    <a href="/privacy.html" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.08);border-radius:100px;transition:color .2s" onmouseover="this.style.color='#25D366';this.style.borderColor='rgba(37,211,102,.3)'" onmouseout="this.style.color='rgba(255,255,255,.4)';this.style.borderColor='rgba(255,255,255,.08)'">Privacy Policy</a>
+    <span style="color:rgba(255,255,255,.15)">·</span>
+    <a href="/terms.html" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.08);border-radius:100px;transition:color .2s" onmouseover="this.style.color='#25D366';this.style.borderColor='rgba(37,211,102,.3)'" onmouseout="this.style.color='rgba(255,255,255,.4)';this.style.borderColor='rgba(255,255,255,.08)'">Terms of Service</a>
+    <span style="color:rgba(255,255,255,.15)">·</span>
+    <a href="/impressum.html" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.08);border-radius:100px;transition:color .2s" onmouseover="this.style.color='#25D366';this.style.borderColor='rgba(37,211,102,.3)'" onmouseout="this.style.color='rgba(255,255,255,.4)';this.style.borderColor='rgba(255,255,255,.08)'">Impressum</a>
+    <span style="color:rgba(255,255,255,.15)">·</span>
+    <a href="/contact.html" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.08);border-radius:100px;transition:color .2s" onmouseover="this.style.color='#25D366';this.style.borderColor='rgba(37,211,102,.3)'" onmouseout="this.style.color='rgba(255,255,255,.4)';this.style.borderColor='rgba(255,255,255,.08)'">Contact</a>
+  </div>
+</footer>
 </body>
 </html>`);
 });
@@ -175,6 +188,20 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px}
   <p class="sub">Click the link in the email to verify your account and continue to onboarding.</p>
   <p class="note">Didn't receive it? Check your spam folder or <a href="/auth/resend-verify?email=${encodeURIComponent(email)}">resend the email</a>.</p>
 </div>
+
+
+<footer style="position:relative;z-index:1;text-align:center;padding:32px 24px;margin-top:24px">
+  <p style="font-size:13px;color:rgba(255,255,255,.25);line-height:1.8">© 2026 Syncora · WhatsApp ↔ Slack Bridge</p>
+  <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap">
+    <a href="/privacy.html" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.08);border-radius:100px;transition:color .2s" onmouseover="this.style.color='#25D366';this.style.borderColor='rgba(37,211,102,.3)'" onmouseout="this.style.color='rgba(255,255,255,.4)';this.style.borderColor='rgba(255,255,255,.08)'">Privacy Policy</a>
+    <span style="color:rgba(255,255,255,.15)">·</span>
+    <a href="/terms.html" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.08);border-radius:100px;transition:color .2s" onmouseover="this.style.color='#25D366';this.style.borderColor='rgba(37,211,102,.3)'" onmouseout="this.style.color='rgba(255,255,255,.4)';this.style.borderColor='rgba(255,255,255,.08)'">Terms of Service</a>
+    <span style="color:rgba(255,255,255,.15)">·</span>
+    <a href="/impressum.html" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.08);border-radius:100px;transition:color .2s" onmouseover="this.style.color='#25D366';this.style.borderColor='rgba(37,211,102,.3)'" onmouseout="this.style.color='rgba(255,255,255,.4)';this.style.borderColor='rgba(255,255,255,.08)'">Impressum</a>
+    <span style="color:rgba(255,255,255,.15)">·</span>
+    <a href="/contact.html" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.08);border-radius:100px;transition:color .2s" onmouseover="this.style.color='#25D366';this.style.borderColor='rgba(37,211,102,.3)'" onmouseout="this.style.color='rgba(255,255,255,.4)';this.style.borderColor='rgba(255,255,255,.08)'">Contact</a>
+  </div>
+</footer>
 </body>
 </html>`);
 });
@@ -291,6 +318,21 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;text-a
   <div class="divider"><span>don't have an account?</span></div>
   <p class="note"><a href="/auth/register">Create account →</a></p>
 </div>
+
+
+<footer style="position:relative;z-index:1;text-align:center;padding:32px 24px;margin-top:24px">
+  <p style="font-size:13px;color:rgba(255,255,255,.25);line-height:1.8">© 2026 Syncora · WhatsApp ↔ Slack Bridge</p>
+  <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap">
+    <a href="/privacy.html" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.08);border-radius:100px;transition:color .2s" onmouseover="this.style.color='#25D366';this.style.borderColor='rgba(37,211,102,.3)'" onmouseout="this.style.color='rgba(255,255,255,.4)';this.style.borderColor='rgba(255,255,255,.08)'">Privacy Policy</a>
+    <span style="color:rgba(255,255,255,.15)">·</span>
+    <a href="/terms.html" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.08);border-radius:100px;transition:color .2s" onmouseover="this.style.color='#25D366';this.style.borderColor='rgba(37,211,102,.3)'" onmouseout="this.style.color='rgba(255,255,255,.4)';this.style.borderColor='rgba(255,255,255,.08)'">Terms of Service</a>
+    <span style="color:rgba(255,255,255,.15)">·</span>
+    <a href="/impressum.html" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.08);border-radius:100px;transition:color .2s" onmouseover="this.style.color='#25D366';this.style.borderColor='rgba(37,211,102,.3)'" onmouseout="this.style.color='rgba(255,255,255,.4)';this.style.borderColor='rgba(255,255,255,.08)'">Impressum</a>
+    <span style="color:rgba(255,255,255,.15)">·</span>
+    <a href="/contact.html" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.08);border-radius:100px;transition:color .2s" onmouseover="this.style.color='#25D366';this.style.borderColor='rgba(37,211,102,.3)'" onmouseout="this.style.color='rgba(255,255,255,.4)';this.style.borderColor='rgba(255,255,255,.08)'">Contact</a>
+  </div>
+</footer>
+
 </body>
 </html>`);
 });
