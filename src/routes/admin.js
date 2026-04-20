@@ -766,7 +766,7 @@ function renderWaitlist(){
   const start=(_wlPage-1)*_wlPerPage;const slice=_wl.slice(start,start+_wlPerPage);
   const rows=slice.map(function(r){
     const date=new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-    return '<tr class="tr-hover"><td style="font-size:13px">'+r.email+'</td><td style="font-size:12px;color:rgba(255,255,255,.4)">'+date+'</td><td><button data-email="'+r.email+'" onclick="sendInvite(this.dataset.email,this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Send invite →</button></td></tr>';
+    return '<tr class="tr-hover"><td style="font-size:13px;color:rgba(255,255,255,.85);word-break:break-all">'+r.email+'</td><td style="font-size:13px;color:rgba(255,255,255,.5);white-space:nowrap">'+date+'</td><td style="text-align:right"><button data-email="'+r.email+'" onclick="sendInvite(this.dataset.email,this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap">Invite →</button></td></tr>';
   }).join('');
   var pagerHTML='';
   if(pages>1){
