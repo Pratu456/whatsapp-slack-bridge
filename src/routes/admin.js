@@ -61,6 +61,8 @@ const generateClaimCode = () => {
   return code;
 };
 
+const logAdminAction = async (action, detail = "") => { try { await pool.query(`CREATE TABLE IF NOT EXISTS admin_logs (id SERIAL PRIMARY KEY, action VARCHAR(255), detail TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`); await pool.query(`INSERT INTO admin_logs (action, detail) VALUES ($1, $2)`, [action, detail]); } catch(e) { console.error("[LOG ERROR]", e.message); } };
+
 const validateClaimCode = (code) => {
   if (!code) return 'Claim code is required';
   if (code.length < 3) return 'Claim code must be at least 3 characters';
@@ -606,7 +608,7 @@ function show(name,el){
   if(pt)pt.textContent=titles[name]||name;
   if(name==='messages')loadMessages();
   if(name==='add')initAddForm();
-  if(name==='waitlist')loadWaitlist();
+  if(name==='waitlist')loadWaitlist();if(name==='settings')loadLogs();
 }
 (function(){
   const p=new URLSearchParams(window.location.search).get('panel');
@@ -891,6 +893,7 @@ router.post('/activate', auth, async (req, res) => {
       await sendActivationEmail({ to: email.trim(), companyName: (await pool.query('SELECT company_name FROM tenants WHERE id = $1', [id])).rows[0].company_name, claimCode: claim_code.toLowerCase().trim(), twilioNumber: twilio_number });
       emailSent = true;
     } catch (emailErr) { console.error('Email send failed:', emailErr.message); }
+    await logAdminAction("Activated company", email.trim());
     res.json({ success: true, emailSent, emailTo: email.trim() });
   } catch(err){ res.json({ success: false, error: err.message }); }
 });
@@ -940,6 +943,7 @@ router.post('/change-password', auth, async (req, res) => {
     if (current !== process.env.ADMIN_PASSWORD) return res.json({ success: false, error: 'Current password is incorrect' });
     if (!newPassword || newPassword.length < 8) return res.json({ success: false, error: 'New password must be at least 8 characters' });
     process.env.ADMIN_PASSWORD = newPassword;
+    await logAdminAction("Password changed", "");
     res.json({ success: true });
   } catch (err) { res.json({ success: false, error: err.message }); }
 });
@@ -966,5 +970,7 @@ router.post('/waitlist-invite', auth, async (req, res) => {
     res.json({ success: false, error: err.message });
   }
 });
+
+router.get("/logs-data", auth, async (req, res) => { try { await pool.query(`CREATE TABLE IF NOT EXISTS admin_logs (id SERIAL PRIMARY KEY, action VARCHAR(255), detail TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`); const result = await pool.query("SELECT * FROM admin_logs ORDER BY created_at DESC LIMIT 10"); res.json({ success: true, logs: result.rows }); } catch(err) { res.json({ success: false, logs: [] }); }});
 
 module.exports = router;
