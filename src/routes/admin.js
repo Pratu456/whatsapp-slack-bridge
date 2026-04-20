@@ -748,9 +748,9 @@ function renderMessages(){
 async function loadLogs(){
   try{
     const r=await fetch('/admin/logs-data');const d=await r.json();
-    const icons={'Activated company':'✅','Deleted company':'�','Added company':'➕','Password changed':'�','Sent waitlist invite':'�'};
+    const icons={'Activated company':'[+]','Deleted company':'[x]','Added company':'[+]','Password changed':'[*]','Sent waitlist invite':'[@]'};
     const el=document.getElementById('adminLogs');
-    el.innerHTML=d.logs.map(l=>{const ago=timeAgo(new Date(l.created_at));const icon=icons[l.action]||'�';return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border-radius:10px;border:1px solid var(--b1)"><span style="font-size:16px">'+icon+'</span><div style="flex:1;font-size:13px;color:var(--t2)">'+l.action+(l.detail?' · <span style="color:var(--t4)">'+l.detail+'</span>':'')+'</div><div style="font-size:11px;color:var(--t4)">'+ago+'</div></div>';}).join('');
+    el.innerHTML=d.logs.map(l=>{const ago=timeAgo(new Date(l.created_at));const icon=icons[l.action]||'[?]';return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border-radius:10px;border:1px solid var(--b1)"><span style="font-size:16px">'+icon+'</span><div style="flex:1;font-size:13px;color:var(--t2)">'+l.action+(l.detail?' · <span style="color:var(--t4)">'+l.detail+'</span>':'')+'</div><div style="font-size:11px;color:var(--t4)">'+ago+'</div></div>';}).join('');
   }catch(e){document.getElementById('adminLogs').innerHTML='<div style="color:#f87171;font-size:13px">Error loading logs</div>';}
 }
 function timeAgo(date){const s=Math.floor((Date.now()-date)/1000);if(s<60)return 'Just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';}
@@ -766,7 +766,7 @@ function renderWaitlist(){
   const start=(_wlPage-1)*_wlPerPage;const slice=_wl.slice(start,start+_wlPerPage);
   const rows=slice.map(function(r){
     const date=new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-    return '<tr class="tr-hover"><td style="font-size:13px">'+r.email+'</td><td style="font-size:12px;color:rgba(255,255,255,.4)">'+date+'</td><td><button onclick="sendInvite('' +r.email+ '',this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Send invite →</button></td></tr>';
+    return '<tr class="tr-hover"><td style="font-size:13px">'+r.email+'</td><td style="font-size:12px;color:rgba(255,255,255,.4)">'+date+'</td><td><button data-email="'+r.email+'" onclick="sendInvite(this.dataset.email,this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Send invite →</button></td></tr>';
   }).join('');
   var pagerHTML='';
   if(pages>1){
