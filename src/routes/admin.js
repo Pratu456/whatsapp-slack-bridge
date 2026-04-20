@@ -120,7 +120,7 @@ router.get('/', auth, async (req, res) => {
           </div>
         </td>
         <td><code style="background:rgba(37,211,102,.08);color:#25D366;padding:3px 10px;border-radius:6px;font-size:12px;border:1px solid rgba(37,211,102,.15)">${t.claim_code || '-'}</code></td>
-        <td style="font-size:13px;color:rgba(255,255,255,.4)">${t.twilio_number || '-'}</td>
+        <td class="hide-mobile" style="font-size:13px;color:rgba(255,255,255,.4)">${t.twilio_number || '-'}</td>
         <td>${t.is_active ? '<span class="badge-green">Active</span>' : '<span class="badge-yellow">Pending</span>'}</td>
         <td style="font-size:12px;color:rgba(255,255,255,.3)">${new Date(t.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
@@ -272,10 +272,11 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 .email-status.failed{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);display:block}
 .divider{height:1px;background:var(--b1);margin:16px 0}
 @media(max-width:960px){
-  .sidebar{display:none}.mob-bar{display:flex}
-  .main{margin-left:0;padding-top:var(--mob-topbar)}.topbar{display:none}
+  .sidebar{display:none!important}.mob-bar{display:flex!important}
+  .main{margin-left:0!important;padding-top:var(--mob-topbar)}.topbar{display:none!important}
   .stats-row{grid-template-columns:1fr 1fr}.row2{grid-template-columns:1fr}
   .content{padding:16px}.form-grid{grid-template-columns:1fr}
+  .tbl-wrap{overflow-x:auto;max-width:calc(100vw - 32px)}
 }
 @media(max-width:520px){
   .scard-num{font-size:32px;letter-spacing:-1px}.scard{padding:16px}
@@ -294,12 +295,13 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   .code-preview-val{font-size:16px;letter-spacing:2px}
 }
 @media(max-width:600px){
-  .tbl-wrap{border-radius:10px}
-  table{min-width:420px}
-  th{font-size:10px;padding:8px 10px}
-  td{font-size:12px;padding:8px 10px}
-  .badge-green,.badge-yellow{font-size:10px;padding:3px 7px}
+  .tbl-wrap{border-radius:10px;max-width:calc(100vw - 32px)}
+  table{min-width:360px;font-size:12px}
+  th{font-size:10px;padding:7px 8px;letter-spacing:0}
+  td{font-size:12px;padding:7px 8px}
+  .badge-green,.badge-yellow{font-size:10px;padding:2px 6px}
   .btn-xs{font-size:11px;padding:4px 8px}
+  .hide-mobile{display:none!important}
 }
 </style>
 </head>
@@ -436,7 +438,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
       </div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Company</th><th>Claim code</th><th>Twilio number</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Company</th><th>Claim code</th><th class="hide-mobile">Twilio number</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
           <tbody>${tenantRows}</tbody>
         </table>
       </div>
