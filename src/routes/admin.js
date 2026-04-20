@@ -729,9 +729,21 @@ async function loadMessages(){
 function renderMessages(){
   const total=_msgs.length;const pages=Math.ceil(total/_msgsPerPage);
   const start=(_msgsPage-1)*_msgsPerPage;const slice=_msgs.slice(start,start+_msgsPerPage);
-  const rows=slice.map(m=>`<tr class="tr-hover"><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">${new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td style="font-weight:600;font-size:13px">${m.company_name}</td><td style="font-size:12px;color:rgba(255,255,255,.4)">${m.wa_number}</td><td>${m.direction==='inbound'?'<span class="badge-green">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>'}</td><td style="font-size:12px;color:rgba(255,255,255,.5);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.media_type?'['+m.media_type.split('/')[0]+']':(m.body||'').substring(0,60)}</td></tr>`).join('');
-  const pager=pages>1?`<div class="pager"><div class="pager-info">Showing ${start+1}–${Math.min(start+_msgsPerPage,total)} of ${total}</div><div class="pager-btns">${_msgsPage>1?'<button class="pager-btn" onclick="_msgsPage--;renderMessages()">← Prev</button>':''}${Array.from({length:pages},(_,i)=>`<button class="pager-btn${i+1===_msgsPage?' active':' '}" onclick="_msgsPage=${i+1};renderMessages()">${i+1}</button>`).join('')}${_msgsPage<pages?'<button class="pager-btn" onclick="_msgsPage++;renderMessages()">Next →</button>':''}</div></div>`:'';
-  document.getElementById('msg-content').innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Company</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead><tbody>${rows}</tbody></table>${pager}</div>`;
+  const rows=slice.map(function(m){
+    const time=new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    const dir=m.direction==='inbound'?'<span class="badge-green">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>';
+    const msg=m.media_type?'['+m.media_type.split('/')[0]+']':(m.body||'').substring(0,60);
+    return '<tr class="tr-hover"><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">'+time+'</td><td style="font-weight:600;font-size:13px">'+m.company_name+'</td><td style="font-size:12px;color:rgba(255,255,255,.4)">'+m.wa_number+'</td><td>'+dir+'</td><td style="font-size:12px;color:rgba(255,255,255,.5);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+msg+'</td></tr>';
+  }).join('');
+  var pagerHTML='';
+  if(pages>1){
+    var btns='';
+    if(_msgsPage>1)btns+='<button class="pager-btn" onclick="_msgsPage--;renderMessages()">← Prev</button>';
+    for(var i=1;i<=pages;i++)btns+='<button class="pager-btn'+(i===_msgsPage?' active':'')+'" onclick="_msgsPage='+i+';renderMessages()">'+i+'</button>';
+    if(_msgsPage<pages)btns+='<button class="pager-btn" onclick="_msgsPage++;renderMessages()">Next →</button>';
+    pagerHTML='<div class="pager"><div class="pager-info">Showing '+(start+1)+'–'+Math.min(start+_msgsPerPage,total)+' of '+total+'</div><div class="pager-btns">'+btns+'</div></div>';
+  }
+  document.getElementById('msg-content').innerHTML='<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Company</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead><tbody>'+rows+'</tbody></table>'+pagerHTML+'</div>';
 }
 async function loadLogs(){
   try{
@@ -752,9 +764,19 @@ async function loadWaitlist(){
 function renderWaitlist(){
   const total=_wl.length;const pages=Math.ceil(total/_wlPerPage);
   const start=(_wlPage-1)*_wlPerPage;const slice=_wl.slice(start,start+_wlPerPage);
-  const rows=slice.map(r=>`<tr class="tr-hover"><td style="font-size:13px">${r.email}</td><td style="font-size:12px;color:rgba(255,255,255,.4)">${new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td><td><button onclick="sendInvite('${r.email}',this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Send invite →</button></td></tr>`).join('');
-  const pager=pages>1?`<div class="pager"><div class="pager-info">Showing ${start+1}–${Math.min(start+_wlPerPage,total)} of ${total}</div><div class="pager-btns">${_wlPage>1?'<button class="pager-btn" onclick="_wlPage--;renderWaitlist()">← Prev</button>':''}${Array.from({length:pages},(_,i)=>`<button class="pager-btn${i+1===_wlPage?' active':' '}" onclick="_wlPage=${i+1};renderWaitlist()">${i+1}</button>`).join('')}${_wlPage<pages?'<button class="pager-btn" onclick="_wlPage++;renderWaitlist()">Next →</button>':''}</div></div>`:'';
-  document.getElementById('waitlist-content').innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Signed up</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table>${pager}</div>`;
+  const rows=slice.map(function(r){
+    const date=new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    return '<tr class="tr-hover"><td style="font-size:13px">'+r.email+'</td><td style="font-size:12px;color:rgba(255,255,255,.4)">'+date+'</td><td><button onclick="sendInvite('' +r.email+ '',this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Send invite →</button></td></tr>';
+  }).join('');
+  var pagerHTML='';
+  if(pages>1){
+    var btns='';
+    if(_wlPage>1)btns+='<button class="pager-btn" onclick="_wlPage--;renderWaitlist()">← Prev</button>';
+    for(var i=1;i<=pages;i++)btns+='<button class="pager-btn'+(i===_wlPage?' active':'')+'" onclick="_wlPage='+i+';renderWaitlist()">'+i+'</button>';
+    if(_wlPage<pages)btns+='<button class="pager-btn" onclick="_wlPage++;renderWaitlist()">Next →</button>';
+    pagerHTML='<div class="pager"><div class="pager-info">Showing '+(start+1)+'–'+Math.min(start+_wlPerPage,total)+' of '+total+'</div><div class="pager-btns">'+btns+'</div></div>';
+  }
+  document.getElementById('waitlist-content').innerHTML='<div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Signed up</th><th>Action</th></tr></thead><tbody>'+rows+'</tbody></table>'+pagerHTML+'</div>';
 }
 async function sendInvite(email,btn){
   if(!confirm('Send invite to '+email+'?'))return;
