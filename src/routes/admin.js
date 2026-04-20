@@ -221,7 +221,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
 .card-hd-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
 .card-hd-title{font-size:14px;font-weight:700;color:var(--t)}
 .card-hd-sub{font-size:12px;color:var(--t4)}
-.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--b1);-webkit-overflow-scrolling:touch;-ms-overflow-style:-ms-autohiding-scrollbar}
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--b1);-webkit-overflow-scrolling:touch;-ms-overflow-style:-ms-autohiding-scrollbar}.pager{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--b1);flex-wrap:wrap;gap:8px}.pager-info{font-size:12px;color:var(--t4)}.pager-btns{display:flex;gap:6px}.pager-btn{background:var(--b1);color:var(--t3);border:1px solid var(--b2);border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}.pager-btn:hover{background:var(--b2);color:var(--t2)}.pager-btn:disabled{opacity:.3;cursor:not-allowed}.pager-btn.active{background:rgba(37,211,102,.1);color:var(--g);border-color:rgba(37,211,102,.3)}
 table{width:100%;border-collapse:collapse;min-width:520px}
 thead tr{background:var(--bg3)}
 th{padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap}
@@ -719,13 +719,19 @@ const counts=ad.length?ad.map(d=>d.count):[0];
 if(document.getElementById('actChart')){
   new Chart(document.getElementById('actChart'),{type:'bar',data:{labels,datasets:[{data:counts,backgroundColor:'rgba(37,211,102,.12)',borderColor:'#25D366',borderWidth:2,borderRadius:8,hoverBackgroundColor:'rgba(37,211,102,.2)'}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'#111118',borderColor:'rgba(37,211,102,.2)',borderWidth:1,titleColor:'#fff',bodyColor:'rgba(255,255,255,.6)',padding:10,cornerRadius:8}},scales:{y:{beginAtZero:true,ticks:{color:'rgba(255,255,255,.3)',stepSize:1,font:{size:11}},grid:{color:'rgba(255,255,255,.04)'},border:{display:false}},x:{ticks:{color:'rgba(255,255,255,.3)',font:{size:11}},grid:{display:false},border:{display:false}}}}});
 }
+let _msgs=[];let _msgsPage=1;const _msgsPerPage=10;
 async function loadMessages(){
   try{
-    const r=await fetch('/admin/messages-data');
-    const d=await r.json();
-    if(!d.messages||!d.messages.length){document.getElementById('msg-content').innerHTML='<div style="text-align:center;padding:48px 24px;color:rgba(255,255,255,.25);font-size:13px">No messages yet</div>';return;}
-    document.getElementById('msg-content').innerHTML=\`<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Company</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead><tbody>\${d.messages.map(m=>\`<tr class="tr-hover"><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">\${new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td style="font-weight:600;font-size:13px">\${m.company_name}</td><td style="font-size:12px;color:rgba(255,255,255,.4)">\${m.wa_number}</td><td>\${m.direction==='inbound'?'<span class="badge-green">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>'}</td><td style="font-size:12px;color:rgba(255,255,255,.5);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">\${m.media_type?'['+m.media_type.split('/')[0]+']':(m.body||'').substring(0,80)}</td></tr>\`).join('')}</tbody></table></div>\`;
+    const r=await fetch('/admin/messages-data');const d=await r.json();
+    _msgs=d.messages;_msgsPage=1;renderMessages();
   }catch(e){document.getElementById('msg-content').innerHTML='<div style="color:#f87171;font-size:13px">Error loading messages</div>';}
+}
+function renderMessages(){
+  const total=_msgs.length;const pages=Math.ceil(total/_msgsPerPage);
+  const start=(_msgsPage-1)*_msgsPerPage;const slice=_msgs.slice(start,start+_msgsPerPage);
+  const rows=slice.map(m=>`<tr class="tr-hover"><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">${new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td style="font-weight:600;font-size:13px">${m.company_name}</td><td style="font-size:12px;color:rgba(255,255,255,.4)">${m.wa_number}</td><td>${m.direction==='inbound'?'<span class="badge-green">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>'}</td><td style="font-size:12px;color:rgba(255,255,255,.5);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.media_type?'['+m.media_type.split('/')[0]+']':(m.body||'').substring(0,60)}</td></tr>`).join('');
+  const pager=pages>1?`<div class="pager"><div class="pager-info">Showing ${start+1}–${Math.min(start+_msgsPerPage,total)} of ${total}</div><div class="pager-btns">${_msgsPage>1?'<button class="pager-btn" onclick="_msgsPage--;renderMessages()">← Prev</button>':''}${Array.from({length:pages},(_,i)=>`<button class="pager-btn${i+1===_msgsPage?' active':' '}" onclick="_msgsPage=${i+1};renderMessages()">${i+1}</button>`).join('')}${_msgsPage<pages?'<button class="pager-btn" onclick="_msgsPage++;renderMessages()">Next →</button>':''}</div></div>`:'';
+  document.getElementById('msg-content').innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Company</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead><tbody>${rows}</tbody></table>${pager}</div>`;
 }
 async function loadLogs(){
   try{
@@ -736,16 +742,19 @@ async function loadLogs(){
   }catch(e){document.getElementById('adminLogs').innerHTML='<div style="color:#f87171;font-size:13px">Error loading logs</div>';}
 }
 function timeAgo(date){const s=Math.floor((Date.now()-date)/1000);if(s<60)return 'Just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';}
+let _wl=[];let _wlPage=1;const _wlPerPage=10;
 async function loadWaitlist(){
   try{
-    const r=await fetch('/admin/waitlist-data');
-    const d=await r.json();
-    if(!d.rows||!d.rows.length){
-      document.getElementById('waitlist-content').innerHTML='<div style="text-align:center;padding:48px 24px;color:rgba(255,255,255,.25);font-size:13px">No signups yet</div>';
-      return;
-    }
-    document.getElementById('waitlist-content').innerHTML=\`<div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Signed up</th><th>Action</th></tr></thead><tbody>\${d.rows.map(r=>\`<tr class="tr-hover"><td style="font-size:13px">\${r.email}</td><td style="font-size:12px;color:rgba(255,255,255,.4)">\${new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td><td><button onclick="sendInvite('\${r.email}',this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Send invite →</button></td></tr>\`).join('')}</tbody></table></div>\`;
+    const r=await fetch('/admin/waitlist-data');const d=await r.json();
+    _wl=d.rows;_wlPage=1;renderWaitlist();
   }catch(e){document.getElementById('waitlist-content').innerHTML='<div style="color:#f87171;font-size:13px">Error loading waitlist</div>';}
+}
+function renderWaitlist(){
+  const total=_wl.length;const pages=Math.ceil(total/_wlPerPage);
+  const start=(_wlPage-1)*_wlPerPage;const slice=_wl.slice(start,start+_wlPerPage);
+  const rows=slice.map(r=>`<tr class="tr-hover"><td style="font-size:13px">${r.email}</td><td style="font-size:12px;color:rgba(255,255,255,.4)">${new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td><td><button onclick="sendInvite('${r.email}',this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Send invite →</button></td></tr>`).join('');
+  const pager=pages>1?`<div class="pager"><div class="pager-info">Showing ${start+1}–${Math.min(start+_wlPerPage,total)} of ${total}</div><div class="pager-btns">${_wlPage>1?'<button class="pager-btn" onclick="_wlPage--;renderWaitlist()">← Prev</button>':''}${Array.from({length:pages},(_,i)=>`<button class="pager-btn${i+1===_wlPage?' active':' '}" onclick="_wlPage=${i+1};renderWaitlist()">${i+1}</button>`).join('')}${_wlPage<pages?'<button class="pager-btn" onclick="_wlPage++;renderWaitlist()">Next →</button>':''}</div></div>`:'';
+  document.getElementById('waitlist-content').innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Signed up</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table>${pager}</div>`;
 }
 async function sendInvite(email,btn){
   if(!confirm('Send invite to '+email+'?'))return;
