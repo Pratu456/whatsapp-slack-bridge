@@ -281,8 +281,18 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   .scard-num{font-size:32px;letter-spacing:-1px}.scard{padding:16px}
   .content{padding:12px}.card{padding:16px}
   .modal-box{padding:24px}.modal-btns{flex-direction:column}
+  .form-grid{grid-template-columns:1fr!important}
+  .row2{grid-template-columns:1fr!important}
+  .card-hd{flex-wrap:wrap;gap:8px}
+  .btn-primary,.btn-ghost{padding:9px 14px;font-size:12px}
+  table{font-size:12px}th,td{padding:8px 10px}
 }
-@media(max-width:380px){.stats-row{grid-template-columns:1fr}}
+@media(max-width:380px){
+  .stats-row{grid-template-columns:1fr}
+  .scard-num{font-size:28px}
+  .modal-box{padding:16px}
+  .code-preview-val{font-size:16px;letter-spacing:2px}
+}
 </style>
 </head>
 <body>
