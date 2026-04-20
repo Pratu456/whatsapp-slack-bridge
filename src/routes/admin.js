@@ -221,8 +221,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
 .card-hd-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
 .card-hd-title{font-size:14px;font-weight:700;color:var(--t)}
 .card-hd-sub{font-size:12px;color:var(--t4)}
-.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--b1);-webkit-overflow-scrolling:touch}
-table{width:100%;border-collapse:collapse;min-width:600px}
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--b1);-webkit-overflow-scrolling:touch;-ms-overflow-style:-ms-autohiding-scrollbar}
+table{width:100%;border-collapse:collapse;min-width:520px}
 thead tr{background:var(--bg3)}
 th{padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap}
 td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-align:middle}
@@ -292,6 +292,14 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   .scard-num{font-size:28px}
   .modal-box{padding:16px}
   .code-preview-val{font-size:16px;letter-spacing:2px}
+}
+@media(max-width:600px){
+  .tbl-wrap{border-radius:10px}
+  table{min-width:420px}
+  th{font-size:10px;padding:8px 10px}
+  td{font-size:12px;padding:8px 10px}
+  .badge-green,.badge-yellow{font-size:10px;padding:3px 7px}
+  .btn-xs{font-size:11px;padding:4px 8px}
 }
 </style>
 </head>
