@@ -613,6 +613,7 @@ function show(name,el){
   if(p){const el=document.getElementById('desk-link-'+p);show(p,el);}
   if(window.history.replaceState)window.history.replaceState({},'','/admin');
 })();
+fetch('/admin/settings-data').then(r=>r.json()).then(d=>{if(d.success&&d.settings){const n=d.settings.display_name;const e=d.settings.email;if(n){const inp=document.getElementById('sDisplayName');if(inp)inp.value=n;updateInitial(n);localStorage.setItem('adminDisplayName',n);}if(e){const inp=document.getElementById('sEmail');if(inp)inp.value=e;}}});
 function toggleDrawer(){
   document.getElementById('hbg').classList.toggle('open');
   document.getElementById('drawer').classList.toggle('open');
@@ -635,10 +636,19 @@ function updateInitial(val){
   const el=document.getElementById('profileInitial');
   if(el)el.textContent=val?val.charAt(0).toUpperCase():'A';
 }
-function saveProfile(){
+async function saveProfile(){
+  const name=document.getElementById('sDisplayName').value.trim();
+  const email=document.getElementById('sEmail').value.trim();
   const msg=document.getElementById('profileSaved');
-  msg.style.display='block';
-  setTimeout(()=>msg.style.display='none',3000);
+  const btn=document.querySelector('[onclick="saveProfile()"]');
+  btn.disabled=true;btn.textContent='Saving...';
+  try{
+    const r=await fetch('/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({display_name:name,email})});
+    const d=await r.json();
+    if(d.success){if(name)localStorage.setItem('adminDisplayName',name);updateInitial(name);msg.style.display='block';msg.textContent='✓ Profile saved';msg.style.color='#4ade80';setTimeout(()=>msg.style.display='none',3000);}
+    else{msg.style.display='block';msg.style.color='#f87171';msg.textContent='Error: '+d.error;}
+  }catch(e){msg.style.display='block';msg.style.color='#f87171';msg.textContent='Error saving profile';}
+  btn.disabled=false;btn.textContent='Save profile';
 }
 let currentCodeLen=6;
 function setCodeLen(len,btn){
@@ -922,6 +932,8 @@ router.post('/settings', auth, async (req, res) => {
   } catch (err) { res.json({ success: false, error: err.message }); }
 });
 
+router.post('/settings', auth, async (req, res) => { try { const { display_name, email } = req.body; await pool.query('CREATE TABLE IF NOT EXISTS admin_settings (id SERIAL PRIMARY KEY, display_name VARCHAR(255), email VARCHAR(255), updated_at TIMESTAMPTZ DEFAULT NOW())'); const existing = await pool.query('SELECT id FROM admin_settings LIMIT 1'); if (existing.rows.length) { await pool.query('UPDATE admin_settings SET display_name=$1, email=$2, updated_at=NOW() WHERE id=$3', [display_name||'Admin', email||'', existing.rows[0].id]); } else { await pool.query('INSERT INTO admin_settings (display_name, email) VALUES ($1, $2)', [display_name||'Admin', email||'']); } res.json({ success: true }); } catch (err) { res.json({ success: false, error: err.message }); }});
+router.get('/settings-data', auth, async (req, res) => { try { await pool.query('CREATE TABLE IF NOT EXISTS admin_settings (id SERIAL PRIMARY KEY, display_name VARCHAR(255), email VARCHAR(255), updated_at TIMESTAMPTZ DEFAULT NOW())'); const result = await pool.query('SELECT * FROM admin_settings LIMIT 1'); res.json({ success: true, settings: result.rows[0] || null }); } catch (err) { res.json({ success: false }); }});
 router.post('/change-password', auth, async (req, res) => {
   try {
     const { current, newPassword } = req.body;
