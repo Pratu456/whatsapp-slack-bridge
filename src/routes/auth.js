@@ -127,7 +127,8 @@ router.post('/register', express.urlencoded({ extended: false }), async (req, re
        VALUES ($1, $2, $3, $4, $5)`,
       [full_name.trim(), email.trim().toLowerCase(), company_name.trim(), password_hash, verify_token]
     );
-
+    // Remove from waitlist if exists
+    await pool.query('DELETE FROM waitlist WHERE email = $1', [email.trim().toLowerCase()]);
     // Send verification email
     try {
       const { sendVerificationEmail } = require('../services/emailService');
