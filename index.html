@@ -750,9 +750,7 @@ if(ww)wfObs.observe(ww);
   async function signup(){
     const e=document.getElementById('ctaEmail');
     const b=document.querySelector('.cta-form .btn-p');
-    const form=document.querySelector('.cta-form');
-undefined
-    try{
+
       const wRes=await fetch('/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e.value})});
       const wData=await wRes.json();
       if(wData.success===false && wData.error){
