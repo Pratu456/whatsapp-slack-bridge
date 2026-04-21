@@ -294,6 +294,10 @@ server.post('/slack/commands', express.urlencoded({ extended: true }), async (re
       if (!email || !email.includes('@')) {
         return res.json({ success: false, error: 'Invalid email' });
       }
+      const existingUser = await pool.query('SELECT id FROM users WHERE email = $1', [email.trim().toLowerCase()]);
+      if (existingUser.rows.length) {
+        return res.json({ success: false, error: 'An account with this email already exists. Please sign in instead.' });
+      }
       const result = await pool.query(
         `INSERT INTO waitlist (email, created_at)
          VALUES ($1, NOW())
