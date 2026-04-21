@@ -750,10 +750,12 @@ if(ww)wfObs.observe(ww);
   async function signup(){
     const e=document.getElementById('ctaEmail');
     const b=document.querySelector('.cta-form .btn-p');
-
+    const form=document.querySelector('.cta-form');
+undefined
+    try{
       const wRes=await fetch('/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e.value})});
       const wData=await wRes.json();
-      if(wData.success===false && wData.error){
+      if(wData.success===false&&wData.error){
         e.style.borderColor='rgba(239,68,68,.5)';
         const errDiv=document.createElement('div');
         errDiv.className='cta-err';
@@ -763,6 +765,7 @@ if(ww)wfObs.observe(ww);
         b.disabled=false;b.textContent='Get early access →';
         return;
       }
+      document.querySelectorAll('.cta-err').forEach(el=>el.remove());
       sessionStorage.setItem('signupEmail',e.value);
       form.innerHTML='<div style="text-align:center;padding:12px 0"><div style="font-size:28px;margin-bottom:8px">✓</div><div style="font-size:16px;font-weight:700;color:#25D366;margin-bottom:6px">You are on the list!</div><div style="font-size:13px;color:rgba(255,255,255,.5)">We will reach out to '+e.value+' shortly.</div></div>';
     }catch(err){b.disabled=false;b.textContent='Get early access →';}
