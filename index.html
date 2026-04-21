@@ -751,21 +751,24 @@ if(ww)wfObs.observe(ww);
   async function signup(){
     const e=document.getElementById('ctaEmail');
     const b=document.querySelector('.cta-form .btn-p');
-    if(!e.value.includes('@')){e.style.borderColor='rgba(239,68,68,.5)';e.focus();setTimeout(()=>e.style.borderColor='',2000);return}
-    b.textContent='Loading...';b.disabled=true;
+    const form=document.querySelector('.cta-form');
+    document.querySelectorAll('.cta-err').forEach(el=>el.remove());
+    b.textContent='Sending...';b.disabled=true;
     try{
-    const wRes = await fetch('/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e.value})});
-    const wData = await wRes.json();
-    if(!wData.success && wData.error){
-      e.style.borderColor='rgba(239,68,68,.5)';
-      const errDiv=document.createElement('div');
-      errDiv.style.cssText='font-size:13px;color:#f87171;margin-top:8px;text-align:center';
-      errDiv.textContent=wData.error;
-      document.querySelector('.cta-form').after(errDiv);
-      btn.disabled=false;btn.textContent='Get early access →';
-      return;
-    }    }catch(err){}
-    const btn=document.querySelector(".cta-form .btn-p");const form=document.querySelector(".cta-form");btn.disabled=true;btn.textContent="Sending...";setTimeout(function(){form.innerHTML="<div style=\"text-align:center;padding:12px 0\"><div style=\"font-size:28px;margin-bottom:8px\">✓<\/div><div style=\"font-size:16px;font-weight:700;color:#25D366;margin-bottom:6px\">You're on the list!<\/div><div style=\"font-size:13px;color:rgba(255,255,255,.5)\">We'll reach out to "+e.value+" shortly.<\/div><\/div>"},800);sessionStorage.setItem("signupEmail",e.value);
+      const wRes=await fetch('/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e.value})});
+      const wData=await wRes.json();
+        e.style.borderColor='rgba(239,68,68,.5)';
+        const errDiv=document.createElement('div');
+        errDiv.className='cta-err';
+        errDiv.style.cssText='font-size:13px;color:#f87171;margin-top:8px;text-align:center';
+        errDiv.textContent=wData.error;
+        form.after(errDiv);
+        b.disabled=false;b.textContent='Get early access →';
+        return;
+      }
+      sessionStorage.setItem('signupEmail',e.value);
+      form.innerHTML='<div style="text-align:center;padding:12px 0"><div style="font-size:28px;margin-bottom:8px">✓</div><div style="font-size:16px;font-weight:700;color:#25D366;margin-bottom:6px">You are on the list!</div><div style="font-size:13px;color:rgba(255,255,255,.5)">We will reach out to '+e.value+' shortly.</div></div>';
+    }catch(err){b.disabled=false;b.textContent='Get early access →';}
   }
 </script>
 <!-- COOKIE OVERLAY -->
