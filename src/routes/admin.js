@@ -383,7 +383,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <div class="scard-sub">${totalMessages} total all-time</div>
           <div class="scard-bar" style="background:linear-gradient(90deg,#8b5cf6,transparent)"></div>
         </div>
-        <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'))" style="cursor:pointer">
+        <div class="scard" onclick="show('messages',document.getElementById('desk-link-messages'))" style="cursor:pointer">
           <div class="scard-top"><div class="scard-icon" style="background:rgba(245,158,11,.1)">👥</div><div class="scard-trend" style="background:rgba(245,158,11,.1);color:#fbbf24">All time</div></div>
           <div class="scard-num" style="color:#fbbf24">${totalContacts}</div><div class="scard-label">Total contacts</div>
           <div class="scard-sub">Across all workspaces</div>
