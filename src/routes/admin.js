@@ -861,6 +861,17 @@ router.get('/messages-data', auth, async (req, res) => {
   } catch(err){ res.json({ messages: [] }); }
 });
 
+router.get('/contacts-data', auth, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT c.wa_number, c.display_name, c.slack_channel, c.blocked, c.created_at, t.company_name
+      FROM contacts c JOIN tenants t ON t.id = c.tenant_id
+      ORDER BY c.created_at DESC
+    `);
+    res.json({ contacts: result.rows });
+  } catch(err){ res.json({ contacts: [] }); }
+});
+
 router.get('/waitlist-data', auth, async (req, res) => {
   try {
     const result = await pool.query('SELECT email, created_at FROM waitlist ORDER BY created_at DESC');
