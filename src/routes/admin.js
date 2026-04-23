@@ -341,10 +341,6 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div class="sb-link" id="desk-link-companies" onclick="show('companies',this)"><span class="sb-icon">🏢</span>Companies<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-messages" onclick="show('messages',this)"><span class="sb-icon">💬</span>Messages<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-contacts" onclick="show('contacts',this)"><span class="sb-icon">👤</span>Contacts<span class="sb-dot"></span></div>
-    <div class="sb-link" id="desk-link-contacts" onclick="show('contacts',this)"><span class="sb-icon">👤</span>Contacts<span class="sb-dot"></span></div>
-    <div class="sb-link" id="desk-link-contacts" onclick="show('contacts',this)"><span class="sb-icon">👤</span>Contacts<span class="sb-dot"></span></div>
-    <div class="sb-link" id="desk-link-waitlist" onclick="show('waitlist',this)"><span class="sb-icon">📧</span>Waitlist<span class="sb-dot"></span></div>
-    <div class="sb-section">Actions</div>
     <div class="sb-link" id="desk-link-settings" onclick="show('settings',this)"><span class="sb-icon">⚙</span>Settings<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-add" onclick="show('add',this)"><span class="sb-icon">+</span>Add company<span class="sb-dot"></span></div>
   </nav>
