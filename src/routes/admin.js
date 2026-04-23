@@ -402,7 +402,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <canvas id="actChart" height="80"></canvas>
         </div>
         <div class="card">
-          <div class="card-hd">
+        <div class="card" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('all'),50)" style="cursor:pointer">
             <div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(245,158,11,.1)">⚠️</div><div><div class="card-hd-title">Inactive companies</div><div class="card-hd-sub">No messages in 14 days</div></div></div>
           </div>
           ${inactiveRows}
