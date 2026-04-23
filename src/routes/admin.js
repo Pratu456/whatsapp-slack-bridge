@@ -354,7 +354,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
         <div class="scard-sub">${active} active · ${pending} pending</div>
         <div class="scard-bar" style="background:linear-gradient(90deg,#25D366,transparent)"></div>
       </div>
-      <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('active'),300)" style="cursor:pointer">
+      <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('active'),500)" style="cursor:pointer">
         <div class="scard-top"><div class="scard-icon" style="background:rgba(59,130,246,.1)">✅</div><div class="scard-trend" style="background:rgba(59,130,246,.1);color:#60a5fa">Active</div></div>
         <div class="scard-num" style="color:#60a5fa">${active}</div><div class="scard-label">Active companies</div>
         <div class="scard-sub">Routing messages live</div>
@@ -381,7 +381,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
         </div>
         <canvas id="actChart" height="80"></canvas>
       </div>
-      <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('pending'),300)" style="cursor:pointer">
+      <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('pending'),500)" style="cursor:pointer">
         <div class="scard-top"><div class="scard-icon" style="background:rgba(245,158,11,.1)">⚠️</div><div class="scard-trend" style="background:rgba(245,158,11,.1);color:#fbbf24">Pending</div></div>
         <div class="scard-num" style="color:#fbbf24">${inactiveTenants.rows.length}</div>
         <div class="scard-label">Pending companies</div>
@@ -681,6 +681,18 @@ function setCodeLen(len,btn){
   btn.className='btn-xs btn-xs-green';
   document.getElementById('codeLenDisplay').textContent=len+' characters';
   localStorage.setItem('defaultCodeLen',len);
+}
+function filterCompanies(status){
+  const rows=document.querySelectorAll('#p-companies tbody tr');
+  rows.forEach(function(row){
+    if(status==='all'){row.style.display='';return;}
+    const badge=row.querySelector('.badge-green,.badge-yellow');
+    if(status==='active')row.style.display=badge.classList.contains('badge-green')?'':'none';
+    if(status==='pending')row.style.display=badge.classList.contains('badge-yellow')?'':'none';
+  });
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active-filter'));
+  const btn=document.getElementById('filter-'+status);
+  if(btn)btn.classList.add('active-filter');
 }
 function initAddForm(){
   currentAddCode=genCode();
