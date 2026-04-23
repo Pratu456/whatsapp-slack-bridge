@@ -9,7 +9,7 @@ require('dotenv').config();
 const auth = (req, res, next) => {
   if (req.session && req.session.isAdmin) return next();
   return res.send(`<!DOCTYPE html><html><head><title>Syncora Admin</title>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -60,8 +60,12 @@ const generateClaimCode = () => {
   for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
   return code;
 };
-
-const logAdminAction = async (action, detail = "") => { try { await pool.query(`CREATE TABLE IF NOT EXISTS admin_logs (id SERIAL PRIMARY KEY, action VARCHAR(255), detail TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`); await pool.query(`INSERT INTO admin_logs (action, detail) VALUES ($1, $2)`, [action, detail]); } catch(e) { console.error("[LOG ERROR]", e.message); } };
+const logAdminAction = async (action, detail = '') => {
+  try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS admin_logs (id SERIAL PRIMARY KEY, action VARCHAR(255), detail TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`);
+    await pool.query(`INSERT INTO admin_logs (action, detail) VALUES ($1, $2)`, [action, detail]);
+  } catch(e) { console.error('[LOG ERROR]', e.message); }
+};
 
 const validateClaimCode = (code) => {
   if (!code) return 'Claim code is required';
@@ -90,9 +94,13 @@ router.get('/', auth, async (req, res) => {
   try {
     const { tenants, totalMessages, todayMessages, totalContacts } = await getStats();
 
-    const inactiveTenants = await pool.query(
-      'SELECT * FROM tenants WHERE is_active = FALSE ORDER BY created_at DESC'
-    ).catch(() => ({ rows: [] }));
+    const inactiveTenants = await pool.query(`
+      SELECT t.id, t.company_name, t.slack_team_name, MAX(m.created_at) as last_msg
+      FROM tenants t LEFT JOIN messages m ON m.tenant_id = t.id
+      WHERE t.is_active = TRUE
+      GROUP BY t.id, t.company_name, t.slack_team_name
+      HAVING MAX(m.created_at) < NOW() - INTERVAL '14 days' OR MAX(m.created_at) IS NULL
+    `).catch(() => ({ rows: [] }));
 
     const msgActivity = await pool.query(`
       SELECT DATE(created_at) as day, COUNT(*) as count
@@ -116,7 +124,7 @@ router.get('/', auth, async (req, res) => {
           </div>
         </td>
         <td><code style="background:rgba(37,211,102,.08);color:#25D366;padding:3px 10px;border-radius:6px;font-size:12px;border:1px solid rgba(37,211,102,.15)">${t.claim_code || '-'}</code></td>
-        <td class="hide-mobile" style="font-size:13px;color:rgba(255,255,255,.4)">${t.twilio_number || '-'}</td>
+        <td style="font-size:13px;color:rgba(255,255,255,.4)">${t.twilio_number || '-'}</td>
         <td>${t.is_active ? '<span class="badge-green">Active</span>' : '<span class="badge-yellow">Pending</span>'}</td>
         <td style="font-size:12px;color:rgba(255,255,255,.3)">${new Date(t.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
@@ -142,7 +150,7 @@ router.get('/', auth, async (req, res) => {
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>Syncora Admin</title>
 <link rel="icon" type="image/png" href="/logo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
@@ -217,8 +225,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
 .card-hd-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
 .card-hd-title{font-size:14px;font-weight:700;color:var(--t)}
 .card-hd-sub{font-size:12px;color:var(--t4)}
-.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--b1);-webkit-overflow-scrolling:touch;-ms-overflow-style:-ms-autohiding-scrollbar}.pager{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--b1);flex-wrap:wrap;gap:8px}.pager-info{font-size:12px;color:var(--t4)}.pager-btns{display:flex;gap:6px}.pager-btn{background:var(--b1);color:var(--t3);border:1px solid var(--b2);border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}.pager-btn:hover{background:var(--b2);color:var(--t2)}.pager-btn:disabled{opacity:.3;cursor:not-allowed}.pager-btn.active{background:rgba(37,211,102,.1);color:var(--g);border-color:rgba(37,211,102,.3)}
-table{width:100%;border-collapse:collapse;min-width:520px}
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--b1);-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:600px}
 thead tr{background:var(--bg3)}
 th{padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap}
 td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-align:middle}
@@ -262,44 +270,23 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 .code-preview-val{font-size:20px;font-weight:800;color:var(--g);letter-spacing:3px;font-family:monospace}
 .code-preview-btn{background:rgba(37,211,102,.1);color:var(--g);border:1px solid rgba(37,211,102,.2);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
 .code-preview-btn:hover{background:rgba(37,211,102,.2)}
-.active-filter{background:rgba(37,211,102,.15)!important;color:#4ade80!important;border-color:rgba(37,211,102,.3)!important}
 .toggle-custom{font-size:12px;color:var(--t4);cursor:pointer;text-decoration:underline;margin-bottom:14px;display:inline-block}
 .email-status{font-size:12px;margin-top:12px;padding:10px 14px;border-radius:8px;display:none;line-height:1.5}
 .email-status.sent{background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);display:block}
 .email-status.failed{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);display:block}
 .divider{height:1px;background:var(--b1);margin:16px 0}
 @media(max-width:960px){
-  .sidebar{display:none!important}.mob-bar{display:flex!important}
-  .main{margin-left:0!important;padding-top:var(--mob-topbar)}.topbar{display:none!important}
+  .sidebar{display:none}.mob-bar{display:flex}
+  .main{margin-left:0;padding-top:var(--mob-topbar)}.topbar{display:none}
   .stats-row{grid-template-columns:1fr 1fr}.row2{grid-template-columns:1fr}
   .content{padding:16px}.form-grid{grid-template-columns:1fr}
-  .tbl-wrap{overflow-x:auto;max-width:calc(100vw - 32px)}
 }
 @media(max-width:520px){
   .scard-num{font-size:32px;letter-spacing:-1px}.scard{padding:16px}
   .content{padding:12px}.card{padding:16px}
   .modal-box{padding:24px}.modal-btns{flex-direction:column}
-  .form-grid{grid-template-columns:1fr!important}
-  .row2{grid-template-columns:1fr!important}
-  .card-hd{flex-wrap:wrap;gap:8px}
-  .btn-primary,.btn-ghost{padding:9px 14px;font-size:12px}
-  table{font-size:12px}th,td{padding:8px 10px}
 }
-@media(max-width:380px){
-  .stats-row{grid-template-columns:1fr}
-  .scard-num{font-size:28px}
-  .modal-box{padding:16px}
-  .code-preview-val{font-size:16px;letter-spacing:2px}
-}
-@media(max-width:600px){
-  .tbl-wrap{border-radius:10px;max-width:calc(100vw - 32px)}
-  table{min-width:360px;font-size:12px}
-  th{font-size:10px;padding:7px 8px;letter-spacing:0}
-  td{font-size:12px;padding:7px 8px}
-  .badge-green,.badge-yellow{font-size:10px;padding:2px 6px}
-  .btn-xs{font-size:11px;padding:4px 8px}
-  .hide-mobile{display:none!important}
-}
+@media(max-width:380px){.stats-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -317,9 +304,6 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   <div class="sb-link on" id="mob-link-dashboard" onclick="show('dashboard',this);closeDrawer()"><span class="sb-icon">⬛</span>Dashboard</div>
   <div class="sb-link" id="mob-link-companies" onclick="show('companies',this);closeDrawer()"><span class="sb-icon">🏢</span>Companies</div>
   <div class="sb-link" id="mob-link-messages" onclick="show('messages',this);closeDrawer()"><span class="sb-icon">💬</span>Messages</div>
-  <div class="sb-link" id="mob-link-contacts" onclick="show('contacts',this);closeDrawer()"><span class="sb-icon">👤</span>Contacts</div>
-  <div class="sb-link" id="mob-link-contacts" onclick="show('contacts',this);closeDrawer()"><span class="sb-icon">👤</span>Contacts</div>
-  <div class="sb-link" id="mob-link-contacts" onclick="show('contacts',this);closeDrawer()"><span class="sb-icon">👤</span>Contacts</div>
   <div class="sb-link" id="mob-link-waitlist" onclick="show('waitlist',this);closeDrawer()"><span class="sb-icon">📧</span>Waitlist</div>
   <div class="sb-section">Actions</div>
   <div class="sb-link" id="mob-link-settings" onclick="show('settings',this);closeDrawer()"><span class="sb-icon">⚙</span>Settings</div>
@@ -337,7 +321,8 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div class="sb-link on" id="desk-link-dashboard" onclick="show('dashboard',this)"><span class="sb-icon">⬛</span>Dashboard<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-companies" onclick="show('companies',this)"><span class="sb-icon">🏢</span>Companies<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-messages" onclick="show('messages',this)"><span class="sb-icon">💬</span>Messages<span class="sb-dot"></span></div>
-    <div class="sb-link" id="desk-link-contacts" onclick="show('contacts',this)"><span class="sb-icon">👤</span>Contacts<span class="sb-dot"></span></div>
+    <div class="sb-link" id="desk-link-waitlist" onclick="show('waitlist',this)"><span class="sb-icon">📧</span>Waitlist<span class="sb-dot"></span></div>
+    <div class="sb-section">Actions</div>
     <div class="sb-link" id="desk-link-settings" onclick="show('settings',this)"><span class="sb-icon">⚙</span>Settings<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-add" onclick="show('add',this)"><span class="sb-icon">+</span>Add company<span class="sb-dot"></span></div>
   </nav>
@@ -364,25 +349,25 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <!-- DASHBOARD -->
     <div id="p-dashboard" class="panel on">
       <div class="stats-row">
-        <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'))" style="cursor:pointer">
+        <div class="scard">
           <div class="scard-top"><div class="scard-icon" style="background:rgba(37,211,102,.1)">🏢</div><div class="scard-trend" style="background:rgba(37,211,102,.1);color:#4ade80">${active} live</div></div>
           <div class="scard-num">${tenants.length}</div><div class="scard-label">Total companies</div>
           <div class="scard-sub">${active} active · ${pending} pending</div>
           <div class="scard-bar" style="background:linear-gradient(90deg,#25D366,transparent)"></div>
         </div>
-        <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('active'),50)" style="cursor:pointer">
+        <div class="scard">
           <div class="scard-top"><div class="scard-icon" style="background:rgba(59,130,246,.1)">✅</div><div class="scard-trend" style="background:rgba(59,130,246,.1);color:#60a5fa">Active</div></div>
           <div class="scard-num" style="color:#60a5fa">${active}</div><div class="scard-label">Active companies</div>
           <div class="scard-sub">Routing messages live</div>
           <div class="scard-bar" style="background:linear-gradient(90deg,#3b82f6,transparent)"></div>
         </div>
-        <div class="scard" onclick="show('messages',document.getElementById('desk-link-messages'))" style="cursor:pointer">
+        <div class="scard">
           <div class="scard-top"><div class="scard-icon" style="background:rgba(139,92,246,.1)">💬</div><div class="scard-trend" style="background:rgba(139,92,246,.1);color:#a78bfa">Today</div></div>
           <div class="scard-num" style="color:#a78bfa">${todayMessages}</div><div class="scard-label">Messages today</div>
           <div class="scard-sub">${totalMessages} total all-time</div>
           <div class="scard-bar" style="background:linear-gradient(90deg,#8b5cf6,transparent)"></div>
         </div>
-        <div class="scard" onclick="show('contacts',document.getElementById('desk-link-contacts'))" style="cursor:pointer">
+        <div class="scard">
           <div class="scard-top"><div class="scard-icon" style="background:rgba(245,158,11,.1)">👥</div><div class="scard-trend" style="background:rgba(245,158,11,.1);color:#fbbf24">All time</div></div>
           <div class="scard-num" style="color:#fbbf24">${totalContacts}</div><div class="scard-label">Total contacts</div>
           <div class="scard-sub">Across all workspaces</div>
@@ -397,22 +382,19 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           </div>
           <canvas id="actChart" height="80"></canvas>
         </div>
-
-
-
-
-        <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('pending'),50)" style="cursor:pointer">
-          <div class="scard-top"><div class="scard-icon" style="background:rgba(245,158,11,.1)">⚠️</div><div class="scard-trend" style="background:rgba(245,158,11,.1);color:#fbbf24">Pending</div></div>
-          <div class="scard-num" style="color:#fbbf24">${inactiveTenants.rows.length}</div>
-          <div class="scard-label">Pending companies</div>
-          <div class="scard-sub">Awaiting activation</div>
-          <div class="scard-bar" style="background:linear-gradient(90deg,#f59e0b,transparent)"></div>
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(245,158,11,.1)">⚠️</div><div><div class="card-hd-title">Inactive companies</div><div class="card-hd-sub">No messages in 14 days</div></div></div>
+          </div>
+          ${inactiveRows}
         </div>
       </div>
+
       <div class="card">
         <div class="card-hd">
           <div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(139,92,246,.1)">🏢</div><div><div class="card-hd-title">Company overview</div><div class="card-hd-sub">Quick status of all companies</div></div></div>
           <button class="btn-ghost" onclick="show('companies',document.getElementById('desk-link-companies'))">View all →</button>
+        </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
           ${tenants.map(t=>`
             <div onclick="location.href='/admin/tenant/${t.id}'" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid rgba(255,255,255,.06);border-radius:10px;cursor:pointer;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.03)'" onmouseout="this.style.background='transparent'">
@@ -436,15 +418,11 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <div style="font-size:18px;font-weight:800;color:var(--t)">${tenants.length} Companies</div>
           <div style="font-size:13px;color:var(--t4);margin-top:2px">${active} active · ${pending} pending</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <button id="filter-all" class="btn-xs btn-xs-green filter-btn active-filter" onclick="filterCompanies('all')">All</button>
-          <button id="filter-active" class="btn-xs btn-xs-gray filter-btn" onclick="filterCompanies('active')">Active only</button>
-          <button id="filter-pending" class="btn-xs btn-xs-gray filter-btn" onclick="filterCompanies('pending')">Pending only</button>
-        </div>
+        <button class="btn-primary" onclick="show('add',document.getElementById('desk-link-add'))">＋ Add company</button>
       </div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Company</th><th>Claim code</th><th class="hide-mobile">Twilio number</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Company</th><th>Claim code</th><th>Twilio number</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
           <tbody>${tenantRows}</tbody>
         </table>
       </div>
@@ -567,15 +545,6 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 
       </div>
     </div>
-    <!-- CONTACTS -->
-    <div id="p-contacts" class="panel">
-      <div style="margin-bottom:16px">
-        <div style="font-size:18px;font-weight:800;color:var(--t)">Contacts</div>
-        <div style="font-size:13px;color:var(--t4);margin-top:2px">All WhatsApp contacts across all workspaces</div>
-      </div>
-      <div id="contacts-content" style="color:var(--t4);font-size:13px;padding:20px 0">Loading...</div>
-    </div>
-
     <!-- WAITLIST -->
     <div id="p-waitlist" class="panel">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px">
@@ -638,19 +607,28 @@ function show(name,el){
   const mobEl=document.getElementById('mob-link-'+name);
   if(deskEl)deskEl.classList.add('on');
   if(mobEl)mobEl.classList.add('on');
-  const titles={dashboard:'Dashboard',companies:'Companies',messages:'Messages',contacts:'Contacts',add:'Add Company',settings:'Settings',waitlist:'Waitlist'};
+  const titles={dashboard:'Dashboard',companies:'Companies',messages:'Messages',add:'Add Company',settings:'Settings',waitlist:'Waitlist'};
   const pt=document.getElementById('ptitle');
   if(pt)pt.textContent=titles[name]||name;
   if(name==='messages')loadMessages();
   if(name==='add')initAddForm();
-  if(name==='waitlist')loadWaitlist();if(name==='settings')loadLogs();if(name==='contacts')loadContacts();if(name==='contacts')loadContacts();if(name==='contacts')loadContacts();
+  if(name==='waitlist')loadWaitlist();
 }
 (function(){
   const p=new URLSearchParams(window.location.search).get('panel');
   if(p){const el=document.getElementById('desk-link-'+p);show(p,el);}
   if(window.history.replaceState)window.history.replaceState({},'','/admin');
 })();
-fetch('/admin/settings-data').then(r=>r.json()).then(d=>{if(d.success&&d.settings){const n=d.settings.display_name;const e=d.settings.email;if(n){const inp=document.getElementById('sDisplayName');if(inp)inp.value=n;updateInitial(n);localStorage.setItem('adminDisplayName',n);}if(e){const inp=document.getElementById('sEmail');if(inp)inp.value=e;}}});
+
+// Load profile from DB
+fetch('/admin/settings-data').then(r=>r.json()).then(d=>{
+  if(d.success&&d.settings){
+    const n=d.settings.display_name;
+    const e=d.settings.email;
+    if(n){const inp=document.getElementById('sDisplayName');if(inp)inp.value=n;updateInitial(n);localStorage.setItem('adminDisplayName',n);}
+    if(e){const inp=document.getElementById('sEmail');if(inp)inp.value=e;}
+  }
+});
 function toggleDrawer(){
   document.getElementById('hbg').classList.toggle('open');
   document.getElementById('drawer').classList.toggle('open');
@@ -673,20 +651,26 @@ function updateInitial(val){
   const el=document.getElementById('profileInitial');
   if(el)el.textContent=val?val.charAt(0).toUpperCase():'A';
 }
-async function saveProfile(){
-  const name=document.getElementById('sDisplayName').value.trim();
-  const email=document.getElementById('sEmail').value.trim();
-  const msg=document.getElementById('profileSaved');
-  const btn=document.querySelector('[onclick="saveProfile()"]');
-  btn.disabled=true;btn.textContent='Saving...';
-  try{
-    const r=await fetch('/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({display_name:name,email})});
-    const d=await r.json();
-    if(d.success){if(name)localStorage.setItem('adminDisplayName',name);updateInitial(name);msg.style.display='block';msg.textContent='✓ Profile saved';msg.style.color='#4ade80';setTimeout(()=>msg.style.display='none',3000);}
-    else{msg.style.display='block';msg.style.color='#f87171';msg.textContent='Error: '+d.error;}
-  }catch(e){msg.style.display='block';msg.style.color='#f87171';msg.textContent='Error saving profile';}
-  btn.disabled=false;btn.textContent='Save profile';
-}
+  async function saveProfile(){
+    const name=document.getElementById('sDisplayName').value.trim();
+    const email=document.getElementById('sEmail').value.trim();
+    const msg=document.getElementById('profileSaved');
+    const btn=document.querySelector('[onclick="saveProfile()"]');
+    btn.disabled=true;btn.textContent='Saving...';
+    try{
+      const r=await fetch('/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({display_name:name,email})});
+      const d=await r.json();
+      if(d.success){
+        if(name)localStorage.setItem('adminDisplayName',name);
+        updateInitial(name);
+        msg.style.display='block';
+        msg.textContent='✓ Profile saved';
+        setTimeout(()=>msg.style.display='none',3000);
+      }else{msg.style.display='block';msg.style.color='#f87171';msg.textContent='Error: '+d.error;}
+    }catch(e){msg.style.display='block';msg.style.color='#f87171';msg.textContent='Error saving profile';}
+    btn.disabled=false;btn.textContent='Save profile';
+  }
+  
 let currentCodeLen=6;
 function setCodeLen(len,btn){
   currentCodeLen=len;
@@ -697,19 +681,6 @@ function setCodeLen(len,btn){
   btn.className='btn-xs btn-xs-green';
   document.getElementById('codeLenDisplay').textContent=len+' characters';
   localStorage.setItem('defaultCodeLen',len);
-}
-function filterCompanies(status){
-  const rows=document.querySelectorAll('#p-companies tbody tr');
-  rows.forEach(function(row){
-    if(status==='all'){row.style.display='';return;}
-    const badge=row.querySelector('.badge-green,.badge-yellow');
-    if(!badge){row.style.display='none';return;}
-    if(status==='active')row.style.display=badge.classList.contains('badge-green')?'':'none';
-    if(status==='pending')row.style.display=badge.classList.contains('badge-yellow')?'':'none';
-  });
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active-filter'));
-  const btn=document.getElementById('filter-'+status);
-  if(btn)btn.classList.add('active-filter');
 }
 function initAddForm(){
   currentAddCode=genCode();
@@ -747,90 +718,24 @@ const counts=ad.length?ad.map(d=>d.count):[0];
 if(document.getElementById('actChart')){
   new Chart(document.getElementById('actChart'),{type:'bar',data:{labels,datasets:[{data:counts,backgroundColor:'rgba(37,211,102,.12)',borderColor:'#25D366',borderWidth:2,borderRadius:8,hoverBackgroundColor:'rgba(37,211,102,.2)'}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'#111118',borderColor:'rgba(37,211,102,.2)',borderWidth:1,titleColor:'#fff',bodyColor:'rgba(255,255,255,.6)',padding:10,cornerRadius:8}},scales:{y:{beginAtZero:true,ticks:{color:'rgba(255,255,255,.3)',stepSize:1,font:{size:11}},grid:{color:'rgba(255,255,255,.04)'},border:{display:false}},x:{ticks:{color:'rgba(255,255,255,.3)',font:{size:11}},grid:{display:false},border:{display:false}}}}});
 }
-let _msgs=[];let _msgsPage=1;const _msgsPerPage=10;
 async function loadMessages(){
   try{
-    const r=await fetch('/admin/messages-data');const d=await r.json();
-    _msgs=d.messages;_msgsPage=1;renderMessages();
+    const r=await fetch('/admin/messages-data');
+    const d=await r.json();
+    if(!d.messages||!d.messages.length){document.getElementById('msg-content').innerHTML='<div style="text-align:center;padding:48px 24px;color:rgba(255,255,255,.25);font-size:13px">No messages yet</div>';return;}
+    document.getElementById('msg-content').innerHTML=\`<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Company</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead><tbody>\${d.messages.map(m=>\`<tr class="tr-hover"><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">\${new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td style="font-weight:600;font-size:13px">\${m.company_name}</td><td style="font-size:12px;color:rgba(255,255,255,.4)">\${m.wa_number}</td><td>\${m.direction==='inbound'?'<span class="badge-green">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>'}</td><td style="font-size:12px;color:rgba(255,255,255,.5);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">\${m.media_type?'['+m.media_type.split('/')[0]+']':(m.body||'').substring(0,80)}</td></tr>\`).join('')}</tbody></table></div>\`;
   }catch(e){document.getElementById('msg-content').innerHTML='<div style="color:#f87171;font-size:13px">Error loading messages</div>';}
 }
-function renderMessages(){
-  const total=_msgs.length;const pages=Math.ceil(total/_msgsPerPage);
-  const start=(_msgsPage-1)*_msgsPerPage;const slice=_msgs.slice(start,start+_msgsPerPage);
-  const rows=slice.map(function(m){
-    const time=new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    const dir=m.direction==='inbound'?'<span class="badge-green">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>';
-    const msg=m.media_type?'['+m.media_type.split('/')[0]+']':(m.body||'').substring(0,60);
-    return '<tr class="tr-hover"><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">'+time+'</td><td style="font-weight:600;font-size:13px">'+m.company_name+'</td><td style="font-size:12px;color:rgba(255,255,255,.4)">'+m.wa_number+'</td><td>'+dir+'</td><td style="font-size:12px;color:rgba(255,255,255,.5);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+msg+'</td></tr>';
-  }).join('');
-  var pagerHTML='';
-  if(pages>1){
-    var btns='';
-    if(_msgsPage>1)btns+='<button class="pager-btn" onclick="_msgsPage--;renderMessages()">← Prev</button>';
-    for(var i=1;i<=pages;i++)btns+='<button class="pager-btn'+(i===_msgsPage?' active':'')+'" onclick="_msgsPage='+i+';renderMessages()">'+i+'</button>';
-    if(_msgsPage<pages)btns+='<button class="pager-btn" onclick="_msgsPage++;renderMessages()">Next →</button>';
-    pagerHTML='<div class="pager"><div class="pager-info">Showing '+(start+1)+'–'+Math.min(start+_msgsPerPage,total)+' of '+total+'</div><div class="pager-btns">'+btns+'</div></div>';
-  }
-  document.getElementById('msg-content').innerHTML='<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Company</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead><tbody>'+rows+'</tbody></table>'+pagerHTML+'</div>';
-}
-let _contacts=[];let _contactsPage=1;const _contactsPerPage=10;
-async function loadContacts(){
-  try{
-    const r=await fetch('/admin/contacts-data');const d=await r.json();
-    if(!d.contacts||!d.contacts.length){document.getElementById('contacts-content').innerHTML='<div style="text-align:center;padding:48px 24px;color:rgba(255,255,255,.25);font-size:13px">No contacts yet</div>';return;}
-    _contacts=d.contacts;_contactsPage=1;renderContacts();
-  }catch(e){document.getElementById('contacts-content').innerHTML='<div style="color:#f87171;font-size:13px">Error loading contacts</div>';}
-}
-function renderContacts(){
-  const total=_contacts.length;const pages=Math.ceil(total/_contactsPerPage);
-  const start=(_contactsPage-1)*_contactsPerPage;const slice=_contacts.slice(start,start+_contactsPerPage);
-  const rows=slice.map(function(c){
-    const blocked=c.blocked?'<span style="color:#f87171;font-size:12px">Blocked</span>':'<span style="color:#4ade80;font-size:12px">Active</span>';
-    const date=new Date(c.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-    return '<tr class="tr-hover"><td style="font-size:13px;color:rgba(255,255,255,.85)">'+c.wa_number+'</td><td style="font-size:13px;color:rgba(255,255,255,.6)">'+(c.display_name||'-')+'</td><td style="font-size:13px;color:rgba(255,255,255,.6)">'+c.company_name+'</td><td style="font-size:12px;color:rgba(255,255,255,.4)">'+c.slack_channel+'</td><td>'+blocked+'</td><td style="font-size:12px;color:rgba(255,255,255,.3)">'+date+'</td></tr>';
-  }).join('');
-  var pagerHTML='';
-  if(pages>1){
-    var btns='';
-    if(_contactsPage>1)btns+='<button class="pager-btn" onclick="_contactsPage--;renderContacts()">← Prev</button>';
-    for(var i=1;i<=pages;i++)btns+='<button class="pager-btn'+(i===_contactsPage?' active':'')+'" onclick="_contactsPage='+i+';renderContacts()">'+i+'</button>';
-    if(_contactsPage<pages)btns+='<button class="pager-btn" onclick="_contactsPage++;renderContacts()">Next →</button>';
-    pagerHTML='<div class="pager"><div class="pager-info">Showing '+(start+1)+'–'+Math.min(start+_contactsPerPage,total)+' of '+total+'</div><div class="pager-btns">'+btns+'</div></div>';
-  }
-  document.getElementById('contacts-content').innerHTML='<div class="tbl-wrap"><table><thead><tr><th>WhatsApp number</th><th>Name</th><th>Company</th><th>Slack channel</th><th>Status</th><th>Added</th></tr></thead><tbody>'+rows+'</tbody></table>'+pagerHTML+'</div>';
-}
-async function loadLogs(){
-  try{
-    const r=await fetch('/admin/logs-data');const d=await r.json();
-    const icons={'Activated company':'[+]','Deleted company':'[x]','Added company':'[+]','Password changed':'[*]','Sent waitlist invite':'[@]'};
-    const el=document.getElementById('adminLogs');
-    el.innerHTML=d.logs.map(l=>{const ago=timeAgo(new Date(l.created_at));const icon=icons[l.action]||'[?]';return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border-radius:10px;border:1px solid var(--b1)"><span style="font-size:16px">'+icon+'</span><div style="flex:1;font-size:13px;color:var(--t2)">'+l.action+(l.detail?' · <span style="color:var(--t4)">'+l.detail+'</span>':'')+'</div><div style="font-size:11px;color:var(--t4)">'+ago+'</div></div>';}).join('');
-  }catch(e){document.getElementById('adminLogs').innerHTML='<div style="color:#f87171;font-size:13px">Error loading logs</div>';}
-}
-function timeAgo(date){const s=Math.floor((Date.now()-date)/1000);if(s<60)return 'Just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';}
-let _wl=[];let _wlPage=1;const _wlPerPage=10;
 async function loadWaitlist(){
   try{
-    const r=await fetch('/admin/waitlist-data');const d=await r.json();
-    _wl=d.rows;_wlPage=1;renderWaitlist();
+    const r=await fetch('/admin/waitlist-data');
+    const d=await r.json();
+    if(!d.rows||!d.rows.length){
+      document.getElementById('waitlist-content').innerHTML='<div style="text-align:center;padding:48px 24px;color:rgba(255,255,255,.25);font-size:13px">No signups yet</div>';
+      return;
+    }
+    document.getElementById('waitlist-content').innerHTML=\`<div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Signed up</th><th>Action</th></tr></thead><tbody>\${d.rows.map(r=>\`<tr class="tr-hover"><td style="font-size:13px">\${r.email}</td><td style="font-size:12px;color:rgba(255,255,255,.4)">\${new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td><td><button onclick="sendInvite('\${r.email}',this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Send invite →</button></td></tr>\`).join('')}</tbody></table></div>\`;
   }catch(e){document.getElementById('waitlist-content').innerHTML='<div style="color:#f87171;font-size:13px">Error loading waitlist</div>';}
-}
-function renderWaitlist(){
-  const total=_wl.length;const pages=Math.ceil(total/_wlPerPage);
-  const start=(_wlPage-1)*_wlPerPage;const slice=_wl.slice(start,start+_wlPerPage);
-  const rows=slice.map(function(r){
-    const date=new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-    return '<tr class="tr-hover"><td style="font-size:13px;color:rgba(255,255,255,.85);word-break:break-all">'+r.email+'</td><td style="font-size:13px;color:rgba(255,255,255,.5);white-space:nowrap">'+date+'</td><td style="text-align:right"><button data-email="'+r.email+'" onclick="sendInvite(this.dataset.email,this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;white-space:nowrap">Invite →</button></td></tr>';
-  }).join('');
-  var pagerHTML='';
-  if(pages>1){
-    var btns='';
-    if(_wlPage>1)btns+='<button class="pager-btn" onclick="_wlPage--;renderWaitlist()">← Prev</button>';
-    for(var i=1;i<=pages;i++)btns+='<button class="pager-btn'+(i===_wlPage?' active':'')+'" onclick="_wlPage='+i+';renderWaitlist()">'+i+'</button>';
-    if(_wlPage<pages)btns+='<button class="pager-btn" onclick="_wlPage++;renderWaitlist()">Next →</button>';
-    pagerHTML='<div class="pager"><div class="pager-info">Showing '+(start+1)+'–'+Math.min(start+_wlPerPage,total)+' of '+total+'</div><div class="pager-btns">'+btns+'</div></div>';
-  }
-  document.getElementById('waitlist-content').innerHTML='<div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Signed up</th><th>Action</th></tr></thead><tbody>'+rows+'</tbody></table>'+pagerHTML+'</div>';
 }
 async function sendInvite(email,btn){
   if(!confirm('Send invite to '+email+'?'))return;
@@ -904,14 +809,6 @@ async function addTenant(){
   const r=await fetch('/admin/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company:co,email,twilio_number:tw,slack_bot_token:tok,claim_code:code})});
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
-}
-async function saveSettings(){
-  const email=document.getElementById('sEmail').value.trim();
-  const appUrl=document.getElementById('sAppUrl').value.trim();
-  const r=await fetch('/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,app_url:appUrl})});
-  const d=await r.json();
-  if(d.success){const msg=document.getElementById('settingsSaved');msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);}
-  else alert('Error: '+d.error);
 }
 async function changePassword(){
   const curr=document.getElementById('sCurrPwd').value;
@@ -1007,7 +904,6 @@ router.post('/activate', auth, async (req, res) => {
       await sendActivationEmail({ to: email.trim(), companyName: (await pool.query('SELECT company_name FROM tenants WHERE id = $1', [id])).rows[0].company_name, claimCode: claim_code.toLowerCase().trim(), twilioNumber: twilio_number });
       emailSent = true;
     } catch (emailErr) { console.error('Email send failed:', emailErr.message); }
-    await logAdminAction("Activated company", email.trim());
     res.json({ success: true, emailSent, emailTo: email.trim() });
   } catch(err){ res.json({ success: false, error: err.message }); }
 });
@@ -1040,26 +936,47 @@ router.post('/add', auth, async (req, res) => {
   } catch(err){ res.json({ success: false, error: err.message }); }
 });
 
-router.post('/settings', auth, async (req, res) => {
-  try {
-    const { email, app_url } = req.body;
-    if (email && !email.includes('@')) return res.json({ success: false, error: 'Invalid email' });
-    console.log('[SETTINGS] Updated — email:', email, 'app_url:', app_url);
-    res.json({ success: true });
-  } catch (err) { res.json({ success: false, error: err.message }); }
+    router.post('/settings', auth, async (req, res) => {
+      try {
+        const { display_name, email } = req.body;
+        await pool.query(`
+          CREATE TABLE IF NOT EXISTS admin_settings (
+            id SERIAL PRIMARY KEY,
+            display_name VARCHAR(255),
+            email VARCHAR(255),
+            updated_at TIMESTAMPTZ DEFAULT NOW()
+          )
+        `);
+        const existing = await pool.query('SELECT id FROM admin_settings LIMIT 1');
+        if (existing.rows.length) {
+          await pool.query(
+            'UPDATE admin_settings SET display_name=$1, email=$2, updated_at=NOW() WHERE id=$3',
+            [display_name||'Admin', email||'', existing.rows[0].id]
+          );
+        } else {
+          await pool.query(
+            'INSERT INTO admin_settings (display_name, email) VALUES ($1, $2)',
+            [display_name||'Admin', email||'']
+          );
+        }
+        res.json({ success: true });
+      } catch (err) { res.json({ success: false, error: err.message }); }
+    });
+    router.get('/settings-data', auth, async (req, res) => {
+      try {
+      await pool.query(`CREATE TABLE IF NOT EXISTS admin_settings (id SERIAL PRIMARY KEY, display_name VARCHAR(255), email VARCHAR(255), updated_at TIMESTAMPTZ DEFAULT NOW())`);
+      const result = await pool.query('SELECT * FROM admin_settings LIMIT 1');
+      res.json({ success: true, settings: result.rows[0] || null });
+    } catch (err) { res.json({ success: false }); }
 });
-
-router.post('/settings', auth, async (req, res) => { try { const { display_name, email } = req.body; await pool.query('CREATE TABLE IF NOT EXISTS admin_settings (id SERIAL PRIMARY KEY, display_name VARCHAR(255), email VARCHAR(255), updated_at TIMESTAMPTZ DEFAULT NOW())'); const existing = await pool.query('SELECT id FROM admin_settings LIMIT 1'); if (existing.rows.length) { await pool.query('UPDATE admin_settings SET display_name=$1, email=$2, updated_at=NOW() WHERE id=$3', [display_name||'Admin', email||'', existing.rows[0].id]); } else { await pool.query('INSERT INTO admin_settings (display_name, email) VALUES ($1, $2)', [display_name||'Admin', email||'']); } res.json({ success: true }); } catch (err) { res.json({ success: false, error: err.message }); }});
-router.get('/settings-data', auth, async (req, res) => { try { await pool.query('CREATE TABLE IF NOT EXISTS admin_settings (id SERIAL PRIMARY KEY, display_name VARCHAR(255), email VARCHAR(255), updated_at TIMESTAMPTZ DEFAULT NOW())'); const result = await pool.query('SELECT * FROM admin_settings LIMIT 1'); res.json({ success: true, settings: result.rows[0] || null }); } catch (err) { res.json({ success: false }); }});
 router.post('/change-password', auth, async (req, res) => {
-  try {
-    const { current, newPassword } = req.body;
-    if (current !== process.env.ADMIN_PASSWORD) return res.json({ success: false, error: 'Current password is incorrect' });
-    if (!newPassword || newPassword.length < 8) return res.json({ success: false, error: 'New password must be at least 8 characters' });
-    process.env.ADMIN_PASSWORD = newPassword;
-    await logAdminAction("Password changed", "");
-    res.json({ success: true });
-  } catch (err) { res.json({ success: false, error: err.message }); }
+   try {
+     const { current, newPassword } = req.body;
+     if (current !== process.env.ADMIN_PASSWORD) return res.json({ success: false, error: 'Current password is incorrect' });
+     if (!newPassword || newPassword.length < 8) return res.json({ success: false, error: 'New password must be at least 8 characters' });
+     process.env.ADMIN_PASSWORD = newPassword;
+     res.json({ success: true });
+   } catch (err) { res.json({ success: false, error: err.message }); }
 });
 
 router.post('/delete-all', auth, async (req, res) => {
@@ -1084,19 +1001,5 @@ router.post('/waitlist-invite', auth, async (req, res) => {
     res.json({ success: false, error: err.message });
   }
 });
-
-router.get('/contacts-data', auth, async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT c.wa_number, c.display_name, c.slack_channel, c.blocked, c.created_at, t.company_name
-      FROM contacts c
-      JOIN tenants t ON t.id = c.tenant_id
-      ORDER BY c.created_at DESC
-    `);
-    res.json({ contacts: result.rows });
-  } catch(err){ res.json({ contacts: [] }); }
-});
-
-router.get("/logs-data", auth, async (req, res) => { try { await pool.query(`CREATE TABLE IF NOT EXISTS admin_logs (id SERIAL PRIMARY KEY, action VARCHAR(255), detail TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`); const result = await pool.query("SELECT * FROM admin_logs ORDER BY created_at DESC LIMIT 10"); res.json({ success: true, logs: result.rows }); } catch(err) { res.json({ success: false, logs: [] }); }});
 
 module.exports = router;
