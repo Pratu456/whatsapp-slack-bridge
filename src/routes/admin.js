@@ -407,7 +407,8 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <div class="scard-num" style="color:#fbbf24">${inactiveTenants.rows.length}</div>
           <div class="scard-label">Inactive companies</div>
           <div class="scard-sub">No messages in 14 days</div>
-          <div class="scard-bar" style="background:linear-gradient(90deg,#f59e0b,transparent)"></div>
+        </div>
+      </div>
         </div>
       <div class="card">
         <div class="card-hd">
