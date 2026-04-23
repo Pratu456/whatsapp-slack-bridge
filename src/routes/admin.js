@@ -398,19 +398,21 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <canvas id="actChart" height="80"></canvas>
         </div>
 
+
+
+
         <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('pending'),50)" style="cursor:pointer">
-          <div class="scard-top"><div class="scard-icon" style="background:rgba(245,158,11,.1)">⚠️</div><div class="scard-trend" style="background:rgba(245,158,11,.1);color:#fbbf24">14 days</div></div>
+          <div class="scard-top"><div class="scard-icon" style="background:rgba(245,158,11,.1)">⚠️</div><div class="scard-trend" style="background:rgba(245,158,11,.1);color:#fbbf24">Pending</div></div>
           <div class="scard-num" style="color:#fbbf24">${inactiveTenants.rows.length}</div>
+          <div class="scard-label">Pending companies</div>
+          <div class="scard-sub">Awaiting activation</div>
+          <div class="scard-bar" style="background:linear-gradient(90deg,#f59e0b,transparent)"></div>
         </div>
-
-
       </div>
-
       <div class="card">
         <div class="card-hd">
           <div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(139,92,246,.1)">🏢</div><div><div class="card-hd-title">Company overview</div><div class="card-hd-sub">Quick status of all companies</div></div></div>
           <button class="btn-ghost" onclick="show('companies',document.getElementById('desk-link-companies'))">View all →</button>
-        </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
           ${tenants.map(t=>`
             <div onclick="location.href='/admin/tenant/${t.id}'" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid rgba(255,255,255,.06);border-radius:10px;cursor:pointer;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.03)'" onmouseout="this.style.background='transparent'">
