@@ -393,7 +393,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div class="card">
       <div class="card-hd">
         <div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(139,92,246,.1)">🏢</div><div><div class="card-hd-title">Company overview</div><div class="card-hd-sub">Quick status of all companies</div></div></div>
-        <button class="btn-ghost" onclick="show('companies',document.getElementById('desk-link-companies'))">View all →</button>
+        <button class="btn-ghost" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('all'),100)">View all →</button>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
         ${tenants.map(t=>`
@@ -610,7 +610,7 @@ function show(name,el){
   const titles={dashboard:'Dashboard',companies:'Companies',messages:'Messages',add:'Add Company',settings:'Settings',waitlist:'Waitlist'};
   const pt=document.getElementById('ptitle');
   if(pt)pt.textContent=titles[name]||name;
-  if(name==='messages')loadMessages();
+  if(name==='messages')loadMessages();if(name==='companies')setTimeout(()=>filterCompanies('all'),100);
   if(name==='add')initAddForm();
   if(name==='waitlist')loadWaitlist();
 }
