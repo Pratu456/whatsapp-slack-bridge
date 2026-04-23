@@ -266,6 +266,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 .code-preview-val{font-size:20px;font-weight:800;color:var(--g);letter-spacing:3px;font-family:monospace}
 .code-preview-btn{background:rgba(37,211,102,.1);color:var(--g);border:1px solid rgba(37,211,102,.2);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
 .code-preview-btn:hover{background:rgba(37,211,102,.2)}
+.active-filter{background:rgba(37,211,102,.15)!important;color:#4ade80!important;border-color:rgba(37,211,102,.3)!important}
 .toggle-custom{font-size:12px;color:var(--t4);cursor:pointer;text-decoration:underline;margin-bottom:14px;display:inline-block}
 .email-status{font-size:12px;margin-top:12px;padding:10px 14px;border-radius:8px;display:none;line-height:1.5}
 .email-status.sent{background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);display:block}
@@ -373,7 +374,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <div class="scard-sub">${active} active · ${pending} pending</div>
           <div class="scard-bar" style="background:linear-gradient(90deg,#25D366,transparent)"></div>
         </div>
-        <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'))" style="cursor:pointer">
+        <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('active'),50)" style="cursor:pointer">
           <div class="scard-top"><div class="scard-icon" style="background:rgba(59,130,246,.1)">✅</div><div class="scard-trend" style="background:rgba(59,130,246,.1);color:#60a5fa">Active</div></div>
           <div class="scard-num" style="color:#60a5fa">${active}</div><div class="scard-label">Active companies</div>
           <div class="scard-sub">Routing messages live</div>
@@ -436,7 +437,12 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <div style="font-size:18px;font-weight:800;color:var(--t)">${tenants.length} Companies</div>
           <div style="font-size:13px;color:var(--t4);margin-top:2px">${active} active · ${pending} pending</div>
         </div>
-        <button class="btn-primary" onclick="show('add',document.getElementById('desk-link-add'))">＋ Add company</button>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <button id="filter-all" class="btn-xs btn-xs-green filter-btn active-filter" onclick="filterCompanies('all')">All</button>
+          <button id="filter-active" class="btn-xs btn-xs-gray filter-btn" onclick="filterCompanies('active')">Active only</button>
+          <button id="filter-pending" class="btn-xs btn-xs-gray filter-btn" onclick="filterCompanies('pending')">Pending only</button>
+          <button class="btn-primary" onclick="show('add',document.getElementById('desk-link-add'))">＋ Add company</button>
+        </div>
       </div>
       <div class="tbl-wrap">
         <table>
@@ -693,6 +699,19 @@ function setCodeLen(len,btn){
   btn.className='btn-xs btn-xs-green';
   document.getElementById('codeLenDisplay').textContent=len+' characters';
   localStorage.setItem('defaultCodeLen',len);
+}
+function filterCompanies(status){
+  const rows=document.querySelectorAll('#p-companies tbody tr');
+  rows.forEach(function(row){
+    if(status==='all'){row.style.display='';return;}
+    const badge=row.querySelector('.badge-green,.badge-yellow');
+    if(!badge){row.style.display='none';return;}
+    if(status==='active')row.style.display=badge.classList.contains('badge-green')?'':'none';
+    if(status==='pending')row.style.display=badge.classList.contains('badge-yellow')?'':'none';
+  });
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active-filter'));
+  const btn=document.getElementById('filter-'+status);
+  if(btn)btn.classList.add('active-filter');
 }
 function initAddForm(){
   currentAddCode=genCode();
