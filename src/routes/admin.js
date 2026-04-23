@@ -441,7 +441,6 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <button id="filter-all" class="btn-xs btn-xs-green filter-btn active-filter" onclick="filterCompanies('all')">All</button>
           <button id="filter-active" class="btn-xs btn-xs-gray filter-btn" onclick="filterCompanies('active')">Active only</button>
           <button id="filter-pending" class="btn-xs btn-xs-gray filter-btn" onclick="filterCompanies('pending')">Pending only</button>
-          <button class="btn-primary" onclick="show('add',document.getElementById('desk-link-add'))">＋ Add company</button>
         </div>
       </div>
       <div class="tbl-wrap">
