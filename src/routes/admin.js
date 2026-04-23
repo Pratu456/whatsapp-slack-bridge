@@ -405,11 +405,11 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
         <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('pending'),50)" style="cursor:pointer">
           <div class="scard-top"><div class="scard-icon" style="background:rgba(245,158,11,.1)">⚠️</div><div class="scard-trend" style="background:rgba(245,158,11,.1);color:#fbbf24">14 days</div></div>
           <div class="scard-num" style="color:#fbbf24">${inactiveTenants.rows.length}</div>
-          <div class="scard-label">Inactive companies</div>
-          <div class="scard-sub">No messages in 14 days</div>
         </div>
+
+
       </div>
-        </div>
+
       <div class="card">
         <div class="card-hd">
           <div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(139,92,246,.1)">🏢</div><div><div class="card-hd-title">Company overview</div><div class="card-hd-sub">Quick status of all companies</div></div></div>
