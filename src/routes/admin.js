@@ -340,76 +340,76 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div class="topbar-title" id="ptitle">Dashboard</div>
     <div class="topbar-right">
       <div class="live-badge"><span class="live-dot"></span>Live</div>
-      <div class="topbar-date">${new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}</div>
+        <div class="topbar-date">${new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}</div>
+      </div>
     </div>
-  </div>
-
-  <div class="content">
-
-    <!-- DASHBOARD -->
-    <div id="p-dashboard" class="panel on">
-      <div class="stats-row">
-        <div class="scard">
-          <div class="scard-top"><div class="scard-icon" style="background:rgba(37,211,102,.1)">🏢</div><div class="scard-trend" style="background:rgba(37,211,102,.1);color:#4ade80">${active} live</div></div>
-          <div class="scard-num">${tenants.length}</div><div class="scard-label">Total companies</div>
-          <div class="scard-sub">${active} active · ${pending} pending</div>
-          <div class="scard-bar" style="background:linear-gradient(90deg,#25D366,transparent)"></div>
-        </div>
-        <div class="scard">
-          <div class="scard-top"><div class="scard-icon" style="background:rgba(59,130,246,.1)">✅</div><div class="scard-trend" style="background:rgba(59,130,246,.1);color:#60a5fa">Active</div></div>
-          <div class="scard-num" style="color:#60a5fa">${active}</div><div class="scard-label">Active companies</div>
-          <div class="scard-sub">Routing messages live</div>
-          <div class="scard-bar" style="background:linear-gradient(90deg,#3b82f6,transparent)"></div>
-        </div>
-        <div class="scard">
-          <div class="scard-top"><div class="scard-icon" style="background:rgba(139,92,246,.1)">💬</div><div class="scard-trend" style="background:rgba(139,92,246,.1);color:#a78bfa">Today</div></div>
-          <div class="scard-num" style="color:#a78bfa">${todayMessages}</div><div class="scard-label">Messages today</div>
-          <div class="scard-sub">${totalMessages} total all-time</div>
-          <div class="scard-bar" style="background:linear-gradient(90deg,#8b5cf6,transparent)"></div>
-        </div>
-        <div class="scard">
-          <div class="scard-top"><div class="scard-icon" style="background:rgba(245,158,11,.1)">👥</div><div class="scard-trend" style="background:rgba(245,158,11,.1);color:#fbbf24">All time</div></div>
-          <div class="scard-num" style="color:#fbbf24">${totalContacts}</div><div class="scard-label">Total contacts</div>
-          <div class="scard-sub">Across all workspaces</div>
-          <div class="scard-bar" style="background:linear-gradient(90deg,#f59e0b,transparent)"></div>
-        </div>
+      
+    <div class="content">
+  <!------dashbord------>
+  <div id="p-dashboard" class="panel on">
+    <div class="stats-row">
+      <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'))" style="cursor:pointer">
+        <div class="scard-top"><div class="scard-icon" style="background:rgba(37,211,102,.1)">🏢</div><div class="scard-trend" style="background:rgba(37,211,102,.1);color:#4ade80">${active} live</div></div>
+        <div class="scard-num">${tenants.length}</div><div class="scard-label">Total companies</div>
+        <div class="scard-sub">${active} active · ${pending} pending</div>
+        <div class="scard-bar" style="background:linear-gradient(90deg,#25D366,transparent)"></div>
       </div>
-
-      <div class="row2" style="margin-bottom:16px">
-        <div class="card">
-          <div class="card-hd">
-            <div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(37,211,102,.1)">📈</div><div><div class="card-hd-title">Message activity</div><div class="card-hd-sub">Last 7 days</div></div></div>
-          </div>
-          <canvas id="actChart" height="80"></canvas>
-        </div>
-        <div class="card">
-          <div class="card-hd">
-            <div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(245,158,11,.1)">⚠️</div><div><div class="card-hd-title">Inactive companies</div><div class="card-hd-sub">No messages in 14 days</div></div></div>
-          </div>
-          ${inactiveRows}
-        </div>
+      <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('active'),50)" style="cursor:pointer">
+        <div class="scard-top"><div class="scard-icon" style="background:rgba(59,130,246,.1)">✅</div><div class="scard-trend" style="background:rgba(59,130,246,.1);color:#60a5fa">Active</div></div>
+        <div class="scard-num" style="color:#60a5fa">${active}</div><div class="scard-label">Active companies</div>
+        <div class="scard-sub">Routing messages live</div>
+        <div class="scard-bar" style="background:linear-gradient(90deg,#3b82f6,transparent)"></div>
       </div>
-
+      <div class="scard" onclick="show('messages',document.getElementById('desk-link-messages'))" style="cursor:pointer">
+        <div class="scard-top"><div class="scard-icon" style="background:rgba(139,92,246,.1)">💬</div><div class="scard-trend" style="background:rgba(139,92,246,.1);color:#a78bfa">Today</div></div>
+        <div class="scard-num" style="color:#a78bfa">${todayMessages}</div><div class="scard-label">Messages today</div>
+        <div class="scard-sub">${totalMessages} total all-time</div>
+        <div class="scard-bar" style="background:linear-gradient(90deg,#8b5cf6,transparent)"></div>
+      </div>
+      <div class="scard" onclick="show('contacts',document.getElementById('desk-link-contacts'))" style="cursor:pointer">
+        <div class="scard-top"><div class="scard-icon" style="background:rgba(245,158,11,.1)">👥</div><div class="scard-trend" style="background:rgba(245,158,11,.1);color:#fbbf24">All time</div></div>
+        <div class="scard-num" style="color:#fbbf24">${totalContacts}</div><div class="scard-label">Total contacts</div>
+        <div class="scard-sub">Across all workspaces</div>
+        <div class="scard-bar" style="background:linear-gradient(90deg,#f59e0b,transparent)"></div>
+      </div>
+    </div>
+      
+    <div class="row2" style="margin-bottom:16px">
       <div class="card">
         <div class="card-hd">
-          <div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(139,92,246,.1)">🏢</div><div><div class="card-hd-title">Company overview</div><div class="card-hd-sub">Quick status of all companies</div></div></div>
-          <button class="btn-ghost" onclick="show('companies',document.getElementById('desk-link-companies'))">View all →</button>
+          <div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(37,211,102,.1)">📈</div><div><div class="card-hd-title">Message activity</div><div class="card-hd-sub">Last 7 days</div></div></div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
-          ${tenants.map(t=>`
-            <div onclick="location.href='/admin/tenant/${t.id}'" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid rgba(255,255,255,.06);border-radius:10px;cursor:pointer;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.03)'" onmouseout="this.style.background='transparent'">
-              <div style="display:flex;align-items:center;gap:10px">
-                <div style="width:32px;height:32px;border-radius:8px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.15);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#25D366;flex-shrink:0">${t.company_name.charAt(0)}</div>
-                <div>
-                  <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.85)">${t.company_name}</div>
-                  <div style="font-size:11px;color:rgba(255,255,255,.3)">${t.claim_code?'Code: '+t.claim_code:'No claim code'}</div>
-                </div>
-              </div>
-              ${t.is_active?'<span class="badge-green">Active</span>':'<span class="badge-yellow">Pending</span>'}
-            </div>`).join('')}
-        </div>
+        <canvas id="actChart" height="80"></canvas>
+      </div>
+      <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('pending'),50)" style="cursor:pointer">
+        <div class="scard-top"><div class="scard-icon" style="background:rgba(245,158,11,.1)">⚠️</div><div class="scard-trend" style="background:rgba(245,158,11,.1);color:#fbbf24">Pending</div></div>
+        <div class="scard-num" style="color:#fbbf24">${inactiveTenants.rows.length}</div>
+        <div class="scard-label">Pending companies</div>
+        <div class="scard-sub">Awaiting activation</div>
+        <div class="scard-bar" style="background:linear-gradient(90deg,#f59e0b,transparent)"></div>
       </div>
     </div>
+      
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(139,92,246,.1)">🏢</div><div><div class="card-hd-title">Company overview</div><div class="card-hd-sub">Quick status of all companies</div></div></div>
+        <button class="btn-ghost" onclick="show('companies',document.getElementById('desk-link-companies'))">View all →</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
+        ${tenants.map(t=>`
+          <div onclick="location.href='/admin/tenant/${t.id}'" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid rgba(255,255,255,.06);border-radius:10px;cursor:pointer;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.03)'" onmouseout="this.style.background='transparent'">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:32px;height:32px;border-radius:8px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.15);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#25D366;flex-shrink:0">${t.company_name.charAt(0)}</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.85)">${t.company_name}</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.3)">${t.claim_code?'Code: '+t.claim_code:'No claim code'}</div>
+              </div>
+            </div>
+            ${t.is_active?'<span class="badge-green">Active</span>':'<span class="badge-yellow">Pending</span>'}
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>
 
     <!-- COMPANIES -->
     <div id="p-companies" class="panel">
