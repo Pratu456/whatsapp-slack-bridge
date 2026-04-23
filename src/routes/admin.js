@@ -1068,6 +1068,18 @@ router.post('/waitlist-invite', auth, async (req, res) => {
   }
 });
 
+router.get('/contacts-data', auth, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT c.wa_number, c.display_name, c.slack_channel, c.blocked, c.created_at, t.company_name
+      FROM contacts c
+      JOIN tenants t ON t.id = c.tenant_id
+      ORDER BY c.created_at DESC
+    `);
+    res.json({ contacts: result.rows });
+  } catch(err){ res.json({ contacts: [] }); }
+});
+
 router.get("/logs-data", auth, async (req, res) => { try { await pool.query(`CREATE TABLE IF NOT EXISTS admin_logs (id SERIAL PRIMARY KEY, action VARCHAR(255), detail TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`); const result = await pool.query("SELECT * FROM admin_logs ORDER BY created_at DESC LIMIT 10"); res.json({ success: true, logs: result.rows }); } catch(err) { res.json({ success: false, logs: [] }); }});
 
 module.exports = router;
