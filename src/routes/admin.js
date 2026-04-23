@@ -381,7 +381,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
         </div>
         <canvas id="actChart" height="80"></canvas>
       </div>
-      <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('pending'),50)" style="cursor:pointer">
+      <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'));setTimeout(()=>filterCompanies('pending'),100)" style="cursor:pointer">
         <div class="scard-top"><div class="scard-icon" style="background:rgba(245,158,11,.1)">⚠️</div><div class="scard-trend" style="background:rgba(245,158,11,.1);color:#fbbf24">Pending</div></div>
         <div class="scard-num" style="color:#fbbf24">${inactiveTenants.rows.length}</div>
         <div class="scard-label">Pending companies</div>
