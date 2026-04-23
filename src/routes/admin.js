@@ -367,7 +367,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <!-- DASHBOARD -->
     <div id="p-dashboard" class="panel on">
       <div class="stats-row">
-        <div class="scard">
+        <div class="scard" onclick="show('companies',document.getElementById('desk-link-companies'))" style="cursor:pointer">
           <div class="scard-top"><div class="scard-icon" style="background:rgba(37,211,102,.1)">🏢</div><div class="scard-trend" style="background:rgba(37,211,102,.1);color:#4ade80">${active} live</div></div>
           <div class="scard-num">${tenants.length}</div><div class="scard-label">Total companies</div>
           <div class="scard-sub">${active} active · ${pending} pending</div>
