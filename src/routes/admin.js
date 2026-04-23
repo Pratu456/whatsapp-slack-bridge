@@ -683,13 +683,6 @@ function setCodeLen(len,btn){
   localStorage.setItem('defaultCodeLen',len);
 }
 function filterCompanies(status){
-  const ph=document.querySelector('#p-companies [style*="font-size:18px"]');
-  const ps=document.querySelector('#p-companies [style*="font-size:13px"][style*="color:var(--t4)"]');
-  if(ph&&ps){
-    if(status==='pending'){ph.textContent='Pending Companies';ps.textContent='Awaiting activation';}
-    else if(status==='active'){ph.textContent='Active Companies';ps.textContent='Currently routing messages';}
-    else{ph.textContent=ph.dataset.orig||ph.textContent;ps.textContent=ps.dataset.orig||ps.textContent;}
-  }
   const rows=document.querySelectorAll('#p-companies tbody tr');
   rows.forEach(function(row){
     if(status==='all'){row.style.display='';return;}
