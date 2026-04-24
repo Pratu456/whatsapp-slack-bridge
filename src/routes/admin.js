@@ -782,6 +782,7 @@ function renderMessages(){
   if(pages>1){var btns='';if(_msgsPage>1)btns+='<button class="pager-btn" onclick="_msgsPage--;renderMessages()">← Prev</button>';for(var i=1;i<=pages;i++)btns+='<button class="pager-btn'+(i===_msgsPage?' active':'')+'" onclick="_msgsPage='+i+';renderMessages()">'+i+'</button>';if(_msgsPage<pages)btns+='<button class="pager-btn" onclick="_msgsPage++;renderMessages()">Next →</button>';pagerHTML='<div class="pager"><div class="pager-info">Showing '+(start+1)+'–'+Math.min(start+_msgsPerPage,total)+' of '+total+'</div><div class="pager-btns">'+btns+'</div></div>';}
   document.getElementById('msg-content').innerHTML='<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Company</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead><tbody>'+rows+'</tbody></table>'+pagerHTML+'</div>';
 }
+async function loadWaitlist(){
   try{
     const r=await fetch('/admin/waitlist-data');
     const d=await r.json();
