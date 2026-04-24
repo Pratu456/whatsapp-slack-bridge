@@ -761,15 +761,27 @@ const counts=ad.length?ad.map(d=>d.count):[0];
 if(document.getElementById('actChart')){
   new Chart(document.getElementById('actChart'),{type:'bar',data:{labels,datasets:[{data:counts,backgroundColor:'rgba(37,211,102,.12)',borderColor:'#25D366',borderWidth:2,borderRadius:8,hoverBackgroundColor:'rgba(37,211,102,.2)'}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'#111118',borderColor:'rgba(37,211,102,.2)',borderWidth:1,titleColor:'#fff',bodyColor:'rgba(255,255,255,.6)',padding:10,cornerRadius:8}},scales:{y:{beginAtZero:true,ticks:{color:'rgba(255,255,255,.3)',stepSize:1,font:{size:11}},grid:{color:'rgba(255,255,255,.04)'},border:{display:false}},x:{ticks:{color:'rgba(255,255,255,.3)',font:{size:11}},grid:{display:false},border:{display:false}}}}});
 }
+let _msgs=[];let _msgsPage=1;const _msgsPerPage=10;
 async function loadMessages(){
   try{
-    const r=await fetch('/admin/messages-data');
-    const d=await r.json();
+    const r=await fetch('/admin/messages-data');const d=await r.json();
     if(!d.messages||!d.messages.length){document.getElementById('msg-content').innerHTML='<div style="text-align:center;padding:48px 24px;color:rgba(255,255,255,.25);font-size:13px">No messages yet</div>';return;}
-    document.getElementById('msg-content').innerHTML=\`<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Company</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead><tbody>\${d.messages.map(m=>\`<tr class="tr-hover"><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">\${new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td style="font-weight:600;font-size:13px">\${m.company_name}</td><td style="font-size:12px;color:rgba(255,255,255,.4)">\${m.wa_number}</td><td>\${m.direction==='inbound'?'<span class="badge-green">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>'}</td><td style="font-size:12px;color:rgba(255,255,255,.5);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">\${m.media_type?'['+m.media_type.split('/')[0]+']':(m.body||'').substring(0,80)}</td></tr>\`).join('')}</tbody></table></div>\`;
+    _msgs=d.messages;_msgsPage=1;renderMessages();
   }catch(e){document.getElementById('msg-content').innerHTML='<div style="color:#f87171;font-size:13px">Error loading messages</div>';}
 }
-async function loadWaitlist(){
+function renderMessages(){
+  const total=_msgs.length;const pages=Math.ceil(total/_msgsPerPage);
+  const start=(_msgsPage-1)*_msgsPerPage;const slice=_msgs.slice(start,start+_msgsPerPage);
+  const rows=slice.map(function(m){
+    const time=new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    const dir=m.direction==='inbound'?'<span class="badge-green">↓ In</span>":'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>';
+    const msg=m.media_type?'['+m.media_type.split('/')[0]+']':( m.body||'').substring(0,60);
+    return '<tr class="tr-hover"><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">'+time+'</td><td style="font-weight:600;font-size:13px">'+m.company_name+'</td><td style="font-size:12px;color:rgba(255,255,255,.4)">'+m.wa_number+'</td><td>'+dir+'</td><td style="font-size:12px;color:rgba(255,255,255,.5);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+msg+'</td></tr>';
+  }).join('');
+  var pagerHTML='';
+  if(pages>1){var btns='';if(_msgsPage>1)btns+='<button class="pager-btn" onclick="_msgsPage--;renderMessages()">← Prev</button>';for(var i=1;i<=pages;i++)btns+='<button class="pager-btn'+(i===_msgsPage?' active':'')+'" onclick="_msgsPage='+i+';renderMessages()">'+i+'</button>';if(_msgsPage<pages)btns+='<button class="pager-btn" onclick="_msgsPage++;renderMessages()">Next →</button>';pagerHTML='<div class="pager"><div class="pager-info">Showing '+(start+1)+'–'+Math.min(start+_msgsPerPage,total)+' of '+total+'</div><div class="pager-btns">'+btns+'</div></div>';}
+  document.getElementById('msg-content').innerHTML='<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Company</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead><tbody>'+rows+'</tbody></table>'+pagerHTML+'</div>';
+}
   try{
     const r=await fetch('/admin/waitlist-data');
     const d=await r.json();
