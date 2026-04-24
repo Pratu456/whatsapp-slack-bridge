@@ -304,6 +304,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   <div class="sb-link on" id="mob-link-dashboard" onclick="show('dashboard',this);closeDrawer()"><span class="sb-icon">⬛</span>Dashboard</div>
   <div class="sb-link" id="mob-link-companies" onclick="show('companies',this);closeDrawer()"><span class="sb-icon">🏢</span>Companies</div>
   <div class="sb-link" id="mob-link-messages" onclick="show('messages',this);closeDrawer()"><span class="sb-icon">💬</span>Messages</div>
+  <div class="sb-link" id="mob-link-contacts" onclick="show('contacts',this);closeDrawer()"><span class="sb-icon">👤</span>Contacts</div>
   <div class="sb-link" id="mob-link-waitlist" onclick="show('waitlist',this);closeDrawer()"><span class="sb-icon">📧</span>Waitlist</div>
   <div class="sb-section">Actions</div>
   <div class="sb-link" id="mob-link-settings" onclick="show('settings',this);closeDrawer()"><span class="sb-icon">⚙</span>Settings</div>
@@ -321,6 +322,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div class="sb-link on" id="desk-link-dashboard" onclick="show('dashboard',this)"><span class="sb-icon">⬛</span>Dashboard<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-companies" onclick="show('companies',this)"><span class="sb-icon">🏢</span>Companies<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-messages" onclick="show('messages',this)"><span class="sb-icon">💬</span>Messages<span class="sb-dot"></span></div>
+    <div class="sb-link" id="desk-link-contacts" onclick="show('contacts',this)"><span class="sb-icon">👤</span>Contacts<span class="sb-dot"></span></div>
     <div class="sb-link" id="desk-link-waitlist" onclick="show('waitlist',this)"><span class="sb-icon">📧</span>Waitlist<span class="sb-dot"></span></div>
     <div class="sb-section">Actions</div>
     <div class="sb-link" id="desk-link-settings" onclick="show('settings',this)"><span class="sb-icon">⚙</span>Settings<span class="sb-dot"></span></div>
@@ -545,6 +547,15 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 
       </div>
     </div>
+    <!-- CONTACTS -->
+    <div id="p-contacts" class="panel">
+      <div style="margin-bottom:16px">
+        <div style="font-size:18px;font-weight:800;color:var(--t)">Contacts</div>
+        <div style="font-size:13px;color:var(--t4);margin-top:2px">All WhatsApp contacts across all workspaces</div>
+      </div>
+      <div id="contacts-content" style="color:var(--t4);font-size:13px;padding:20px 0">Loading...</div>
+    </div>
+
     <!-- WAITLIST -->
     <div id="p-waitlist" class="panel">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px">
@@ -607,12 +618,12 @@ function show(name,el){
   const mobEl=document.getElementById('mob-link-'+name);
   if(deskEl)deskEl.classList.add('on');
   if(mobEl)mobEl.classList.add('on');
-  const titles={dashboard:'Dashboard',companies:'Companies',messages:'Messages',add:'Add Company',settings:'Settings',waitlist:'Waitlist'};
+  const titles={dashboard:'Dashboard',companies:'Companies',messages:'Messages',contacts:'Contacts',add:'Add Company',settings:'Settings',waitlist:'Waitlist'};
   const pt=document.getElementById('ptitle');
   if(pt)pt.textContent=titles[name]||name;
   if(name==='messages')loadMessages();if(name==='companies')setTimeout(()=>filterCompanies('all'),100);
   if(name==='add')initAddForm();
-  if(name==='waitlist')loadWaitlist();
+  if(name==='waitlist')loadWaitlist();if(name==='contacts')loadContacts();
 }
 (function(){
   const p=new URLSearchParams(window.location.search).get('panel');
@@ -693,6 +704,26 @@ function filterCompanies(status){
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active-filter'));
   const btn=document.getElementById('filter-'+status);
   if(btn)btn.classList.add('active-filter');
+}
+let _contacts=[];let _contactsPage=1;const _contactsPerPage=10;
+async function loadContacts(){
+  try{
+    const r=await fetch('/admin/contacts-data');const d=await r.json();
+    if(!d.contacts||!d.contacts.length){document.getElementById('contacts-content').innerHTML='<div style="text-align:center;padding:48px 24px;color:rgba(255,255,255,.25);font-size:13px">No contacts yet</div>';return;}
+    _contacts=d.contacts;_contactsPage=1;renderContacts();
+  }catch(e){document.getElementById('contacts-content').innerHTML='<div style="color:#f87171;font-size:13px">Error loading contacts</div>';}
+}
+function renderContacts(){
+  const total=_contacts.length;const pages=Math.ceil(total/_contactsPerPage);
+  const start=(_contactsPage-1)*_contactsPerPage;const slice=_contacts.slice(start,start+_contactsPerPage);
+  const rows=slice.map(function(c){
+    const blocked=c.blocked?'<span style="color:#f87171;font-size:12px">Blocked</span>':'<span style="color:#4ade80;font-size:12px">Active</span>';
+    const date=new Date(c.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    return '<tr class="tr-hover"><td style="font-size:13px;color:rgba(255,255,255,.85)">'+c.wa_number+'</td><td style="font-size:13px;color:rgba(255,255,255,.6)">'+(c.display_name||'-')+'</td><td style="font-size:13px;color:rgba(255,255,255,.6)">'+c.company_name+'</td><td style="font-size:12px;color:rgba(255,255,255,.4)">'+c.slack_channel+'</td><td>'+blocked+'</td><td style="font-size:12px;color:rgba(255,255,255,.3)">'+date+'</td></tr>';
+  }).join('');
+  var pagerHTML='';
+  if(pages>1){var btns='';if(_contactsPage>1)btns+='<button class="pager-btn" onclick="_contactsPage--;renderContacts()">← Prev</button>';for(var i=1;i<=pages;i++)btns+='<button class="pager-btn'+(i===_contactsPage?' active':'')+'" onclick="_contactsPage='+i+';renderContacts()">'+i+'</button>';if(_contactsPage<pages)btns+='<button class="pager-btn" onclick="_contactsPage++;renderContacts()">Next →</button>';pagerHTML='<div class="pager"><div class="pager-info">Showing '+(start+1)+'–'+Math.min(start+_contactsPerPage,total)+' of '+total+'</div><div class="pager-btns">'+btns+'</div></div>';}
+  document.getElementById('contacts-content').innerHTML='<div class="tbl-wrap"><table><thead><tr><th>WhatsApp number</th><th>Name</th><th>Company</th><th>Slack channel</th><th>Status</th><th>Added</th></tr></thead><tbody>'+rows+'</tbody></table>'+pagerHTML+'</div>';
 }
 function initAddForm(){
   currentAddCode=genCode();
