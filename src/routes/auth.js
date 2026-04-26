@@ -230,7 +230,7 @@ router.get('/verify-email', async (req, res) => {
     req.session.companyName = user.company_name;
 
     // Redirect to onboarding
-    res.redirect('/onboarding?company=' + encodeURIComponent(user.company_name) + '&email=' + encodeURIComponent(user.email));
+    res.redirect('/dashboard');
   } catch (err) {
     console.error('[VERIFY ERROR]', err.message);
     res.redirect('/auth/register?error=Verification+failed+—+please+try+again');
@@ -360,7 +360,7 @@ router.post('/login', express.urlencoded({ extended: false }), async (req, res) 
     req.session.userEmail   = user.email;
     req.session.companyName = user.company_name;
 
-    res.redirect('/onboarding?company=' + encodeURIComponent(user.company_name) + '&email=' + encodeURIComponent(user.email));
+    res.redirect('/dashboard');
   } catch (err) {
     console.error('[LOGIN ERROR]', err.message);
     res.redirect('/auth/login?error=Something+went+wrong+—+please+try+again');
