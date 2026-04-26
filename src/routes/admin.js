@@ -123,6 +123,7 @@ router.get('/', auth, async (req, res) => {
             </div>
           </div>
         </td>
+        <td><select onchange="updatePlan(${t.id},this.value)" style="background:#16161f;border:1px solid rgba(255,255,255,.1);color:#fff;padding:4px 8px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif"><option value="starter" ${ (t.plan||'starter')==='starter'?'selected':'' }>Starter</option><option value="pro" ${ t.plan==='pro'?'selected':'' }>Pro</option><option value="business" ${ t.plan==='business'?'selected':'' }>Business</option></select></td>
         <td><code style="background:rgba(37,211,102,.08);color:#25D366;padding:3px 10px;border-radius:6px;font-size:12px;border:1px solid rgba(37,211,102,.15)">${t.claim_code || '-'}</code></td>
         <td style="font-size:13px;color:rgba(255,255,255,.4)">${t.twilio_number || '-'}</td>
         <td>${t.is_active ? '<span class="badge-green">Active</span>' : '<span class="badge-yellow">Pending</span>'}</td>
