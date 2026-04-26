@@ -774,7 +774,7 @@ function renderMessages(){
   const start=(_msgsPage-1)*_msgsPerPage;const slice=_msgs.slice(start,start+_msgsPerPage);
   const rows=slice.map(function(m){
     const time=new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    const dir=m.direction==='inbound'?'<span class="badge-green">↓ In</span>":'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>';
+    const dir=m.direction==='inbound'?'<span class="badge-green">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>';
     const dir=m.direction==='inbound'?'<span class="badge-green">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>';
     return '<tr class="tr-hover"><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">'+time+'</td><td style="font-weight:600;font-size:13px">'+m.company_name+'</td><td style="font-size:12px;color:rgba(255,255,255,.4)">'+m.wa_number+'</td><td>'+dir+'</td><td style="font-size:12px;color:rgba(255,255,255,.5);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+msg+'</td></tr>';
   }).join('');
