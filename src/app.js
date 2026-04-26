@@ -3,6 +3,7 @@ require('dotenv').config();
 const { pool } = require('./db');
 const express = require('express');
 const session = require('express-session');
+const RedisStore = require('connect-redis').default;
 const whatsappRoute = require('./routes/whatsapp');
 const { connect: connectRedis } = require('./cache/redis');
 const { sendWhatsApp, sendWhatsAppMedia } = require('./services/twilioService');
@@ -23,6 +24,7 @@ server.use(session({
     secret: process.env.SESSION_SECRET || 'syncora-secret-key',
     resave: false,
     saveUninitialized: false,
+    store: (() => { try { const { getClient } = require('./cache/redis'); const c = getClient(); return c ? new RedisStore({ client: c }) : undefined; } catch(e) { return undefined; } })(),
     cookie: {
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,

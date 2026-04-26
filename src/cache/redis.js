@@ -41,4 +41,4 @@ const markProcessed = async (messageId) => {
   } catch { /* silent */ }
 };
 
-module.exports = { connect, isDuplicate, markProcessed };
+module.exports = { connect, isDuplicate, markProcessed, getClient: () => client };
