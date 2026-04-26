@@ -24,7 +24,6 @@ server.use(session({
     secret: process.env.SESSION_SECRET || 'syncora-secret-key',
     resave: false,
     saveUninitialized: false,
-    store: (() => { try { const { getClient } = require('./cache/redis'); const c = getClient(); return c ? new RedisStore({ client: c }) : undefined; } catch(e) { return undefined; } })(),
     cookie: {
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
@@ -443,6 +442,19 @@ server.post('/contact', async (req, res) => {
 const start = async () => {
   try {
     await connectRedis();
+    const { getClient } = require('./cache/redis');
+    const _rc = getClient();
+    if (_rc) {
+      const _store = new RedisStore({ client: _rc });
+      server._router.stack.forEach(layer => {
+        if (layer.handle && layer.handle.name === 'session') {
+          layer.handle.store = _store;
+          console.log('Session store: Redis');
+        }
+      });
+    } else {
+      console.log('Session store: memory (Redis unavailable)');
+    }
     server.listen(process.env.PORT || 3000, () => {
       console.log(`Server running on port ${process.env.PORT || 3000} in HTTP mode`);
     });
