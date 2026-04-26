@@ -432,7 +432,9 @@ router.get('/slack/callback', async (req, res) => {
       );
     }
 
-    res.send(`<!DOCTYPE html>
+        return res.redirect('/dashboard');
+
+res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
