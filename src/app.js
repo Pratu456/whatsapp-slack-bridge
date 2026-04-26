@@ -18,12 +18,13 @@ const adminRoute = require('./routes/admin');
 const commandsRoute = require('./routes/commands');
 const { sendWaitlistConfirmationEmail } = require('./services/emailService');
 const server = express();
+server.set('trust proxy', 1);
 server.use(session({
     secret: process.env.SESSION_SECRET || 'syncora-secret-key',
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false,
+      secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
       maxAge: 8 * 60 * 60 * 1000, // 8 hours
     },
