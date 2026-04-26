@@ -669,7 +669,7 @@ function updateInitial(val){
     const btn=document.querySelector('[onclick="saveProfile()"]');
     btn.disabled=true;btn.textContent='Saving...';
     try{
-      const r=await fetch('/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({display_name:name,email})});
+      const r=await fetch('/admin/settings', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({display_name:name,email})});
       const d=await r.json();
       if(d.success){
         if(name)localStorage.setItem('adminDisplayName',name);
@@ -708,7 +708,7 @@ function filterCompanies(status){
 let _contacts=[];let _contactsPage=1;const _contactsPerPage=10;
 async function loadContacts(){
   try{
-    const r=await fetch('/admin/contacts-data');const d=await r.json();
+    const r=await fetch('/admin/contacts-data', {credentials:'same-origin'});const d=await r.json();
     if(!d.contacts||!d.contacts.length){document.getElementById('contacts-content').innerHTML='<div style="text-align:center;padding:48px 24px;color:rgba(255,255,255,.25);font-size:13px">No contacts yet</div>';return;}
     _contacts=d.contacts;_contactsPage=1;renderContacts();
   }catch(e){document.getElementById('contacts-content').innerHTML='<div style="color:#f87171;font-size:13px">Error loading contacts</div>';}
@@ -764,7 +764,7 @@ if(document.getElementById('actChart')){
 let _msgs=[];let _msgsPage=1;const _msgsPerPage=10;
 async function loadMessages(){
   try{
-    const r=await fetch('/admin/messages-data');const d=await r.json();
+    const r=await fetch('/admin/messages-data', {credentials:'same-origin'});const d=await r.json();
     if(!d.messages||!d.messages.length){document.getElementById('msg-content').innerHTML='<div style="text-align:center;padding:48px 24px;color:rgba(255,255,255,.25);font-size:13px">No messages yet</div>';return;}
     _msgs=d.messages;_msgsPage=1;renderMessages();
   }catch(e){document.getElementById('msg-content').innerHTML='<div style="color:#f87171;font-size:13px">Error loading messages</div>';}
@@ -783,7 +783,7 @@ function renderMessages(){
 }
 async function loadWaitlist(){
   try{
-    const r=await fetch('/admin/waitlist-data');
+    const r=await fetch('/admin/waitlist-data', {credentials:'same-origin'});
     const d=await r.json();
     if(!d.rows||!d.rows.length){
       document.getElementById('waitlist-content').innerHTML='<div style="text-align:center;padding:48px 24px;color:rgba(255,255,255,.25);font-size:13px">No signups yet</div>';
@@ -795,7 +795,7 @@ async function loadWaitlist(){
 async function sendInvite(email,btn){
   if(!confirm('Send invite to '+email+'?'))return;
   btn.disabled=true;btn.textContent='Sending...';
-  const r=await fetch('/admin/waitlist-invite',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+  const r=await fetch('/admin/waitlist-invite', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
   const d=await r.json();
   if(d.success){btn.textContent='✓ Sent';btn.style.color='#4ade80';}
   else{btn.disabled=false;btn.textContent='Send invite →';alert('Error: '+d.error);}
@@ -830,7 +830,7 @@ async function confirmActivate(){
   if(customVisible&&!validateCustomCode(document.getElementById('mCustomCode'))){return}
   const btn=document.getElementById('mConfirmBtn');
   btn.disabled=true;btn.textContent='Activating...';
-  const r=await fetch('/admin/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,email,twilio_number:twilio,claim_code:code,default_slack_channel:slackChannel})});
+  const r=await fetch('/admin/activate', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,email,twilio_number:twilio,claim_code:code,default_slack_channel:slackChannel})});
   const d=await r.json();
   if(d.success){
     const status=document.getElementById('emailStatus');
@@ -842,13 +842,13 @@ async function confirmActivate(){
 }
 async function deactivate(id){
   if(!confirm('Deactivate this company?'))return;
-  const r=await fetch('/admin/deactivate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  const r=await fetch('/admin/deactivate', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
 async function deleteTenant(id){
   if(!confirm('Permanently delete this company and all its data?'))return;
-  const r=await fetch('/admin/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  const r=await fetch('/admin/delete', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
@@ -861,7 +861,7 @@ async function addTenant(){
   const code=customVisible?document.getElementById('nCustomCode').value.trim().toLowerCase():currentAddCode;
   if(!co||!tw||!tok){alert('Please fill in all fields');return}
   if(customVisible&&!validateCustomCode(document.getElementById('nCustomCode'))){return}
-  const r=await fetch('/admin/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company:co,email,twilio_number:tw,slack_bot_token:tok,claim_code:code})});
+  const r=await fetch('/admin/add', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company:co,email,twilio_number:tw,slack_bot_token:tok,claim_code:code})});
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
@@ -870,7 +870,7 @@ async function changePassword(){
   const newp=document.getElementById('sNewPwd').value;
   const msg=document.getElementById('pwdMsg');
   if(newp.length<8){msg.textContent='New password must be at least 8 characters';msg.style.color='#f87171';msg.style.display='block';return}
-  const r=await fetch('/admin/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({current:curr,newPassword:newp})});
+  const r=await fetch('/admin/change-password', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({current:curr,newPassword:newp})});
   const d=await r.json();
   msg.style.display='block';
   if(d.success){msg.textContent='✓ Password changed successfully';msg.style.color='#4ade80';document.getElementById('sCurrPwd').value='';document.getElementById('sNewPwd').value='';}
@@ -878,7 +878,7 @@ async function changePassword(){
 }
 async function confirmDeleteAccount(){
   if(!confirm('Are you absolutely sure? This will permanently delete ALL companies, contacts, and messages.'))return;
-  const r=await fetch('/admin/delete-all',{method:'POST',headers:{'Content-Type':'application/json'}});
+  const r=await fetch('/admin/delete-all', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'}});
   const d=await r.json();
   if(d.success){alert('All data deleted. Redirecting...');location.href='/';}
   else{document.getElementById('deleteMsg').textContent='Error: '+d.error;document.getElementById('deleteMsg').style.display='block';}
