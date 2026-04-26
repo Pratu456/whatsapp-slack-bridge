@@ -22,8 +22,8 @@ const server = express();
 server.set('trust proxy', 1);
 server.use(session({
     secret: process.env.SESSION_SECRET || 'syncora-secret-key',
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     cookie: {
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
