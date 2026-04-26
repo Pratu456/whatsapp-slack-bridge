@@ -1075,3 +1075,11 @@ router.post('/waitlist-invite', auth, async (req, res) => {
 });
 
 module.exports = router;
+router.post('/update-plan', auth, async (req, res) => {
+  try {
+    const { id, plan } = req.body;
+    if (!['starter','pro','business'].includes(plan)) return res.json({ success: false, error: 'Invalid plan' });
+    await pool.query('UPDATE tenants SET plan = $1 WHERE id = $2', [plan, id]);
+    res.json({ success: true });
+  } catch(err) { res.json({ success: false, error: err.message }); }
+});

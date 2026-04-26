@@ -61,7 +61,12 @@ router.post('/webhook', async (req, res) => {
       return res.status(200).send('<Response></Response>');
     }
 
-    // 4. Get or create Slack channel
+    const planCheck = await checkMessageLimit(tenant.id);
+    if (planCheck.allowed === false) {
+      console.log("[PLAN LIMIT]", tenant.company_name);
+      await sendWhatsApp(waNumber, "Sorry, daily message limit reached. Please upgrade.", tenant.twilio_number);
+      return res.sendStatus(200);
+    }
     const channelId = await getOrCreateChannelForTenant(tenant, waNumber, ProfileName);
     ensureChannelMembers(tenant, channelId).catch(err =>
     console.warn('[CHANNEL] ensureChannelMembers failed:', err.message)
