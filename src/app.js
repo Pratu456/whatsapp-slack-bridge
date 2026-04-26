@@ -3,7 +3,7 @@ require('dotenv').config();
 const { pool } = require('./db');
 const express = require('express');
 const session = require('express-session');
-const RedisStore = require('connect-redis').default;
+const { RedisStore } = require('connect-redis');
 const whatsappRoute = require('./routes/whatsapp');
 const { connect: connectRedis } = require('./cache/redis');
 const { sendWhatsApp, sendWhatsAppMedia } = require('./services/twilioService');
