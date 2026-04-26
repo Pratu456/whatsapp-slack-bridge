@@ -287,6 +287,12 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
   .modal-box{padding:24px}.modal-btns{flex-direction:column}
 }
 @media(max-width:380px){.stats-row{grid-template-columns:1fr}}
+.pager{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap;gap:8px}
+.pager-info{font-size:12px;color:rgba(255,255,255,.3)}
+.pager-btns{display:flex;gap:4px;flex-wrap:wrap}
+.pager-btn{padding:5px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:6px;font-size:12px;font-weight:600;color:rgba(255,255,255,.4);cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
+.pager-btn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7)}
+.pager-btn.active{background:rgba(37,211,102,.1);color:#4ade80;border-color:rgba(37,211,102,.2)}
 </style>
 </head>
 <body>
@@ -779,7 +785,7 @@ function renderMessages(){
   }).join('');
   var pagerHTML='';
   if(pages>1){var btns='';if(_msgsPage>1)btns+='<button class="pager-btn" onclick="_msgsPage--;renderMessages()">← Prev</button>';for(var i=1;i<=pages;i++)btns+='<button class="pager-btn'+(i===_msgsPage?' active':'')+'" onclick="_msgsPage='+i+';renderMessages()">'+i+'</button>';if(_msgsPage<pages)btns+='<button class="pager-btn" onclick="_msgsPage++;renderMessages()">Next →</button>';pagerHTML='<div class="pager"><div class="pager-info">Showing '+(start+1)+'–'+Math.min(start+_msgsPerPage,total)+' of '+total+'</div><div class="pager-btns">'+btns+'</div></div>';}
-  document.getElementById('msg-content').innerHTML='<div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Company</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead><tbody>'+rows+'</tbody></table>'+pagerHTML+'</div>';
+  document.getElementById('msg-content').innerHTML='<div class="tbl-wrap" style="border-radius:12px;border:1px solid rgba(255,255,255,.06);overflow:hidden"><table><thead><tr><th>Time</th><th>Company</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead><tbody>'+rows+'</tbody></table>'+pagerHTML+'</div>';
 }
 async function loadWaitlist(){
   try{
