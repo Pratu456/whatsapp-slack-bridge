@@ -299,14 +299,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
       </div>
       <div class="ws-grid">${workspaceCards}</div>
       ${!canAddWorkspace ? `
-      <div style="background:linear-gradient(135deg,rgba(37,211,102,.06),rgba(96,165,250,.04));border:1px solid rgba(37,211,102,.12);border-radius:14px;padding:24px;text-align:center">
-        <div style="font-size:20px;margin-bottom:10px">🚀</div>
-        <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:6px">Need more workspaces?</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:16px">
-          ${plan === 'starter' ? 'Upgrade to Pro for 3 workspaces or Business for unlimited' : 'Upgrade to Business for unlimited workspaces'}
-        </div>
-        <a href="/#pricing" style="background:#25D366;color:#000;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">View plans →</a>
-      </div>` : ''}
+      ` : ''}
     </div>
 
     <!-- ACCOUNT TAB -->
