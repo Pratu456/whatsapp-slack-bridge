@@ -3,6 +3,7 @@ const express  = require('express');
 const router   = express.Router();
 const { pool } = require('../db');
 const { logMessage }                        = require('../services/messageLogger');
+const { checkMessageLimit } = require('../services/planEnforcement');
 const { downloadTwilioMedia, sendWhatsApp } = require('../services/twilioService');
 const { isDuplicate, markProcessed }        = require('../cache/redis');
 const { getTenantForIncomingMessage,
