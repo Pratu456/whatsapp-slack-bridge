@@ -810,7 +810,11 @@ async function loadWaitlist(){
       document.getElementById('waitlist-content').innerHTML='<div style="text-align:center;padding:48px 24px;color:rgba(255,255,255,.25);font-size:13px">No signups yet</div>';
       return;
     }
+    if(window.innerWidth<700){
+      document.getElementById('waitlist-content').innerHTML='<div>'+d.rows.map(r=>'<div style="background:#111118;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;margin-bottom:10px"><div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.85);margin-bottom:8px">'+r.email+'</div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;color:rgba(255,255,255,.3)">'+new Date(r.created_at).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})+'</span><button onclick="sendInvite(''+r.email+'',this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Invite</button></div></div>').join('')+'</div>';
+    } else {
     document.getElementById('waitlist-content').innerHTML=\`<div class="tbl-wrap"><table><thead><tr><th>Email</th><th>Signed up</th><th>Action</th></tr></thead><tbody>\${d.rows.map(r=>\`<tr class="tr-hover"><td style="font-size:13px">\${r.email}</td><td style="font-size:12px;color:rgba(255,255,255,.4)">\${new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td><td><button onclick="sendInvite('\${r.email}',this)" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Invite →</button></td></tr>\`).join('')}</tbody></table></div>\`;
+    }
   }catch(e){document.getElementById('waitlist-content').innerHTML='<div style="color:#f87171;font-size:13px">Error loading waitlist</div>';}
 }
 async function sendInvite(email,btn){
