@@ -4,15 +4,10 @@ const { WebClient } = require('@slack/web-api');
 
 /**
  * Get tenant for incoming message.
- * Logic:
- * 1. If message contains a valid claim code → switch/add to that tenant
- * 2. If returning contact with no claim code → route to last active tenant
- * 3. No match → return null (show instructions)
  */
 const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
   const words = (messageBody || '').toLowerCase().trim().split(/\s+/);
 
-  // Stage 1 — Check if message contains a claim code (any word matches)
   for (const word of words) {
     if (!word) continue;
     const match = await pool.query(
@@ -21,15 +16,11 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
     );
     if (match.rows.length > 0) {
       const tenant = match.rows[0];
-
-      // Check if this number is already mapped to this tenant
       const existing = await pool.query(
         'SELECT id FROM contacts WHERE wa_number = $1 AND tenant_id = $2',
         [fromNumber, tenant.id]
       );
-
       if (existing.rows.length > 0) {
-        // Already mapped — update last_active timestamp so this becomes active tenant
         await pool.query(
           'UPDATE contacts SET last_active = NOW() WHERE wa_number = $1 AND tenant_id = $2',
           [fromNumber, tenant.id]
@@ -37,15 +28,12 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
         console.log(`Contact ${fromNumber} re-activated for tenant: ${tenant.company_name}`);
         return { tenant, isNew: false, claimCodeUsed: true };
       } else {
-        // New mapping for this tenant
         console.log(`New contact ${fromNumber} mapped to tenant: ${tenant.company_name}`);
         return { tenant, isNew: true, claimCodeUsed: true };
       }
     }
   }
 
-  // Stage 2 — No claim code in message, check if returning contact
-  // Route to the most recently active tenant for this number
   const contact = await pool.query(
     `SELECT t.* FROM contacts c
      JOIN tenants t ON t.id = c.tenant_id
@@ -56,7 +44,6 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
   );
 
   if (contact.rows.length > 0) {
-    // Update last_active
     await pool.query(
       'UPDATE contacts SET last_active = NOW() WHERE wa_number = $1 AND tenant_id = $2',
       [fromNumber, contact.rows[0].id]
@@ -64,95 +51,122 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
     return { tenant: contact.rows[0], isNew: false, claimCodeUsed: false };
   }
 
-  // Stage 3 — No match at all
   return { tenant: null, isNew: false, claimCodeUsed: false };
 };
 
 /**
- * Get or create a Slack channel for a WhatsApp number under a specific tenant
+ * Pick the next agent for a tenant using round-robin
  */
-  const getOrCreateChannelForTenant = async (tenant, waNumber, displayName) => {
-    // 1. Check if contact already mapped
-    const existing = await pool.query(
-      'SELECT slack_channel FROM contacts WHERE wa_number = $1 AND tenant_id = $2',
-      [waNumber, tenant.id]
-    );
-    if (existing.rows.length > 0) {
-    // If tenant has a default channel set, update existing contact to use it
+const pickAgent = async (tenantId) => {
+  const agents = await pool.query(
+    'SELECT slack_user_id, slack_name FROM tenant_agents WHERE tenant_id = $1 ORDER BY id',
+    [tenantId]
+  );
+  if (!agents.rows.length) return null;
+
+  // Round-robin based on existing contact count
+  const countResult = await pool.query(
+    'SELECT COUNT(*) as cnt FROM contacts WHERE tenant_id = $1',
+    [tenantId]
+  );
+  const idx = parseInt(countResult.rows[0].cnt) % agents.rows.length;
+  return agents.rows[idx];
+};
+
+/**
+ * Get or create a PRIVATE Slack channel for a WhatsApp contact
+ */
+const getOrCreateChannelForTenant = async (tenant, waNumber, displayName) => {
+  // 1. Check if contact already mapped
+  const existing = await pool.query(
+    'SELECT slack_channel FROM contacts WHERE wa_number = $1 AND tenant_id = $2',
+    [waNumber, tenant.id]
+  );
+  if (existing.rows.length > 0) {
     if (tenant.default_slack_channel && existing.rows[0].slack_channel !== tenant.default_slack_channel) {
       await pool.query(
         'UPDATE contacts SET slack_channel = $1 WHERE wa_number = $2 AND tenant_id = $3',
         [tenant.default_slack_channel, waNumber, tenant.id]
       );
-      console.log('[CHANNEL] Updated contact', waNumber, 'to shared channel', tenant.default_slack_channel);
       return tenant.default_slack_channel;
     }
     return existing.rows[0].slack_channel;
   }
 
-    const slack = new WebClient(tenant.slack_bot_token);
+  const slack = new WebClient(tenant.slack_bot_token);
+  let channelId;
 
-    // 2. Use pre-configured channel if set, otherwise create new one
-    let channelId;
-
-    if (tenant.default_slack_channel) {
-      // Use existing channel configured by admin
-      channelId = tenant.default_slack_channel;
-      console.log(`[CHANNEL] Using existing channel ${channelId} for ${waNumber}`);
-
-      // Make sure bot is in the channel
-      try {
-        await slack.conversations.join({ channel: channelId });
-      } catch (err) {
-        if (err.data?.error !== 'already_in_channel') {
-          console.warn('[CHANNEL] Could not join channel:', err.data?.error);
-        }
+  if (tenant.default_slack_channel) {
+    // Use pre-configured shared channel
+    channelId = tenant.default_slack_channel;
+    console.log(`[CHANNEL] Using shared channel ${channelId} for ${waNumber}`);
+    try {
+      await slack.conversations.join({ channel: channelId });
+    } catch (err) {
+      if (err.data?.error !== 'already_in_channel') {
+        console.warn('[CHANNEL] Could not join channel:', err.data?.error);
       }
-    } else {
-      // Fall back to auto-creating a channel
-      const channelName = (() => {
-        const safeName = displayName && displayName !== waNumber
-          ? displayName.toLowerCase()
-              .replace(/[^a-z0-9]/g, '-')
-              .replace(/-+/g, '-')
-              .replace(/^-|-$/g, '')
-              .slice(0, 20)
-          : null;
-        return safeName ? `wa-${safeName}` : 'wa-' + waNumber.replace(/\D/g, '').slice(-10);
-      })();
+    }
+  } else {
+    // Create a PRIVATE channel for this contact
+    const channelName = (() => {
+      const safeName = displayName && displayName !== waNumber
+        ? displayName.toLowerCase()
+            .replace(/[^a-z0-9]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '')
+            .slice(0, 20)
+        : null;
+      return safeName ? `wa-${safeName}` : 'wa-' + waNumber.replace(/\D/g, '').slice(-10);
+    })();
 
-      try {
+    try {
+      const result = await slack.conversations.create({
+        name: channelName,
+        is_private: true,  // ← PRIVATE channel
+      });
+      channelId = result.channel.id;
+      console.log(`[CHANNEL] Created private channel ${channelName} for ${waNumber}`);
+    } catch (err) {
+      if (err.data?.error === 'name_taken') {
+        // Try with timestamp suffix
         const result = await slack.conversations.create({
-          name: channelName,
-          is_private: false,
+          name: channelName + '-' + Date.now().toString().slice(-4),
+          is_private: true,
         });
         channelId = result.channel.id;
-      } catch (err) {
-        if (err.data?.error === 'name_taken') {
-          const list = await slack.conversations.list({ limit: 200 });
-          const found = list.channels.find(c => c.name === channelName);
-          if (!found) throw new Error('Channel name taken but could not be found');
-          channelId = found.id;
-        } else {
-          throw err;
-        }
+      } else {
+        throw err;
       }
+    }
 
-      // Set channel topic
-      try {
-        await slack.conversations.setTopic({
-          channel: channelId,
-          topic: `WhatsApp: ${waNumber}${displayName ? ' · ' + displayName : ''}`,
-        });
-      } catch (e) { /* non-critical */ }
+    // Set channel topic
+    try {
+      await slack.conversations.setTopic({
+        channel: channelId,
+        topic: `WhatsApp: ${waNumber}${displayName ? ' · ' + displayName : ''}`,
+      });
+    } catch (e) { /* non-critical */ }
 
-      // Invite all workspace members
-      try {
+    // Invite assigned agent (round-robin) or fall back to all members
+    try {
+      const agent = await pickAgent(tenant.id);
+      if (agent) {
+        // Invite only the assigned agent
+        await slack.conversations.invite({ channel: channelId, users: agent.slack_user_id });
+        console.log(`[CHANNEL] Invited agent ${agent.slack_name} to ${channelName}`);
+        // Save assignment
+        await pool.query(
+          'UPDATE contacts SET assigned_to = $1, assigned_name = $2 WHERE wa_number = $3 AND tenant_id = $4',
+          [agent.slack_user_id, agent.slack_name, waNumber, tenant.id]
+        );
+      } else {
+        // No agents configured — invite all workspace members (fallback)
+        console.log('[CHANNEL] No agents configured, inviting all members');
         const memberList = await slack.users.list();
         const humanIds = memberList.members
           .filter(m => !m.is_bot && !m.deleted && m.id !== 'USLACKBOT')
           .map(m => m.id);
-
         for (let i = 0; i < humanIds.length; i += 30) {
           const batch = humanIds.slice(i, i + 30);
           try {
@@ -163,27 +177,29 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
             }
           }
         }
-      } catch (err) {
-        console.warn('Could not invite members:', err.message);
       }
+    } catch (err) {
+      console.warn('[CHANNEL] Could not invite agent:', err.message);
     }
+  }
 
-    // 3. Save contact mapping
-    await pool.query(
-      `INSERT INTO contacts (wa_number, slack_channel, display_name, tenant_id, last_active)
-       VALUES ($1, $2, $3, $4, NOW())
-       ON CONFLICT (wa_number, tenant_id) DO UPDATE SET last_active = NOW()`,
-      [waNumber, channelId, displayName || waNumber, tenant.id]
-    );
+  // 3. Save contact mapping
+  await pool.query(
+    `INSERT INTO contacts (wa_number, slack_channel, display_name, tenant_id, last_active)
+     VALUES ($1, $2, $3, $4, NOW())
+     ON CONFLICT (wa_number, tenant_id) DO UPDATE SET last_active = NOW()`,
+    [waNumber, channelId, displayName || waNumber, tenant.id]
+  );
 
-    // 4. Post welcome message
-    await slack.chat.postMessage({
-      channel: channelId,
-      text: `:phone: New WhatsApp contact: *${displayName || waNumber}*\nNumber: ${waNumber}`,
-    });
+  // 4. Post welcome message
+  await slack.chat.postMessage({
+    channel: channelId,
+    text: `:phone: New WhatsApp contact: *${displayName || waNumber}*\nNumber: ${waNumber}`,
+  });
 
   return channelId;
 };
+
 /**
  * Get WhatsApp number from Slack channel — scoped to tenant
  */
@@ -198,37 +214,36 @@ const getWaNumberForTenant = async (channelId, tenantId) => {
 /**
  * Post message to Slack using tenant's own bot token
  */
-  const postToTenantSlack = async (tenant, channelId, text, senderName, waNumber) => {
-    const slack = new WebClient(tenant.slack_bot_token);
-  
-    const result = await slack.chat.postMessage({
-      channel: channelId,
-      blocks: [
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: `*${senderName}* (WhatsApp · ${waNumber}):\n${text}`,
+const postToTenantSlack = async (tenant, channelId, text, senderName, waNumber) => {
+  const slack = new WebClient(tenant.slack_bot_token);
+  const result = await slack.chat.postMessage({
+    channel: channelId,
+    blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `*${senderName}* (WhatsApp · ${waNumber}):\n${text}`,
+        },
+      },
+      {
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            text: { type: 'plain_text', text: `Reply to ${senderName}` },
+            action_id: 'reply_to_wa',
+            value: waNumber,
+            style: 'primary',
           },
-        },
-        {
-          type: 'actions',
-          elements: [
-            {
-              type: 'button',
-              text: { type: 'plain_text', text: `Reply to ${senderName}` },
-              action_id: 'reply_to_wa',
-              value: waNumber,
-              style: 'primary',
-            },
-          ],
-        },
-      ],
-      text: `${senderName}: ${text}`, // fallback text
-    });
-  
-    return result.ts;
-  };
+        ],
+      },
+    ],
+    text: `${senderName}: ${text}`,
+  });
+  return result.ts;
+};
+
 /**
  * Register a new tenant manually
  */
@@ -241,49 +256,60 @@ const createTenant = async ({ companyName, twilioNumber, slackBotToken, slackTea
   );
   return result.rows[0];
 };
-  /**
-   * Re-invite all workspace members who left the channel.
-   * Called on every inbound message to ensure no one is locked out.
-   */
-  const ensureChannelMembers = async (tenant, channelId) => {
-    try {
-      const slack = new WebClient(tenant.slack_bot_token);
 
-      // Get current channel members
+/**
+ * Ensure assigned agent is still in the channel (re-invite if they left)
+ */
+const ensureChannelMembers = async (tenant, channelId) => {
+  try {
+    const slack = new WebClient(tenant.slack_bot_token);
+
+    // Check if there's an assigned agent for this channel
+    const contact = await pool.query(
+      'SELECT assigned_to FROM contacts WHERE slack_channel = $1 AND tenant_id = $2',
+      [channelId, tenant.id]
+    );
+
+    if (contact.rows.length > 0 && contact.rows[0].assigned_to) {
+      // Only ensure the assigned agent is in the channel
+      const agentId = contact.rows[0].assigned_to;
+      const channelInfo = await slack.conversations.members({ channel: channelId });
+      if (!channelInfo.members.includes(agentId)) {
+        await slack.conversations.invite({ channel: channelId, users: agentId });
+        console.log(`[CHANNEL] Re-invited assigned agent ${agentId} to ${channelId}`);
+      }
+    } else {
+      // No assigned agent — ensure all members (legacy fallback)
       const channelInfo = await slack.conversations.members({ channel: channelId });
       const currentMembers = new Set(channelInfo.members);
-
-      // Get all workspace members
       const memberList = await slack.users.list();
       const humanIds = memberList.members
         .filter(m => !m.is_bot && !m.deleted && m.id !== 'USLACKBOT')
         .map(m => m.id);
-
-      // Find anyone who left
       const missing = humanIds.filter(id => !currentMembers.has(id));
       if (missing.length === 0) return;
-
-      // Re-invite in batches of 30
       for (let i = 0; i < missing.length; i += 30) {
         const batch = missing.slice(i, i + 30);
         try {
           await slack.conversations.invite({ channel: channelId, users: batch.join(',') });
-          console.log(`[CHANNEL] Re-invited ${batch.length} missing members to ${channelId}`);
         } catch (err) {
           if (err.data?.error !== 'already_in_channel') {
             console.warn('[CHANNEL] Re-invite error:', err.data?.error);
           }
         }
       }
-    } catch (err) {
-      console.warn('[CHANNEL] ensureChannelMembers error:', err.message);
     }
-  };
+  } catch (err) {
+    console.warn('[CHANNEL] ensureChannelMembers error:', err.message);
+  }
+};
+
 module.exports = {
   getTenantForIncomingMessage,
   getOrCreateChannelForTenant,
   getWaNumberForTenant,
   postToTenantSlack,
   createTenant,
-  ensureChannelMembers, 
+  ensureChannelMembers,
+  pickAgent,
 };
