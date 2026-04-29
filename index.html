@@ -831,5 +831,30 @@ document.addEventListener('DOMContentLoaded', function(){
   runSeq();
 });
 </script>
+
+<script>
+// Check if user is already logged in
+fetch('/auth/me', {credentials:'same-origin'})
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.loggedIn) {
+      // Replace CTA buttons with Go to Dashboard
+      var ctaBtns = document.querySelectorAll('[href*="register"],[href*="onboarding"],[href*="get-started"]');
+      ctaBtns.forEach(btn => {
+        btn.href = '/dashboard';
+        btn.textContent = 'Go to Dashboard →';
+      });
+      // Add dashboard link to navbar if it exists
+      var nav = document.querySelector('nav');
+        var link = document.createElement('a');
+        link.id = 'nav-dashboard';
+        link.href = '/dashboard';
+        link.textContent = 'Dashboard →';
+        link.style.cssText = 'background:#25D366;color:#000;padding:8px 18px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;margin-left:12px';
+        nav.appendChild(link);
+      }
+    }
+  }).catch(()=>{});
+</script>
 </body>
 </html>

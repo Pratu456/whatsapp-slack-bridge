@@ -29,7 +29,7 @@ server.use(session({
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
       sameSite: "lax",
-      maxAge: 8 * 60 * 60 * 1000, // 8 hours
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     },
   }));
 
@@ -95,7 +95,10 @@ server.use(express.json());
 server.use(express.static(path.join(__dirname, '../public')));
 server.use((req, res, next) => { res.setHeader('Accept-Ranges', 'bytes'); next(); });
 
-server.get('/', (req, res) => res.sendFile(path.join(__dirname, '../index.html')));
+server.get('/', (req, res) => {
+  if (req.session && req.session.userId) return res.redirect('/dashboard');
+  res.sendFile(path.join(__dirname, '../index.html'));
+});
 server.use('/whatsapp', whatsappRoute);
 server.use('/auth', authRoute);
 server.use('/onboarding', onboardingRoute);
@@ -103,6 +106,13 @@ server.use('/admin', adminRoute);
 server.use('/dashboard', dashboardRoute);
 server.get('/auth/logout', (req, res) => { req.session.destroy(); res.redirect('/auth/login'); });
 server.use('/commands', commandsRoute);
+server.get('/auth/me', (req, res) => {
+  if (req.session && req.session.userId) {
+    res.json({ loggedIn: true, name: req.session.userName, email: req.session.userEmail });
+  } else {
+    res.json({ loggedIn: false });
+  }
+});
 server.get('/health', (req, res) => res.json({ status: 'ok' }));
 server.use('/media', express.static(path.join(__dirname, 'tmp')));
 
