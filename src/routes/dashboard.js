@@ -282,7 +282,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
         <div style="font-size:15px;font-weight:700;color:#fff">Your workspaces</div>
         ${canAddWorkspace
           ? `<a href="/onboarding?email=${encodeURIComponent(user.email)}" style="display:inline-flex;align-items:center;gap:6px;background:#25D366;color:#000;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;text-decoration:none">+ Add workspace</a>`
-          : `<div style="font-size:12px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.04);padding:7px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.06)">Upgrade to add more</div>`}
+          : ""}
       </div>
       <div class="ws-grid">${workspaceCards}</div>
     </div>
@@ -295,7 +295,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
         <div style="font-size:13px;color:rgba(255,255,255,.4)">${tenants.length} of ${maxWorkspaces === 999 ? '∞' : maxWorkspaces} workspaces used</div>
         ${canAddWorkspace
           ? `<a href="/onboarding?email=${encodeURIComponent(user.email)}" style="display:inline-flex;align-items:center;gap:6px;background:#25D366;color:#000;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;text-decoration:none">+ Connect Slack</a>`
-          : `<a href="/#pricing" style="display:inline-flex;align-items:center;gap:6px;background:rgba(37,211,102,.1);color:#4ade80;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(37,211,102,.2)">Upgrade to add more →</a>`}
+          : ""}
       </div>
       <div class="ws-grid">${workspaceCards}</div>
       ${!canAddWorkspace ? `
