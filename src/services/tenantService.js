@@ -247,7 +247,7 @@ const createTenant = async ({ companyName, twilioNumber, slackBotToken, slackTea
  * Ensure assigned agent is still in the channel (re-invite if they left)
  */
 const ensureChannelMembers = async (tenant, channelId) => {
-  try {
+  return; // disabled - manual invites only
     const slack = new WebClient(tenant.slack_bot_token);
 
     // Check if there's an assigned agent for this channel
