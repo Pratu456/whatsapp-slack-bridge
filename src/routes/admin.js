@@ -639,7 +639,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 <script>
 // Intercept back button — always stay on admin
 window.addEventListener('popstate', function(){
-  (function(){var m=window.innerWidth<700;var mc=document.getElementById("mob-co");var dc=document.getElementById("desk-co");if(mc&&dc){mc.style.display=m?"block":"none";dc.style.display=m?"none":"";}})();
+  
 window.history.pushState({},'','/admin');
   show('dashboard', document.getElementById('desk-link-dashboard'));
 });
