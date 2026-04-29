@@ -657,7 +657,7 @@ function show(name,el){
   const titles={dashboard:'Dashboard',companies:'Companies',messages:'Messages',contacts:'Contacts',add:'Add Company',settings:'Settings',waitlist:'Waitlist'};
   const pt=document.getElementById('ptitle');
   if(pt)pt.textContent=titles[name]||name;
-  if(name==='messages')loadMessages();if(name==='companies')setTimeout(()=>filterCompanies('all'),100);
+  if(name==='messages')loadMessages();if(name==='companies'){setTimeout(()=>filterCompanies('all'),100);var mc=document.getElementById('mob-co');var dc=document.getElementById('desk-co');if(mc&&dc){var mob=window.innerWidth<700;mc.style.display=mob?'block':'none';dc.style.display=mob?'none':'';};}
   if(name==='add')initAddForm();
   if(name==='waitlist')loadWaitlist();if(name==='contacts')loadContacts();
 }
