@@ -247,47 +247,7 @@ const createTenant = async ({ companyName, twilioNumber, slackBotToken, slackTea
  * Ensure assigned agent is still in the channel (re-invite if they left)
  */
 const ensureChannelMembers = async (tenant, channelId) => {
-  return; // disabled - manual invites only
-    const slack = new WebClient(tenant.slack_bot_token);
-
-    // Check if there's an assigned agent for this channel
-    const contact = await pool.query(
-      'SELECT assigned_to FROM contacts WHERE slack_channel = $1 AND tenant_id = $2',
-      [channelId, tenant.id]
-    );
-
-    if (contact.rows.length > 0 && contact.rows[0].assigned_to) {
-      // Only ensure the assigned agent is in the channel
-      const agentId = contact.rows[0].assigned_to;
-      const channelInfo = await slack.conversations.members({ channel: channelId });
-      if (!channelInfo.members.includes(agentId)) {
-        await slack.conversations.invite({ channel: channelId, users: agentId });
-        console.log(`[CHANNEL] Re-invited assigned agent ${agentId} to ${channelId}`);
-      }
-    } else {
-      // No assigned agent — ensure all members (legacy fallback)
-      const channelInfo = await slack.conversations.members({ channel: channelId });
-      const currentMembers = new Set(channelInfo.members);
-      const memberList = await slack.users.list();
-      const humanIds = memberList.members
-        .filter(m => !m.is_bot && !m.deleted && m.id !== 'USLACKBOT')
-        .map(m => m.id);
-      const missing = humanIds.filter(id => !currentMembers.has(id));
-      if (missing.length === 0) return;
-      for (let i = 0; i < missing.length; i += 30) {
-        const batch = missing.slice(i, i + 30);
-        try {
-          await slack.conversations.invite({ channel: channelId, users: batch.join(',') });
-        } catch (err) {
-          if (err.data?.error !== 'already_in_channel') {
-            console.warn('[CHANNEL] Re-invite error:', err.data?.error);
-          }
-        }
-      }
-    }
-  } catch (err) {
-    console.warn('[CHANNEL] ensureChannelMembers error:', err.message);
-  }
+  // disabled - manual invites only
 };
 
 module.exports = {
