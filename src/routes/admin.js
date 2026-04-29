@@ -293,7 +293,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
 .pager-btns{display:flex;gap:4px;flex-wrap:wrap}
 .pager-btn{padding:5px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:6px;font-size:12px;font-weight:600;color:rgba(255,255,255,.4);cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
 .pager-btn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7)}
-.pager-btn.active{background:rgba(37,211,102,.1);color:#4ade80;border-color:rgba(37,211,102,.2)}
+.pager-btn.active{background:rgba(37,211,102,.1);color:#4ade80;border-color:rgba(37,211,102,.2)}.mob-card{display:none}.desk-tbl{display:block}@media(max-width:700px){.mob-card{display:block}.desk-tbl{display:none}}
 </style>
 </head>
 <body>
