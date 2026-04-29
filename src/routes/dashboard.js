@@ -398,7 +398,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
 </div>
 
 <script>
-function showTab(name, el) {
+window.history.pushState({tab:"overview"},"","/dashboard");
+window.addEventListener("popstate",function(e){var tab=(e.state&&e.state.tab)||"overview";showTab(tab,null,true);});
+function showTab(name, el, noPush) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('on'));
   document.getElementById('tab-' + name).classList.add('on');
@@ -407,6 +409,7 @@ function showTab(name, el) {
   document.getElementById('topbar-title').textContent = titles[name] || name;
   if (name === 'messages') loadMessages();
   if (name === 'contacts') loadContacts();
+  if (!noPush) window.history.pushState({tab:name},'','/dashboard');
 }
 var isMobile = window.innerWidth < 700;
 async function loadMessages() {
