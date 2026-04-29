@@ -161,22 +161,8 @@ const getOrCreateChannelForTenant = async (tenant, waNumber, displayName) => {
           [agent.slack_user_id, agent.slack_name, waNumber, tenant.id]
         );
       } else {
-        // No agents configured — invite all workspace members (fallback)
-        console.log('[CHANNEL] No agents configured, inviting all members');
-        const memberList = await slack.users.list();
-        const humanIds = memberList.members
-          .filter(m => !m.is_bot && !m.deleted && m.id !== 'USLACKBOT')
-          .map(m => m.id);
-        for (let i = 0; i < humanIds.length; i += 30) {
-          const batch = humanIds.slice(i, i + 30);
-          try {
-            await slack.conversations.invite({ channel: channelId, users: batch.join(',') });
-          } catch (err) {
-            if (err.data?.error !== 'already_in_channel') {
-              console.warn('Could not invite batch:', err.data?.error);
-            }
-          }
-        }
+        // No agents configured - bot only, team joins manually
+        console.log("[CHANNEL] No agents configured, channel created bot-only");
       }
     } catch (err) {
       console.warn('[CHANNEL] Could not invite agent:', err.message);
