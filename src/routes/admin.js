@@ -456,9 +456,10 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
         </div>
         
       </div>
-      <div class="tbl-wrap">
+      <div id="mob-co" style="display:none">${mobileCompanyRows}</div>
+      <div class="tbl-wrap" id="desk-co">
         <table>
-          <thead><tr><th>Company</th><th>Claim code</th><th>Twilio number</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Company</th><th>Claim code</th><th class="hide-mob">Twilio number</th><th>Status</th><th class="hide-mob">Created</th><th>Actions</th></tr></thead>
           <tbody>${tenantRows}</tbody>
         </table>
       </div>
