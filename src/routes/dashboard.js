@@ -299,7 +299,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
       </div>
       <div class="ws-grid">${workspaceCards}</div>
       ${!canAddWorkspace ? `
-      ` : ''}
+      <div style="background:linear-gradient(135deg,rgba(37,211,102,.06),rgba(96,165,250,.04));border:1px solid rgba(37,211,102,.12);border-radius:14px;padding:24px;text-align:center">
+        <div style="font-size:20px;margin-bottom:10px">🚀</div>
+        <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:6px">Need more workspaces?</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:16px">
+          ${plan === 'starter' ? 'Upgrade to Pro for 3 workspaces or Business for unlimited' : 'Upgrade to Business for unlimited workspaces'}
+        </div>
+        <a href="/#pricing" style="background:#25D366;color:#000;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">View plans →</a>
+      </div>` : ''}
     </div>
 
     <!-- ACCOUNT TAB -->
@@ -391,7 +398,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
 </div>
 
 <script>
-function showTab(name, el, noPush) {
+function showTab(name, el) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('on'));
   document.getElementById('tab-' + name).classList.add('on');
@@ -400,12 +407,8 @@ function showTab(name, el, noPush) {
   document.getElementById('topbar-title').textContent = titles[name] || name;
   if (name === 'messages') loadMessages();
   if (name === 'contacts') loadContacts();
-  if (!noPush) window.history.pushState({tab:name}, '', '/dashboard?tab=' + name);
 }
-window.addEventListener('popstate', function(e) {
-  var tab = (e.state && e.state.tab) || 'overview';
-  showTab(tab, null, true);
-});
+var isMobile = window.innerWidth < 700;
 async function loadMessages() {
   var el = document.getElementById('msg-list');
   if (!el || el.dataset.loaded) return;
@@ -413,12 +416,31 @@ async function loadMessages() {
     var r = await fetch('/dashboard/messages-data', {credentials:'same-origin'});
     var d = await r.json();
     if (!d.messages || !d.messages.length) { el.innerHTML = '<div style="text-align:center;padding:48px;color:rgba(255,255,255,.25)">No messages yet</div>'; return; }
-    var rows = d.messages.map(function(m) {
-      var t = new Date(m.created_at).toLocaleString('en-GB', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-      var dir = m.direction === 'inbound' ? '<span style="background:rgba(37,211,102,.1);color:#4ade80;padding:3px 8px;border-radius:100px;font-size:11px;border:1px solid rgba(37,211,102,.2)">In</span>' : '<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:3px 8px;border-radius:100px;font-size:11px;border:1px solid rgba(59,130,246,.2)">Out</span>';
-      return '<tr><td style="padding:10px 14px;font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap;border-top:1px solid rgba(255,255,255,.04)">' + t + '</td><td style="padding:10px 14px;font-size:12px;border-top:1px solid rgba(255,255,255,.04)">' + m.wa_number + '</td><td style="padding:10px 14px;border-top:1px solid rgba(255,255,255,.04)">' + dir + '</td><td style="padding:10px 14px;font-size:12px;color:rgba(255,255,255,.5);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-top:1px solid rgba(255,255,255,.04)">' + (m.body||'').substring(0,60) + '</td></tr>';
-    }).join('');
-    el.innerHTML = '<div style="overflow-x:auto;border-radius:12px;border:1px solid rgba(255,255,255,.06)"><table style="width:100%;border-collapse:collapse;min-width:500px"><thead><tr style="background:#16161f"><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Time</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Number</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Dir</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Message</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    if (isMobile) {
+      var cards = d.messages.map(function(m) {
+        var t = new Date(m.created_at).toLocaleString('en-GB', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+        var dir = m.direction === 'inbound'
+          ? '<span style="background:rgba(37,211,102,.1);color:#4ade80;padding:2px 8px;border-radius:100px;font-size:11px;border:1px solid rgba(37,211,102,.2)">In</span>'
+          : '<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:2px 8px;border-radius:100px;font-size:11px;border:1px solid rgba(59,130,246,.2)">Out</span>';
+        return '<div style="background:#0c0c12;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;margin-bottom:10px">'
+          + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+          + '<span style="font-size:12px;font-weight:600;color:rgba(255,255,255,.8)">' + m.wa_number + '</span>' + dir
+          + '</div>'
+          + '<div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:6px;word-break:break-word">' + (m.body||'').substring(0,80) + '</div>'
+          + '<div style="font-size:11px;color:rgba(255,255,255,.25)">' + t + '</div>'
+          + '</div>';
+      }).join('');
+      el.innerHTML = cards;
+    } else {
+      var rows = d.messages.map(function(m) {
+        var t = new Date(m.created_at).toLocaleString('en-GB', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+        var dir = m.direction === 'inbound'
+          ? '<span style="background:rgba(37,211,102,.1);color:#4ade80;padding:3px 8px;border-radius:100px;font-size:11px;border:1px solid rgba(37,211,102,.2)">In</span>'
+          : '<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:3px 8px;border-radius:100px;font-size:11px;border:1px solid rgba(59,130,246,.2)">Out</span>';
+        return '<tr><td style="padding:10px 14px;font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap;border-top:1px solid rgba(255,255,255,.04)">' + t + '</td><td style="padding:10px 14px;font-size:12px;border-top:1px solid rgba(255,255,255,.04)">' + m.wa_number + '</td><td style="padding:10px 14px;border-top:1px solid rgba(255,255,255,.04)">' + dir + '</td><td style="padding:10px 14px;font-size:12px;color:rgba(255,255,255,.5);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-top:1px solid rgba(255,255,255,.04)">' + (m.body||'').substring(0,60) + '</td></tr>';
+      }).join('');
+      el.innerHTML = '<div style="border-radius:12px;border:1px solid rgba(255,255,255,.06);overflow:hidden"><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#16161f"><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Time</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Number</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Dir</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Message</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    }
     el.dataset.loaded = '1';
   } catch(e) { el.innerHTML = '<div style="color:#f87171">Error loading messages</div>'; }
 }
@@ -431,11 +453,26 @@ async function loadContacts() {
     if (!d.contacts || !d.contacts.length) { el.innerHTML = '<div style="text-align:center;padding:48px;color:rgba(255,255,255,.25)">No contacts yet</div>'; return; }
     var sc = document.getElementById('stat-contacts');
     if (sc) sc.textContent = d.contacts.length;
-    var rows = d.contacts.map(function(c) {
-      var dt = new Date(c.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
-      return '<tr><td style="padding:10px 14px;font-size:13px;border-top:1px solid rgba(255,255,255,.04)">' + c.wa_number + '</td><td style="padding:10px 14px;font-size:13px;color:rgba(255,255,255,.5);border-top:1px solid rgba(255,255,255,.04)">' + (c.display_name||'-') + '</td><td style="padding:10px 14px;font-size:12px;color:rgba(255,255,255,.4);border-top:1px solid rgba(255,255,255,.04)">' + c.slack_channel + '</td><td style="padding:10px 14px;font-size:12px;color:rgba(255,255,255,.3);border-top:1px solid rgba(255,255,255,.04)">' + dt + '</td></tr>';
-    }).join('');
-    el.innerHTML = '<div style="overflow-x:auto;border-radius:12px;border:1px solid rgba(255,255,255,.06)"><table style="width:100%;border-collapse:collapse;min-width:400px"><thead><tr style="background:#16161f"><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">WhatsApp</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Name</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Slack channel</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Added</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    if (isMobile) {
+      var cards = d.contacts.map(function(c) {
+        var dt = new Date(c.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+        return '<div style="background:#0c0c12;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;margin-bottom:10px">'
+          + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+          + '<span style="font-size:13px;font-weight:600;color:rgba(255,255,255,.85)">' + c.wa_number + '</span>'
+          + '<span style="font-size:11px;color:rgba(255,255,255,.25)">' + dt + '</span>'
+          + '</div>'
+          + (c.display_name ? '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px">' + c.display_name + '</div>' : '')
+          + '<div style="font-size:11px;color:rgba(255,255,255,.3);font-family:monospace">' + c.slack_channel + '</div>'
+          + '</div>';
+      }).join('');
+      el.innerHTML = cards;
+    } else {
+      var rows = d.contacts.map(function(c) {
+        var dt = new Date(c.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+        return '<tr><td style="padding:10px 14px;font-size:13px;border-top:1px solid rgba(255,255,255,.04)">' + c.wa_number + '</td><td style="padding:10px 14px;font-size:13px;color:rgba(255,255,255,.5);border-top:1px solid rgba(255,255,255,.04)">' + (c.display_name||'-') + '</td><td style="padding:10px 14px;font-size:12px;color:rgba(255,255,255,.4);border-top:1px solid rgba(255,255,255,.04)">' + c.slack_channel + '</td><td style="padding:10px 14px;font-size:12px;color:rgba(255,255,255,.3);border-top:1px solid rgba(255,255,255,.04)">' + dt + '</td></tr>';
+      }).join('');
+      el.innerHTML = '<div style="border-radius:12px;border:1px solid rgba(255,255,255,.06);overflow:hidden"><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#16161f"><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">WhatsApp</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Name</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Slack channel</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Added</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    }
     el.dataset.loaded = '1';
   } catch(e) { el.innerHTML = '<div style="color:#f87171">Error loading contacts</div>'; }
 }
