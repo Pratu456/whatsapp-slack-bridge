@@ -102,7 +102,7 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;text-a
 });
 
 // ── Register POST ─────────────────────────────────────────
-router.post('/register', express.urlencoded({ extended: false }), async (req, res) => {
+router.post('/register', async (req, res) => {
   try {
     const { full_name, company_name, email, password } = req.body;
 
@@ -339,7 +339,7 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;text-a
 });
 
 // ── Login POST ────────────────────────────────────────────
-router.post('/login', express.urlencoded({ extended: false }), async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) return res.redirect('/auth/login?error=Please+fill+in+all+fields');
