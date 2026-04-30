@@ -991,6 +991,50 @@ router.get('/waitlist-data', auth, async (req, res) => {
   } catch(err){ res.json({ rows: [] }); }
 });
 
+
+// ── Agent API Routes ─────────────────────────────────────────────────────────
+router.get('/api/tenants/:id/agents', auth, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT id, slack_user_id, slack_name FROM tenant_agents WHERE tenant_id = $1 ORDER BY slack_name',
+      [req.params.id]
+    );
+    res.json({ agents: rows });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+router.get('/api/tenants/:id/slack-members', auth, async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT slack_bot_token FROM tenants WHERE id = $1', [req.params.id]);
+    if (!rows[0]?.slack_bot_token) return res.status(400).json({ error: 'No bot token' });
+    const { WebClient } = require('@slack/web-api');
+    const slack = new WebClient(rows[0].slack_bot_token);
+    const result = await slack.users.list({ limit: 200 });
+    const members = result.members
+      .filter(m => !m.is_bot && !m.deleted && m.id !== 'USLACKBOT')
+      .map(m => ({ id: m.id, name: m.profile.display_name || m.real_name, avatar: m.profile.image_48 }));
+    res.json({ members });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+router.post('/api/tenants/:id/agents', auth, async (req, res) => {
+  const { slack_user_id, slack_name } = req.body;
+  try {
+    await pool.query(
+      'INSERT INTO tenant_agents (tenant_id, slack_user_id, slack_name) VALUES ($1, $2, $3)',
+      [req.params.id, slack_user_id, slack_name]
+    );
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+router.delete('/api/tenants/:id/agents/:agentId', auth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM tenant_agents WHERE id = $1 AND tenant_id = $2', [req.params.agentId, req.params.id]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 router.get('/tenant/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
