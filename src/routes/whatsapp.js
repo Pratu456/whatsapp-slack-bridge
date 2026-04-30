@@ -127,14 +127,7 @@ router.post('/webhook', async (req, res) => {
       });
 
     } else {
-        console.log('[DEBUG] About to post to Slack | channel:', channelId, '| tenant:', tenant.company_name, '| body:', Body?.slice(0,30));
-        try {
-          slackTs = await postToTenantSlack(tenant, channelId, Body, ProfileName || waNumber, waNumber);
-          console.log('[DEBUG] postToTenantSlack success | ts:', slackTs);
-        } catch(slackErr) {
-          console.error('[DEBUG] postToTenantSlack FAILED:', slackErr.message, slackErr.data?.error);
-          throw slackErr;
-        }   
+        slackTs = await postToTenantSlack(tenant, channelId, Body, ProfileName || waNumber, waNumber);   
         await logMessage({
         waNumber, body: Body, direction: 'inbound',
         twilioSid: MessageSid, slackTs, tenantId: tenant.id,
