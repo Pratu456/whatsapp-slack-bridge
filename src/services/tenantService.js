@@ -204,28 +204,9 @@ const postToTenantSlack = async (tenant, channelId, text, senderName, waNumber) 
   const slack = new WebClient(tenant.slack_bot_token);
   const result = await slack.chat.postMessage({
     channel: channelId,
-    blocks: [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `*${senderName}* (WhatsApp · ${waNumber}):\n${text}`,
-        },
-      },
-      {
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            text: { type: 'plain_text', text: `Reply to ${senderName}` },
-            action_id: 'reply_to_wa',
-            value: waNumber,
-            style: 'primary',
-          },
-        ],
-      },
-    ],
-    text: `${senderName}: ${text}`,
+    text: `*${senderName}* (WhatsApp · ${waNumber}):
+${text}`,
+    mrkdwn: true,
   });
   return result.ts;
 };
