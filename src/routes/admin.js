@@ -1171,7 +1171,7 @@ loadAgents();
 </script>
 <div class="card"><h2>Recent messages (last 20)</h2>
 <div class="tbl"><table><thead><tr><th>Time</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead>
-<tbody>${messages.rows.map(m=>'<tr><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">${new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td style="font-size:12px">${m.wa_number}</td><td>${m.direction==='inbound'?'<span class="bg">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>'}</td><td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.media_type?'['+m.media_type+']':(m.body||'')}</td></tr>').join('')}</tbody></table></div></div>
+<tbody>${messages.rows.map(m=>'<tr><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">'+new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+'</td><td style="font-size:12px">'+m.wa_number+'</td><td>'+(m.direction==='inbound'?'<span class="bg">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>')+'</td><td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(m.media_type?'['+m.media_type+']' :(m.body||''  ))+'</td></tr>').join('')}</tbody></table></div></div>
 </body></html>`);
   } catch(err){ res.status(500).send('Error: '+err.message); }
 });
