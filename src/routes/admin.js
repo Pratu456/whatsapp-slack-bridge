@@ -1134,7 +1134,7 @@ router.get('/tenant/:id', auth, async (req, res) => {
             '+"<div style=\"width:34px;height:34px;border-radius:50%;background:rgba(37,211,102,.15);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#25D366\">"+a.slack_name.charAt(0).toUpperCase()+"</div>"' +
             '+"<div><div style=\"font-size:13px;font-weight:600;color:#fff\">"+a.slack_name+"</div>"' +
             '+"<div style=\"font-size:11px;color:rgba(255,255,255,.3)\">"+a.slack_user_id+"</div></div></div>"' +
-            '+"<button class=\"btn-rm\" onclick=\"removeAgent("+a.id+",'"+a.slack_name+"')\"  >Remove</button></div>";' +
+            '+"<button class=\"btn-rm\" onclick=\"removeAgent("+a.id+",\""+a.slack_name+"\")\" >Remove</button></div>"';
           '}).join("");' +
         '}).catch(function(e){console.error(e);});' +
       '}' +
