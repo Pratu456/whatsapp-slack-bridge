@@ -1043,136 +1043,131 @@ router.get('/tenant/:id', auth, async (req, res) => {
     const t = tenant.rows[0];
     const [contacts, messages] = await Promise.all([
       pool.query('SELECT * FROM contacts WHERE tenant_id = $1 ORDER BY created_at DESC', [id]),
-      pool.query(`SELECT m.*, c.wa_number FROM messages m JOIN contacts c ON c.id = m.contact_id WHERE m.tenant_id = $1 ORDER BY m.created_at DESC LIMIT 20`, [id]),
+      pool.query('SELECT m.*, c.wa_number FROM messages m JOIN contacts c ON c.id = m.contact_id WHERE m.tenant_id = $1 ORDER BY m.created_at DESC LIMIT 20', [id]),
     ]);
-    res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>${t.company_name} — Syncora</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#060608;color:#fff;padding:24px;min-height:100vh}a{color:#25D366;text-decoration:none;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-bottom:24px}.card{background:#111118;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;margin-bottom:16px}h1{font-size:22px;font-weight:800;margin-bottom:6px}.ig{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}.il label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);display:block;margin-bottom:5px}.il span{font-size:14px;font-weight:500;color:rgba(255,255,255,.8)}h2{font-size:15px;font-weight:700;margin-bottom:14px}.tbl{overflow-x:auto;-webkit-overflow-scrolling:touch}table{width:100%;border-collapse:collapse;min-width:500px}th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.8px;background:rgba(255,255,255,.03)}td{padding:10px 14px;border-top:1px solid rgba(255,255,255,.05);font-size:13px;color:rgba(255,255,255,.7)}.bg{background:rgba(37,211,102,.1);color:#4ade80;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(37,211,102,.2)}.by{background:rgba(245,158,11,.1);color:#fbbf24;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(245,158,11,.2)}</style></head><body>
-<a href="/admin">← Back to admin</a>
-<div class="card"><h1>${t.company_name}</h1>
-<div style="margin-bottom:18px">${t.is_active?'<span class="bg">Active</span>':'<span class="by">Pending</span>'}<span style="font-size:12px;color:rgba(255,255,255,.3);margin-left:10px">Created ${new Date(t.created_at).toLocaleDateString()}</span></div>
-<div class="ig">
-  <div class="il"><label>Claim code</label><span><code style="background:rgba(37,211,102,.08);color:#25D366;padding:2px 8px;border-radius:5px">${t.claim_code||'Not set'}</code></span></div>
-  <div class="il"><label>Twilio number</label><span>${t.twilio_number||'Not set'}</span></div>
-  <div class="il"><label>Email</label><span>${t.email||'Not set'}</span></div>
-  <div class="il"><label>Slack workspace</label><span>${t.slack_team_name||'Not connected'}</span></div>
-</div></div>
-<div class="card"><h2>Contacts (${contacts.rows.length})</h2>
-<div class="tbl"><table><thead><tr><th>WhatsApp number</th><th>Display name</th><th>Slack channel</th><th>Blocked</th><th>Added</th></tr></thead>
-<tbody>${contacts.rows.map(c=>`<tr><td>${c.wa_number}</td><td style="color:rgba(255,255,255,.5)">${c.display_name||'-'}</td><td><code style="background:rgba(255,255,255,.05);padding:1px 6px;border-radius:4px;font-size:11px">${c.slack_channel}</code></td><td>${c.blocked?'<span style="color:#f87171">Blocked</span>':'<span style="color:#4ade80">✓</span>'}</td><td style="color:rgba(255,255,255,.3);font-size:12px">${new Date(c.created_at).toLocaleDateString()}</td></tr>`).join('')}</tbody></table></div></div>
-<div class="card" style="margin-bottom:16px">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-    <h2 style="margin:0">👥 Agents</h2>
-    <button onclick="openAddAgent()" style="background:rgba(37,211,102,.15);color:#25D366;border:1px solid rgba(37,211,102,.3);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">+ Add Agent</button>
-  </div>
-  <div id="agents-list"><div style="color:rgba(255,255,255,.3);font-size:13px">Loading...</div></div>
-</div>
-<div id="agent-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:999;align-items:center;justify-content:center;padding:16px">
-  <div style="background:#111118;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:400px;max-height:80vh;display:flex;flex-direction:column;gap:12px">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h2 style="margin:0;font-size:16px">Add Agent from Slack</h2>
-      <button onclick="closeAddAgent()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:24px;cursor:pointer;line-height:1">×</button>
-    </div>
-    <input id="member-search" placeholder="Search members..." oninput="filterMembers(this.value)"
-      style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;width:100%;font-family:inherit"/>
-    <div id="members-list" style="overflow-y:auto;max-height:320px">
-      <div style="color:rgba(255,255,255,.3);font-size:13px;text-align:center;padding:20px">Loading...</div>
-    </div>
-  </div>
-</div>
-<script>
-const TENANT_ID = ${t.id};
-async function loadAgents() {
-  try {
-    const r = await fetch('/admin/api/tenants/' + TENANT_ID + '/agents');
-    const { agents } = await r.json();
-    const el = document.getElementById('agents-list');
-    if (!agents || !agents.length) {
-      el.innerHTML = '<div style="color:rgba(255,255,255,.3);font-size:13px;padding:4px 0">No agents yet. Click + Add Agent to assign Slack members.</div>';
-      return;
-    }
-    el.innerHTML = agents.map(a =>
-      '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">' +
-        '<div style="display:flex;align-items:center;gap:10px">' +
-          '<div style="width:34px;height:34px;border-radius:50%;background:rgba(37,211,102,.15);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#25D366">' + a.slack_name.charAt(0).toUpperCase() + '</div>' +
-          '<div>' +
-            '<div style="font-size:13px;font-weight:600;color:#fff">' + a.slack_name + '</div>' +
-            '<div style="font-size:11px;color:rgba(255,255,255,.3)">' + a.slack_user_id + '</div>' +
-          '</div>' +
-        '</div>' +
-        '<button onclick="removeAgent(' + a.id + ',\'' + a.slack_name + '\')" style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:5px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">Remove</button>' +
-      '</div>'
+
+    const contactRows = contacts.rows.map(c =>
+      '<tr><td>' + c.wa_number + '</td>' +
+      '<td style="color:rgba(255,255,255,.5)">' + (c.display_name||'-') + '</td>' +
+      '<td style="color:rgba(255,255,255,.5)">' + (c.assigned_name||'-') + '</td>' +
+      '<td><code style="background:rgba(255,255,255,.05);padding:1px 6px;border-radius:4px;font-size:11px">' + (c.slack_channel||'-') + '</code></td>' +
+      '<td>' + (c.blocked ? '<span style="color:#f87171">Blocked</span>' : '<span style="color:#4ade80">✓</span>') + '</td>' +
+      '<td style="color:rgba(255,255,255,.3);font-size:12px">' + new Date(c.created_at).toLocaleDateString() + '</td></tr>'
     ).join('');
-  } catch(e) { console.error(e); }
-}
 
-async function removeAgent(id, name) {
-  if (!confirm('Remove ' + name + ' as agent?')) return;
-  await fetch('/admin/api/tenants/' + TENANT_ID + '/agents/' + id, { method: 'DELETE' });
-  loadAgents();
-}
+    const messageRows = messages.rows.map(m =>
+      '<tr>' +
+      '<td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">' + new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) + '</td>' +
+      '<td style="font-size:12px">' + m.wa_number + '</td>' +
+      '<td>' + (m.direction==='inbound' ? '<span class="bg">↓ In</span>' : '<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>') + '</td>' +
+      '<td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (m.media_type ? '['+m.media_type+']' : (m.body||'')) + '</td>' +
+      '</tr>'
+    ).join('');
 
-let allMembers = [];
-async function openAddAgent() {
-  const overlay = document.getElementById('agent-overlay');
-  overlay.style.display = 'flex';
-  if (allMembers.length) return;
-  const r = await fetch('/admin/api/tenants/' + TENANT_ID + '/slack-members');
-  const d = await r.json();
-  if (d.error) {
-    document.getElementById('members-list').innerHTML = '<div style="color:#f87171;font-size:13px;padding:20px;text-align:center">' + d.error + '</div>';
-    return;
-  }
-  allMembers = d.members;
-  renderMembers(allMembers);
-}
-
-function closeAddAgent() {
-  document.getElementById('agent-overlay').style.display = 'none';
-}
-
-function renderMembers(list) {
-  if (!list.length) {
-    document.getElementById('members-list').innerHTML = '<div style="color:rgba(255,255,255,.3);font-size:13px;text-align:center;padding:20px">No members found</div>';
-    return;
-  }
-  document.getElementById('members-list').innerHTML = list.map(m =>
-    '<div onclick="addAgent(\'' + m.id + '\',\'' + m.name.replace(/'/g, '') + '\')" ' +
-      'style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;cursor:pointer" ' +
-      'onmouseover="this.style.background=\'rgba(255,255,255,.05)\'" onmouseout="this.style.background=\'\'"> ' +
-      '<img src="' + m.avatar + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover" onerror="this.style.display=\'none\'"/>' +
-      '<div>' +
-        '<div style="font-size:13px;font-weight:500;color:#fff">' + m.name + '</div>' +
-        '<div style="font-size:11px;color:rgba(255,255,255,.3)">' + m.id + '</div>' +
+    res.send('<!DOCTYPE html><html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>' +
+      '<title>' + t.company_name + ' — Syncora</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>' +
+      '<style>' +
+      '*{margin:0;padding:0;box-sizing:border-box}' +
+      'body{font-family:"Inter",sans-serif;background:#060608;color:#fff;padding:24px;min-height:100vh}' +
+      'a{color:#25D366;text-decoration:none;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-bottom:24px}' +
+      '.card{background:#111118;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;margin-bottom:16px}' +
+      'h1{font-size:22px;font-weight:800;margin-bottom:6px}' +
+      '.ig{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}' +
+      '.il label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);display:block;margin-bottom:5px}' +
+      '.il span{font-size:14px;font-weight:500;color:rgba(255,255,255,.8)}' +
+      'h2{font-size:15px;font-weight:700;margin-bottom:14px}' +
+      '.tbl{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:500px}' +
+      'th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;background:rgba(255,255,255,.03)}' +
+      'td{padding:10px 14px;border-top:1px solid rgba(255,255,255,.05);font-size:13px;color:rgba(255,255,255,.7)}' +
+      '.bg{background:rgba(37,211,102,.1);color:#4ade80;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(37,211,102,.2)}' +
+      '.by{background:rgba(245,158,11,.1);color:#fbbf24;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(245,158,11,.2)}' +
+      '.btn-add{background:rgba(37,211,102,.15);color:#25D366;border:1px solid rgba(37,211,102,.3);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}' +
+      '.btn-rm{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:5px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}' +
+      '.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:999;align-items:center;justify-content:center;padding:16px}' +
+      '.modal{background:#111118;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:400px;max-height:80vh;display:flex;flex-direction:column;gap:12px}' +
+      '.mi{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;cursor:pointer}' +
+      '.mi:hover{background:rgba(255,255,255,.05)}' +
+      '</style></head><body>' +
+      '<a href="/admin">← Back to admin</a>' +
+      '<div class="card"><h1>' + t.company_name + '</h1>' +
+      '<div style="margin-bottom:18px">' + (t.is_active ? '<span class="bg">Active</span>' : '<span class="by">Pending</span>') +
+      '<span style="font-size:12px;color:rgba(255,255,255,.3);margin-left:10px">Created ' + new Date(t.created_at).toLocaleDateString() + '</span></div>' +
+      '<div class="ig">' +
+      '<div class="il"><label>Claim code</label><span><code style="background:rgba(37,211,102,.08);color:#25D366;padding:2px 8px;border-radius:5px">' + (t.claim_code||'Not set') + '</code></span></div>' +
+      '<div class="il"><label>Twilio number</label><span>' + (t.twilio_number||'Not set') + '</span></div>' +
+      '<div class="il"><label>Email</label><span>' + (t.email||'Not set') + '</span></div>' +
+      '<div class="il"><label>Slack workspace</label><span>' + (t.slack_team_name||'Not connected') + '</span></div>' +
+      '</div></div>' +
+      '<div class="card">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">' +
+      '<h2 style="margin:0">Agents</h2>' +
+      '<button class="btn-add" onclick="openAddAgent()">+ Add Agent</button>' +
       '</div>' +
-    '</div>'
-  ).join('');
-}
-
-function filterMembers(q) {
-  renderMembers(allMembers.filter(m => m.name.toLowerCase().includes(q.toLowerCase())));
-}
-
-async function addAgent(userId, name) {
-  const r = await fetch('/admin/api/tenants/' + TENANT_ID + '/agents', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ slack_user_id: userId, slack_name: name })
-  });
-  const d = await r.json();
-  if (d.error) { alert('Error: ' + d.error); return; }
-  closeAddAgent();
-  allMembers = [];
-  loadAgents();
-}
-
-loadAgents();
-</script>
-<div class="card"><h2>Recent messages (last 20)</h2>
-<div class="tbl"><table><thead><tr><th>Time</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead>
-<tbody>${messages.rows.map(m=>'<tr><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">'+new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+'</td><td style="font-size:12px">'+m.wa_number+'</td><td>'+(m.direction==='inbound'?'<span class="bg">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>')+'</td><td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(m.media_type?'['+m.media_type+']' :(m.body||''  ))+'</td></tr>').join('')}</tbody></table></div></div>
-</body></html>`);
+      '<div id="agents-list"><div style="color:rgba(255,255,255,.3);font-size:13px">Loading...</div></div>' +
+      '</div>' +
+      '<div class="card"><h2>Contacts (' + contacts.rows.length + ')</h2>' +
+      '<div class="tbl"><table><thead><tr><th>WhatsApp</th><th>Name</th><th>Assigned to</th><th>Channel</th><th>Blocked</th><th>Added</th></tr></thead>' +
+      '<tbody>' + contactRows + '</tbody></table></div></div>' +
+      '<div class="card"><h2>Recent messages (last 20)</h2>' +
+      '<div class="tbl"><table><thead><tr><th>Time</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead>' +
+      '<tbody>' + messageRows + '</tbody></table></div></div>' +
+      '<div class="overlay" id="overlay">' +
+      '<div class="modal">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center">' +
+      '<h2 style="margin:0;font-size:16px">Add Agent from Slack</h2>' +
+      '<button onclick="closeModal()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:24px;cursor:pointer">×</button>' +
+      '</div>' +
+      '<input id="search" placeholder="Search members..." oninput="filterM(this.value)" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;width:100%;font-family:inherit"/>' +
+      '<div id="mlist" style="overflow-y:auto;max-height:320px"><div style="color:rgba(255,255,255,.3);font-size:13px;text-align:center;padding:20px">Loading...</div></div>' +
+      '</div></div>' +
+      '<script>' +
+      'var TID=' + t.id + ';' +
+      'var allM=[];' +
+      'function loadAgents(){' +
+        'fetch("/admin/api/tenants/"+TID+"/agents").then(function(r){return r.json();}).then(function(d){' +
+          'var el=document.getElementById("agents-list");' +
+          'if(!d.agents||!d.agents.length){el.innerHTML="<div style=\"color:rgba(255,255,255,.3);font-size:13px\">No agents yet.</div>";return;}' +
+          'el.innerHTML=d.agents.map(function(a){' +
+            'return "<div style=\"display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)\">"' +
+            '+"<div style=\"display:flex;align-items:center;gap:10px\">"' +
+            '+"<div style=\"width:34px;height:34px;border-radius:50%;background:rgba(37,211,102,.15);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#25D366\">"+a.slack_name.charAt(0).toUpperCase()+"</div>"' +
+            '+"<div><div style=\"font-size:13px;font-weight:600;color:#fff\">"+a.slack_name+"</div>"' +
+            '+"<div style=\"font-size:11px;color:rgba(255,255,255,.3)\">"+a.slack_user_id+"</div></div></div>"' +
+            '+"<button class=\"btn-rm\" onclick=\"removeAgent("+a.id+",'"+a.slack_name+"')\"  >Remove</button></div>";' +
+          '}).join("");' +
+        '}).catch(function(e){console.error(e);});' +
+      '}' +
+      'function removeAgent(id,name){' +
+        'if(!confirm("Remove "+name+"?"))return;' +
+        'fetch("/admin/api/tenants/"+TID+"/agents/"+id,{method:"DELETE"}).then(function(){loadAgents();});' +
+      '}' +
+      'function openAddAgent(){' +
+        'document.getElementById("overlay").style.display="flex";' +
+        'if(allM.length)return;' +
+        'fetch("/admin/api/tenants/"+TID+"/slack-members").then(function(r){return r.json();}).then(function(d){' +
+          'if(d.error){document.getElementById("mlist").innerHTML="<div style=\"color:#f87171;padding:20px\">"+d.error+"</div>";return;}' +
+          'allM=d.members;renderM(allM);' +
+        '});' +
+      '}' +
+      'function closeModal(){document.getElementById("overlay").style.display="none";}' +
+      'function renderM(list){' +
+        'if(!list.length){document.getElementById("mlist").innerHTML="<div style=\"color:rgba(255,255,255,.3);text-align:center;padding:20px\">No members</div>";return;}' +
+        'document.getElementById("mlist").innerHTML=list.map(function(m){' +
+          'return "<div class=\"mi\" onclick=\"addAgent('"+m.id+"','"+m.name.replace(/'/g,"")+"')\"><img src=\""+m.avatar+"\" style=\"width:32px;height:32px;border-radius:50%\" onerror=\"this.style.display='none'\"/><div><div style=\"font-size:13px;font-weight:500;color:#fff\">"+m.name+"</div><div style=\"font-size:11px;color:rgba(255,255,255,.3)\">"+m.id+"</div></div></div>";' +
+        '}).join("");' +
+      '}' +
+      'function filterM(q){renderM(allM.filter(function(m){return m.name.toLowerCase().indexOf(q.toLowerCase())>-1;}));}' +
+      'function addAgent(uid,name){' +
+        'fetch("/admin/api/tenants/"+TID+"/agents",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({slack_user_id:uid,slack_name:name})})' +
+        '.then(function(r){return r.json();}).then(function(d){' +
+          'if(d.error){alert("Error: "+d.error);return;}' +
+          'closeModal();allM=[];loadAgents();' +
+        '});' +
+      '}' +
+      'loadAgents();' +
+      '</script>' +
+      '</body></html>');
   } catch(err){ res.status(500).send('Error: '+err.message); }
 });
 
