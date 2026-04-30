@@ -1113,6 +1113,115 @@ async function addAgent(userId,name){
 }
 loadAgents();
 </script>
+
+<div class="card" style="margin-bottom:16px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <h2 style="margin:0">👥 Agents</h2>
+    <button onclick="openAddAgent()" style="background:rgba(37,211,102,.15);color:#25D366;border:1px solid rgba(37,211,102,.3);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">+ Add Agent</button>
+  </div>
+  <div id="agents-list"><div style="color:rgba(255,255,255,.3);font-size:13px">Loading...</div></div>
+</div>
+<div id="agent-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#111118;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;width:100%;max-width:400px;max-height:80vh;display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 style="margin:0;font-size:16px">Add Agent from Slack</h2>
+      <button onclick="closeAddAgent()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:24px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <input id="member-search" placeholder="Search members..." oninput="filterMembers(this.value)"
+      style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;width:100%;font-family:inherit"/>
+    <div id="members-list" style="overflow-y:auto;max-height:320px">
+      <div style="color:rgba(255,255,255,.3);font-size:13px;text-align:center;padding:20px">Loading...</div>
+    </div>
+  </div>
+</div>
+<script>
+const TENANT_ID = ${t.id};
+async function loadAgents() {
+  try {
+    const r = await fetch('/admin/api/tenants/' + TENANT_ID + '/agents');
+    const { agents } = await r.json();
+    const el = document.getElementById('agents-list');
+    if (!agents || !agents.length) {
+      el.innerHTML = '<div style="color:rgba(255,255,255,.3);font-size:13px;padding:4px 0">No agents yet. Click + Add Agent to assign Slack members.</div>';
+      return;
+    }
+    el.innerHTML = agents.map(a =>
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">' +
+        '<div style="display:flex;align-items:center;gap:10px">' +
+          '<div style="width:34px;height:34px;border-radius:50%;background:rgba(37,211,102,.15);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#25D366">' + a.slack_name.charAt(0).toUpperCase() + '</div>' +
+          '<div>' +
+            '<div style="font-size:13px;font-weight:600;color:#fff">' + a.slack_name + '</div>' +
+            '<div style="font-size:11px;color:rgba(255,255,255,.3)">' + a.slack_user_id + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<button onclick="removeAgent(' + a.id + ',\'' + a.slack_name + '\')" style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:5px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">Remove</button>' +
+      '</div>'
+    ).join('');
+  } catch(e) { console.error(e); }
+}
+
+async function removeAgent(id, name) {
+  if (!confirm('Remove ' + name + ' as agent?')) return;
+  await fetch('/admin/api/tenants/' + TENANT_ID + '/agents/' + id, { method: 'DELETE' });
+  loadAgents();
+}
+
+let allMembers = [];
+async function openAddAgent() {
+  const overlay = document.getElementById('agent-overlay');
+  overlay.style.display = 'flex';
+  if (allMembers.length) return;
+  const r = await fetch('/admin/api/tenants/' + TENANT_ID + '/slack-members');
+  const d = await r.json();
+  if (d.error) {
+    document.getElementById('members-list').innerHTML = '<div style="color:#f87171;font-size:13px;padding:20px;text-align:center">' + d.error + '</div>';
+    return;
+  }
+  allMembers = d.members;
+  renderMembers(allMembers);
+}
+
+function closeAddAgent() {
+  document.getElementById('agent-overlay').style.display = 'none';
+}
+
+function renderMembers(list) {
+  if (!list.length) {
+    document.getElementById('members-list').innerHTML = '<div style="color:rgba(255,255,255,.3);font-size:13px;text-align:center;padding:20px">No members found</div>';
+    return;
+  }
+  document.getElementById('members-list').innerHTML = list.map(m =>
+    '<div onclick="addAgent(\'' + m.id + '\',\'' + m.name.replace(/'/g, '') + '\')" ' +
+      'style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;cursor:pointer" ' +
+      'onmouseover="this.style.background=\'rgba(255,255,255,.05)\'" onmouseout="this.style.background=\'\'"> ' +
+      '<img src="' + m.avatar + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover" onerror="this.style.display=\'none\'"/>' +
+      '<div>' +
+        '<div style="font-size:13px;font-weight:500;color:#fff">' + m.name + '</div>' +
+        '<div style="font-size:11px;color:rgba(255,255,255,.3)">' + m.id + '</div>' +
+      '</div>' +
+    '</div>'
+  ).join('');
+}
+
+function filterMembers(q) {
+  renderMembers(allMembers.filter(m => m.name.toLowerCase().includes(q.toLowerCase())));
+}
+
+async function addAgent(userId, name) {
+  const r = await fetch('/admin/api/tenants/' + TENANT_ID + '/agents', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ slack_user_id: userId, slack_name: name })
+  });
+  const d = await r.json();
+  if (d.error) { alert('Error: ' + d.error); return; }
+  closeAddAgent();
+  allMembers = [];
+  loadAgents();
+}
+
+loadAgents();
+</script>
 <div class="card"><h2>Recent messages (last 20)</h2>
 <div class="tbl"><table><thead><tr><th>Time</th><th>Number</th><th>Direction</th><th>Message</th></tr></thead>
 <tbody>${messages.rows.map(m=>`<tr><td style="font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap">${new Date(m.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td><td style="font-size:12px">${m.wa_number}</td><td>${m.direction==='inbound'?'<span class="bg">↓ In</span>':'<span style="background:rgba(59,130,246,.1);color:#60a5fa;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">↑ Out</span>'}</td><td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.media_type?'['+m.media_type+']':(m.body||'')}</td></tr>`).join('')}</tbody></table></div></div>
