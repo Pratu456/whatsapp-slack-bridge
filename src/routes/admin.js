@@ -616,7 +616,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div class="fg"><label>Twilio WhatsApp number</label>
       <input type="text" id="mTwilio" placeholder="+14155238886"/>
     </div>
-    <div class="fg"><label>Default Slack channel <span style="font-weight:400;color:rgba(255,255,255,.3)">(optional)</span></label><input type="text" id="mSlackChannel" placeholder="e.g. C0XXXXXXXXX"/><div class="hint">Leave blank to auto-create per contact. For shared channel: right-click channel in Slack, View channel details, copy Channel ID</div></div>
+    
     <div class="divider"></div>
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t4);margin-bottom:8px">Claim code</div>
     <div class="code-preview">
@@ -889,7 +889,7 @@ async function confirmActivate(){
   const id=document.getElementById('mId').value;
   const email=document.getElementById('mEmail').value.trim();
   const twilio=document.getElementById("mTwilio").value.trim();
-  const slackChannel=document.getElementById("mSlackChannel").value.trim();
+  
   const customVisible=document.getElementById('mCustomWrap').style.display!=='none';
   const code=customVisible?document.getElementById('mCustomCode').value.trim().toLowerCase():currentModalCode;
   if(!email){alert('Please enter the company email address');return}
@@ -899,7 +899,7 @@ async function confirmActivate(){
   if(customVisible&&!validateCustomCode(document.getElementById('mCustomCode'))){return}
   const btn=document.getElementById('mConfirmBtn');
   btn.disabled=true;btn.textContent='Activating...';
-  const r=await fetch('/admin/activate', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,email,twilio_number:twilio,claim_code:code,default_slack_channel:slackChannel})});
+  const r=await fetch('/admin/activate', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,email,twilio_number:twilio,claim_code:code,default_slack_channel:null})});
   const d=await r.json();
   if(d.success){
     const status=document.getElementById('emailStatus');
