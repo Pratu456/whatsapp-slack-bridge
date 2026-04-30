@@ -1084,7 +1084,7 @@ async function loadAgents(){
   const r=await fetch('/admin/api/tenants/'+TENANT_ID+'/agents');
   const {agents}=await r.json();
   const el=document.getElementById('agents-list');
-  el.innerHTML=agents.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)"><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:50%;background:rgba(37,211,102,.15);display:flex;align-items:center;justify-content:center;font-weight:700;color:#25D366">${a.slack_name.charAt(0).toUpperCase()}</div><div><div style="font-size:13px;font-weight:600">${a.slack_name}</div><div style="font-size:11px;color:rgba(255,255,255,.3)">${a.slack_user_id}</div></div></div><button onclick="removeAgent(${a.id},'${a.slack_name}')" style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer">Remove</button></div>`).join('');
+  el.innerHTML=agents.map(a=>'<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)"><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:50%;background:rgba(37,211,102,.15);display:flex;align-items:center;justify-content:center;font-weight:700;color:#25D366">'+a.slack_name.charAt(0).toUpperCase()+'</div><div><div style="font-size:13px;font-weight:600">'+a.slack_name+'</div><div style="font-size:11px;color:rgba(255,255,255,.3)">'+a.slack_user_id+'</div></div></div><button onclick="removeAgent('+a.id+',\''+a.slack_name+'\')" style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer">Remove</button></div>').join('');
 }
 async function removeAgent(id,name){
   await fetch('/admin/api/tenants/'+TENANT_ID+'/agents/'+id,{method:'DELETE'});
@@ -1102,7 +1102,7 @@ async function openAddAgent(){
 }
 function closeAddAgent(){document.getElementById('agent-overlay').style.display='none';}
 function renderMembers(list){
-  document.getElementById('members-list').innerHTML=list.map(m=>`<div onclick="addAgent('${m.id}','${m.name.replace(/'/g,\\'\\')}'')" style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;cursor:pointer" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background=''"><img src="${m.avatar}" style="width:32px;height:32px;border-radius:50%" onerror="this.style.display='none'"/><div><div style="font-size:13px;font-weight:500;color:#fff">${m.name}</div><div style="font-size:11px;color:rgba(255,255,255,.3)">${m.id}</div></div></div>`).join('');
+  document.getElementById('members-list').innerHTML=list.map(m=>'<div onclick="addAgent(\''+m.id+'\',\''+m.name.replace(/'/g,'')+'\')"; style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;cursor:pointer" onmouseover="this.style.background=\'rgba(255,255,255,.05)\'" onmouseout="this.style.background=\'\'">'+'<img src="'+m.avatar+'" style="width:32px;height:32px;border-radius:50%" onerror="this.style.display=\'none\'">'+'<div><div style="font-size:13px;font-weight:500;color:#fff">'+m.name+'</div><div style="font-size:11px;color:rgba(255,255,255,.3)">'+m.id+'</div></div></div>').join('');
 }
 function filterMembers(q){renderMembers(allMembers.filter(m=>m.name.toLowerCase().includes(q.toLowerCase())));}
 async function addAgent(userId,name){
