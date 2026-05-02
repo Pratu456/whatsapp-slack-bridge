@@ -136,6 +136,39 @@ async function handleSlackEvent(event) {
   if (event.subtype === 'channel_join' || event.subtype === 'channel_leave' || event.subtype === 'channel_topic' || event.subtype === 'channel_purpose') return;
   if (!event.text && (!event.files || event.files.length === 0)) return;
 
+  // Check if this is a GROUP channel
+  const groupResult = await pool.query(
+    `SELECT g.id as group_id, g.name as group_name,
+            t.id as tenant_id, t.company_name, t.slack_bot_token, t.twilio_number
+     FROM wa_groups g JOIN tenants t ON t.id = g.tenant_id
+     WHERE g.slack_channel = $1 AND t.is_active = TRUE LIMIT 1`,
+    [event.channel]
+  );
+  if (groupResult.rows.length) {
+    const row = groupResult.rows[0];
+    const grpTenant = { id: row.tenant_id, company_name: row.company_name, slack_bot_token: row.slack_bot_token, twilio_number: row.twilio_number };
+    const groupId = row.group_id;
+    console.log("[GROUP REPLY] Broadcasting to group:", row.group_name);
+    if (event.text) {
+      const { getAllMembers } = require("./services/groupService");
+      const members = await getAllMembers(groupId);
+      let agentName = "Support";
+      try {
+        const slack = new WebClient(grpTenant.slack_bot_token);
+        const ui = await slack.users.info({ user: event.user });
+        agentName = ui.user.profile.display_name || ui.user.real_name || "Support";
+      } catch(e) {}
+      for (const member of members) {
+        try {
+          const sid = await sendWhatsApp(member.wa_number, "*" + agentName + "*: " + event.text, grpTenant.twilio_number);
+          console.log("[GROUP REPLY] Sent to", member.wa_number, sid);
+          await logMessage({ waNumber: member.wa_number, body: event.text, direction: "outbound", twilioSid: sid, slackTs: event.ts, tenantId: grpTenant.id });
+        } catch(e) { console.warn("[GROUP REPLY] Failed:", member.wa_number, e.message); }
+      }
+    }
+    return;
+  }
+
   console.log('[SLACK EVENT] channel:', event.channel, '| text:', event.text?.slice(0, 50));
 
   const tenantResult = await pool.query(
