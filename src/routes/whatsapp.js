@@ -11,6 +11,12 @@ const { getTenantForIncomingMessage,
         postToTenantSlack,
         ensureChannelMembers }              = require('../services/tenantService');
 const { uploadMediaToSlack }               = require('../services/slackService');
+const {
+  getGroupForContact,
+  getOrCreateGroupChannel,
+  postGroupMessageToSlack,
+  broadcastToGroup
+} = require('../services/groupService');
 require('dotenv').config();
 
 const getExtension = (contentType) => {
@@ -43,74 +49,95 @@ router.post('/webhook', async (req, res) => {
 
     if (!tenant) {
       console.warn('[NO TENANT] for:', waNumber, '| Body:', Body);
-      await sendWhatsApp(
-        waNumber,
-        `👋 Welcome to Syncora!\n\nTo connect with a company, send their *claim code* as your first message.\n\nExample: type *acme* or *mvtech*`
+      await sendWhatsApp(waNumber,
+        '👋 Welcome to Syncora!\n\nTo connect with a company, send their *claim code* as your first message.\n\nExample: type *acme* or *mvtech*'
       );
       return res.status(200).send('<Response></Response>');
     }
 
-    console.log(`[TENANT] ${tenant.company_name} | New: ${isNew} | ClaimCode: ${claimCodeUsed}`);
+    console.log('[TENANT]', tenant.company_name, '| New:', isNew, '| ClaimCode:', claimCodeUsed);
 
-    // 3. Check if blocked
+    // 3. Check blocked
     const blockedCheck = await pool.query(
       'SELECT blocked FROM contacts WHERE wa_number = $1 AND tenant_id = $2',
       [waNumber, tenant.id]
     );
     if (blockedCheck.rows[0]?.blocked) {
-      console.log(`[BLOCKED] ${waNumber}`);
       return res.status(200).send('<Response></Response>');
     }
 
-    // 4. Check plan limits
+    // 4. Plan limit
     const planCheck = await checkMessageLimit(tenant.id);
     if (planCheck.allowed === false) {
-      console.log('[PLAN LIMIT]', tenant.company_name);
       await sendWhatsApp(waNumber, 'Sorry, daily message limit reached. Please upgrade.', tenant.twilio_number);
       return res.sendStatus(200);
     }
 
-    // 5. Get or create Slack channel
+    // 5. New contact first message — welcome and stop
+    if (isNew && claimCodeUsed) {
+      await getOrCreateChannelForTenant(tenant, waNumber, ProfileName);
+      await sendWhatsApp(waNumber,
+        '✅ You\'re now connected to *' + tenant.company_name + '*. Send your message and their team will reply shortly.'
+      );
+      return res.status(200).send('<Response></Response>');
+    }
+
+    // 6. CHECK IF CONTACT IS IN A GROUP
+    const group = await getGroupForContact(waNumber, tenant.id);
+
+    if (group) {
+      console.log('[GROUP] Message from', waNumber, 'in group:', group.name);
+
+      // Get or create the group Slack channel
+      const channelId = await getOrCreateGroupChannel(tenant, group);
+
+      const senderName = ProfileName || waNumber;
+
+      // Post to Slack
+      const slackTs = await postGroupMessageToSlack(tenant, channelId, Body, senderName, waNumber);
+
+      // Broadcast to all OTHER group members on WhatsApp
+      await broadcastToGroup(group.id, waNumber, senderName, Body, tenant.twilio_number);
+
+      // Log message
+      await logMessage({
+        waNumber, body: Body, direction: 'inbound',
+        twilioSid: MessageSid, slackTs, tenantId: tenant.id
+      });
+
+      return res.status(200).send('<Response></Response>');
+    }
+
+    // 7. Regular individual message flow
     const channelId = await getOrCreateChannelForTenant(tenant, waNumber, ProfileName);
     ensureChannelMembers(tenant, channelId).catch(err =>
       console.warn('[CHANNEL] ensureChannelMembers failed:', err.message)
     );
 
-    // 6. New contact first message — just send welcome, don't post claim code word to Slack
-    if (isNew && claimCodeUsed) {
-      await sendWhatsApp(
-        waNumber,
-        `✅ You're now connected to *${tenant.company_name}*. Send your message and their team will reply shortly.`
-      );
-      return res.status(200).send('<Response></Response>');
-    }
-
-    // 7. Post message to Slack (ALL messages reach here — text or media)
     let slackTs = null;
-
     if (parseInt(NumMedia) > 0 && MediaUrl0) {
-      console.log(`[MEDIA] ${MediaContentType0}`);
+      console.log('[MEDIA]', MediaContentType0);
       const { data, contentType } = await downloadTwilioMedia(MediaUrl0);
-      const ext      = getExtension(contentType);
-      const fileName = `${MessageSid}.${ext}`;
+      const ext = getExtension(contentType);
+      const fileName = MessageSid + '.' + ext;
       slackTs = await uploadMediaToSlack(
         channelId, data, contentType,
         fileName, ProfileName || waNumber, Body,
         tenant.slack_bot_token
       );
       await logMessage({
-        waNumber, body: Body || `[${contentType} file]`,
+        waNumber, body: Body || '[' + contentType + ' file]',
         direction: 'inbound', twilioSid: MessageSid,
         slackTs, mediaUrl: MediaUrl0, mediaType: contentType,
-        tenantId: tenant.id,
+        tenantId: tenant.id
       });
     } else {
-      console.log(`[SLACK POST] channel: ${channelId} | from: ${ProfileName || waNumber} | body: ${Body?.slice(0,50)}`);
+      console.log('[SLACK POST] channel:', channelId, '| from:', ProfileName || waNumber, '| body:', Body?.slice(0,50));
       slackTs = await postToTenantSlack(tenant, channelId, Body, ProfileName || waNumber, waNumber);
-      console.log(`[SLACK POST] success | ts: ${slackTs}`);
+      console.log('[SLACK POST] success | ts:', slackTs);
       await logMessage({
         waNumber, body: Body, direction: 'inbound',
-        twilioSid: MessageSid, slackTs, tenantId: tenant.id,
+        twilioSid: MessageSid, slackTs, tenantId: tenant.id
       });
     }
 
@@ -123,10 +150,9 @@ router.post('/webhook', async (req, res) => {
   }
 });
 
-// Status callback
 router.post('/status', (req, res) => {
   const { MessageSid, MessageStatus, To } = req.body;
-  console.log(`Status update: ${MessageSid} → ${MessageStatus} (to ${To})`);
+  console.log('Status update:', MessageSid, '→', MessageStatus, '(to', To + ')');
   res.status(200).send('OK');
 });
 
