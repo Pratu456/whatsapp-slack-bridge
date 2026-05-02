@@ -12,7 +12,6 @@ const { getTenantForIncomingMessage,
         ensureChannelMembers }              = require('../services/tenantService');
 const { uploadMediaToSlack }               = require('../services/slackService');
 const {
-  getGroupForContact,
   getOrCreateGroupChannel,
   postGroupMessageToSlack,
   broadcastToGroup
@@ -44,8 +43,8 @@ router.post('/webhook', async (req, res) => {
 
     const waNumber = From.replace('whatsapp:', '');
 
-    // 2. Identify tenant
-    const { tenant, isNew, claimCodeUsed } = await getTenantForIncomingMessage(waNumber, Body);
+    // 2. Identify tenant (and group if claim code matches a group)
+    const { tenant, isNew, claimCodeUsed, group } = await getTenantForIncomingMessage(waNumber, Body);
 
     if (!tenant) {
       console.warn('[NO TENANT] for:', waNumber, '| Body:', Body);
@@ -55,7 +54,7 @@ router.post('/webhook', async (req, res) => {
       return res.status(200).send('<Response></Response>');
     }
 
-    console.log('[TENANT]', tenant.company_name, '| New:', isNew, '| ClaimCode:', claimCodeUsed);
+    console.log('[TENANT]', tenant.company_name, '| New:', isNew, '| ClaimCode:', claimCodeUsed, '| Group:', group?.name || 'none');
 
     // 3. Check blocked
     const blockedCheck = await pool.query(
@@ -73,33 +72,25 @@ router.post('/webhook', async (req, res) => {
       return res.sendStatus(200);
     }
 
-    // 5. New contact first message — welcome and stop
-    if (isNew && claimCodeUsed) {
-      await getOrCreateChannelForTenant(tenant, waNumber, ProfileName);
-      await sendWhatsApp(waNumber,
-        '✅ You\'re now connected to *' + tenant.company_name + '*. Send your message and their team will reply shortly.'
-      );
-      return res.status(200).send('<Response></Response>');
-    }
-
-    // 6. CHECK IF CONTACT IS IN A GROUP
-    const group = await getGroupForContact(waNumber, tenant.id);
-
+    // 5. GROUP FLOW — claim code matched a group
     if (group) {
-      console.log('[GROUP] Message from', waNumber, 'in group:', group.name);
-
-      // Get or create the group Slack channel
       const channelId = await getOrCreateGroupChannel(tenant, group);
-
       const senderName = ProfileName || waNumber;
 
-      // Post to Slack
+      if (claimCodeUsed) {
+        // Just joined the group — confirm and stop (don't post claim code word)
+        await sendWhatsApp(waNumber,
+          '✅ You\'re now in *' + group.name + '*. Your messages will be shared with the group.'
+        );
+        return res.status(200).send('<Response></Response>');
+      }
+
+      // Post to Slack group channel
       const slackTs = await postGroupMessageToSlack(tenant, channelId, Body, senderName, waNumber);
 
-      // Broadcast to all OTHER group members on WhatsApp
+      // Broadcast to all OTHER group members
       await broadcastToGroup(group.id, waNumber, senderName, Body, tenant.twilio_number);
 
-      // Log message
       await logMessage({
         waNumber, body: Body, direction: 'inbound',
         twilioSid: MessageSid, slackTs, tenantId: tenant.id
@@ -108,7 +99,15 @@ router.post('/webhook', async (req, res) => {
       return res.status(200).send('<Response></Response>');
     }
 
-    // 7. Regular individual message flow
+    // 6. INDIVIDUAL FLOW — normal private channel
+    if (isNew && claimCodeUsed) {
+      await getOrCreateChannelForTenant(tenant, waNumber, ProfileName);
+      await sendWhatsApp(waNumber,
+        '✅ You\'re now connected to *' + tenant.company_name + '*. Send your message and their team will reply shortly.'
+      );
+      return res.status(200).send('<Response></Response>');
+    }
+
     const channelId = await getOrCreateChannelForTenant(tenant, waNumber, ProfileName);
     ensureChannelMembers(tenant, channelId).catch(err =>
       console.warn('[CHANNEL] ensureChannelMembers failed:', err.message)
