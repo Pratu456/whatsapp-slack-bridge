@@ -18,6 +18,7 @@ const onboardingRoute = require('./routes/onboarding');
 const adminRoute = require('./routes/admin');
 const dashboardRoute = require('./routes/dashboard');
 const commandsRoute = require('./routes/commands');
+const slackCommandsRoute = require('./routes/slackCommands');
 const { sendWaitlistConfirmationEmail } = require('./services/emailService');
 const server = express();
 server.set('trust proxy', 1);
@@ -106,6 +107,7 @@ server.use('/admin', adminRoute);
 server.use('/dashboard', dashboardRoute);
 server.get('/auth/logout', (req, res) => { req.session.destroy(); res.redirect('/auth/login'); });
 server.use('/commands', commandsRoute);
+server.use('/slack', slackCommandsRoute);
 server.get('/auth/me', (req, res) => {
   if (req.session && req.session.userId) {
     res.json({ loggedIn: true, name: req.session.userName, email: req.session.userEmail });
