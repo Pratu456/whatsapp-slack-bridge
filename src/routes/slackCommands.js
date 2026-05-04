@@ -158,7 +158,73 @@ router.post('/commands', express.urlencoded({ extended: true }), verifySlack, as
       return;
     }
 
-    await respond(response_url, '❌ Unknown command. Use `/syncora-add`, `/syncora-remove`, or `/syncora-groups`');
+    if (command === '/syncora-create-group') {
+      // /syncora-create-group group-name claim-code
+      const parts = text.trim().split(/\s+/);
+      if (parts.length < 2) {
+        await respond(response_url, '❌ Usage: `/syncora-create-group group-name claim-code`\nExample: `/syncora-create-group sales-team sales-team`');
+        return;
+      }
+      const claimCode = parts[parts.length - 1].toLowerCase();
+      const groupName = parts.slice(0, parts.length - 1).join(' ');
+
+      // Check claim code not already taken
+      const { rows: existing } = await pool.query(
+        'SELECT id FROM wa_groups WHERE LOWER(claim_code) = $1',
+        [claimCode]
+      );
+      if (existing.length) {
+        await respond(response_url, `❌ Claim code \`${claimCode}\` is already taken. Choose a different one.`);
+        return;
+      }
+
+      // Create group
+      const { rows } = await pool.query(
+        'INSERT INTO wa_groups (tenant_id, name, claim_code) VALUES ($1, $2, $3) RETURNING *',
+        [tenant.id, groupName, claimCode]
+      );
+      const group = rows[0];
+
+      // Create Slack channel for the group
+      const slack = new WebClient(tenant.slack_bot_token);
+      const channelName = 'group-' + claimCode.replace(/[^a-z0-9]/g, '-').slice(0, 20) + '-' + group.id;
+      try {
+        const result = await slack.conversations.create({ name: channelName, is_private: true });
+        const channelId = result.channel.id;
+
+        // Set topic
+        await slack.conversations.setTopic({ channel: channelId, topic: 'WhatsApp Group: ' + groupName });
+
+        // Invite all agents
+        const { rows: agents } = await pool.query(
+          'SELECT slack_user_id FROM tenant_agents WHERE tenant_id = $1', [tenant.id]
+        );
+        if (agents.length) {
+          await slack.conversations.invite({ channel: channelId, users: agents.map(a => a.slack_user_id).join(',') });
+        }
+
+        // Save channel to DB
+        await pool.query('UPDATE wa_groups SET slack_channel = $1 WHERE id = $2', [channelId, group.id]);
+
+        // Post welcome
+        await slack.chat.postMessage({
+          channel: channelId,
+          text: `:busts_in_silhouette: *WhatsApp Group: ${groupName}* created!\nClaim code: \`${claimCode}\`\n\nAdd members with \`/syncora-add +91xxxxxxxxxx ${claimCode}\``
+        });
+
+        await respond(response_url,
+          `✅ Group *${groupName}* created!\n` +
+          `📌 Claim code: \`${claimCode}\`\n` +
+          `💬 Slack channel: #${channelName}\n\n` +
+          `Add members:\n\`/syncora-add +91xxxxxxxxxx ${claimCode}\``
+        );
+      } catch(e) {
+        await respond(response_url, '❌ Group created in DB but Slack channel failed: ' + e.message);
+      }
+      return;
+    }
+
+    await respond(response_url, '❌ Unknown command. Use `/syncora-add`, `/syncora-remove`, `/syncora-groups`, or `/syncora-create-group`');
 
   } catch(e) {
     console.error('[SLASH CMD ERROR]', e.message);
