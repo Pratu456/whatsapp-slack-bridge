@@ -132,7 +132,7 @@ router.get('/', auth, async (req, res) => {
           ${!t.is_active
             ? `<button onclick="activate(${t.id},'${t.email||''}')" class="btn-xs btn-xs-green">Activate</button>`
             : `<button onclick="deactivate(${t.id})" class="btn-xs btn-xs-orange">Deactivate</button>`}
-          `<button onclick="extendTrial(${t.id})" class="btn-xs" style="background:rgba(59,130,246,.1);color:#60a5fa;border:1px solid rgba(59,130,246,.2)">+Trial</button>${t.paid ? '<span style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;margin-left:4px">✓ Paid</span>' : '<button onclick="markPaid(${t.id})" class="btn-xs" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2)">✓ Paid</button>'}`
+          ${`<button onclick="extendTrial(${t.id})" class="btn-xs" style="background:rgba(59,130,246,.1);color:#60a5fa;border:1px solid rgba(59,130,246,.2)">+Trial</button>`}${t.paid ? '<span style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;margin-left:4px">✓ Paid</span>' : '<button onclick="markPaid('+ t.id +')" class="btn-xs" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2)">✓ Paid</button>'}
           <button onclick="deleteTenant(${t.id})" class="btn-xs btn-xs-red">Delete</button>
         </td>
       </tr>`).join('');
