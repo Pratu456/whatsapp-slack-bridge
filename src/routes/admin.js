@@ -1139,11 +1139,12 @@ router.post('/change-password', auth, async (req, res) => {
     if (!newPassword || newPassword.length < 6) return res.json({ success: false, error: 'Password must be at least 6 characters' });
 
     // Save to DB so it persists across restarts
-    await pool.query(
-      `INSERT INTO admin_settings (key, value) VALUES ('admin_password', $1)
-       ON CONFLICT (key) DO UPDATE SET value = $1`,
-      [newPassword]
-    );
+    const pwdExisting = await pool.query('SELECT id FROM admin_settings LIMIT 1');
+    if (pwdExisting.rows.length) {
+      await pool.query('UPDATE admin_settings SET admin_password=$1, updated_at=NOW() WHERE id=$2', [newPassword, pwdExisting.rows[0].id]);
+    } else {
+      await pool.query('INSERT INTO admin_settings (admin_password) VALUES ($1)', [newPassword]);
+    }
 
     // Also update in memory for current session
     process.env.ADMIN_PASSWORD = newPassword;
