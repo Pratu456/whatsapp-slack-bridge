@@ -121,7 +121,7 @@ router.get('/', requireAuth, async (req, res) => {
           <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px">🚀 Upgrade to Pro</div>
           <div style="font-size:13px;color:rgba(255,255,255,.4)">Get unlimited messages, 3 workspaces and priority support for €29/mo</div>
         </div>
-        <a href="/#pricing" style="background:#25D366;color:#000;padding:9px 20px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">View plans →</a>
+        <a href="#" onclick="showTab('account',this);return false" style="background:#25D366;color:#000;padding:9px 20px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">View plans →</a>
       </div>` : '';
 
     res.send(`<!DOCTYPE html>
@@ -224,7 +224,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
       <div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:4px">Current plan</div>
       <div style="font-size:14px;font-weight:800;color:#25D366">${planInfo.label}</div>
       <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:2px">${planInfo.price}/mo</div>
-      ${plan === 'starter' ? `<a href="/#pricing" style="display:block;text-align:center;margin-top:10px;background:#25D366;color:#000;padding:6px;border-radius:7px;font-size:11px;font-weight:700;text-decoration:none">Upgrade →</a>` : ''}
+      ${plan === 'starter' ? `<a href="#" onclick="showTab('account',this);return false" style="display:block;text-align:center;margin-top:10px;background:#25D366;color:#000;padding:6px;border-radius:7px;font-size:11px;font-weight:700;text-decoration:none">Upgrade →</a>` : ''}
     </div>
   </nav>
   <div class="sb-bottom">
@@ -305,7 +305,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
         <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:16px">
           ${plan === 'starter' ? 'Upgrade to Pro for 3 workspaces or Business for unlimited' : 'Upgrade to Business for unlimited workspaces'}
         </div>
-        <a href="/#pricing" style="background:#25D366;color:#000;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">View plans →</a>
+        <a href="#" onclick="showTab('account',this);return false" style="background:#25D366;color:#000;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">View plans →</a>
       </div>` : ''}
     </div>
 
@@ -367,7 +367,31 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
               ${maxWorkspaces === 999 ? 'Unlimited workspaces' : maxWorkspaces + ' workspace' + (maxWorkspaces > 1 ? 's' : '')}
             </div>
           </div>
-          ${plan !== 'business' ? `<a href="/#pricing" style="background:#25D366;color:#000;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">Upgrade plan →</a>` : '<span style="color:#4ade80;font-size:13px;font-weight:600">✓ Max plan</span>'}
+          ${plan !== 'business' ? `<a href="#" onclick="showTab('account',this);return false" style="background:#25D366;color:#000;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">Upgrade plan →</a>` : '<span style="color:#4ade80;font-size:13px;font-weight:600">✓ Max plan</span>'}
+        </div>
+      </div>
+
+      <!-- Pricing plans -->
+      <div class="card">
+        <div class="card-title">⚡ Upgrade your plan</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:8px">
+          <div style="border:2px solid rgba(255,255,255,.08);border-radius:14px;padding:20px">
+            <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Starter</div>
+            <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px">€0 <span style="font-size:13px;color:rgba(255,255,255,.35);font-weight:400">/mo</span></div>
+            <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px;line-height:1.8">✓ 200 messages/day<br>✓ 1 workspace<br>✓ Basic support</div>
+          </div>
+          <div style="border:2px solid #25D366;border-radius:14px;padding:20px">
+            <div style="font-size:11px;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Pro ⭐</div>
+            <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px">€29 <span style="font-size:13px;color:rgba(255,255,255,.35);font-weight:400">/mo</span></div>
+            <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px;line-height:1.8">✓ Unlimited messages<br>✓ 3 workspaces<br>✓ Priority support<br>✓ Group chats</div>
+            <button onclick="upgradePlan('pro')" style="width:100%;padding:10px;border-radius:8px;background:#25D366;color:#000;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit">Upgrade to Pro →</button>
+          </div>
+          <div style="border:2px solid rgba(96,165,250,.5);border-radius:14px;padding:20px">
+            <div style="font-size:11px;font-weight:700;color:#60a5fa;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Business 🚀</div>
+            <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px">€79 <span style="font-size:13px;color:rgba(255,255,255,.35);font-weight:400">/mo</span></div>
+            <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px;line-height:1.8">✓ Unlimited messages<br>✓ Unlimited workspaces<br>✓ Dedicated support<br>✓ Group chats</div>
+            <button onclick="upgradePlan('business')" style="width:100%;padding:10px;border-radius:8px;background:#60a5fa;color:#000;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit">Upgrade to Business →</button>
+          </div>
         </div>
       </div>
 
@@ -496,6 +520,22 @@ function copyCode(code) {
     setTimeout(function(){ btn.textContent = orig; btn.style.color = ''; }, 2000);
   });
 }
+async function upgradePlan(plan) {
+  if (!confirm("Upgrade to " + plan + " plan? You will be contacted for payment.")) return;
+  const r = await fetch("/dashboard/upgrade-plan", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({plan})
+  });
+  const d = await r.json();
+  if (d.success) {
+    alert("✅ Upgrade request received! Our team will contact you at " + d.email + " within 24 hours.");
+  } else {
+    alert("Error: " + d.error);
+  }
+}
+
 async function saveProfile() {
   var name = document.getElementById('uFullName').value.trim();
   var company = document.getElementById('uCompany').value.trim();
@@ -599,6 +639,24 @@ router.post('/delete-account', requireAuth, async (req, res) => {
 });
 
 // ── Logout ────────────────────────────────────────────────
+router.post('/upgrade-plan', requireAuth, async (req, res) => {
+  try {
+    const { plan } = req.body;
+    const user = await pool.query("SELECT u.email, u.full_name FROM users u WHERE u.id = ", [req.session.userId]);
+    if (!user.rows.length) return res.json({ success: false, error: "User not found" });
+    const { email, full_name } = user.rows[0];
+    // Send upgrade request email to admin
+    const { sendWaitlistConfirmationEmail } = require("../services/emailService");
+    try {
+      await pool.query(
+        "INSERT INTO admin_logs (action, detail) VALUES (, )",
+        ["upgrade_request", full_name + " (" + email + ") requested upgrade to " + plan]
+      );
+    } catch(e) {}
+    res.json({ success: true, email, plan });
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
 router.get('/logout', (req, res) => {
   req.session.destroy();
   res.redirect('/auth/login');
