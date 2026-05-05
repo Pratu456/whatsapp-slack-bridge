@@ -439,11 +439,15 @@ function showTab(name, el, noPush) {
   if (!noPush) window.history.pushState({tab:name},'','/dashboard');
 }
 var isMobile = window.innerWidth < 700;
-async function loadMessages() {
+var msgPage = 1;
+async function loadMessages(page) {
+  page = page || 1;
+  msgPage = page;
   var el = document.getElementById('msg-list');
-  if (!el || el.dataset.loaded) return;
+  if (!el) return;
+  el.innerHTML = '<div style="color:rgba(255,255,255,.3);font-size:13px;padding:20px">Loading...</div>';
   try {
-    var r = await fetch('/dashboard/messages-data', {credentials:'same-origin'});
+    var r = await fetch('/dashboard/messages-data?page=' + page, {credentials:'same-origin'});
     var d = await r.json();
     if (!d.messages || !d.messages.length) { el.innerHTML = '<div style="text-align:center;padding:48px;color:rgba(255,255,255,.25)">No messages yet</div>'; return; }
     if (isMobile) {
@@ -470,8 +474,16 @@ async function loadMessages() {
         return '<tr><td style="padding:10px 14px;font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap;border-top:1px solid rgba(255,255,255,.04)">' + t + '</td><td style="padding:10px 14px;font-size:12px;border-top:1px solid rgba(255,255,255,.04)">' + m.wa_number + '</td><td style="padding:10px 14px;border-top:1px solid rgba(255,255,255,.04)">' + dir + '</td><td style="padding:10px 14px;font-size:12px;color:rgba(255,255,255,.5);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-top:1px solid rgba(255,255,255,.04)">' + (m.body||'').substring(0,60) + '</td></tr>';
       }).join('');
       el.innerHTML = '<div style="border-radius:12px;border:1px solid rgba(255,255,255,.06);overflow:hidden"><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#16161f"><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Time</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Number</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Dir</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Message</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+      el.innerHTML = '<div style="border-radius:12px;border:1px solid rgba(255,255,255,.06);overflow:hidden"><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#16161f"><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Time</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Number</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Dir</th><th style="padding:10px 14px;text-align:left;font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase">Message</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+      var totalPages = Math.ceil(d.total / d.limit);
+      var pager = totalPages > 1 ? '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-top:1px solid rgba(255,255,255,.06)">' +
+        '<button onclick="loadMessages(' + (page-1) + ')" ' + (page<=1?'disabled style="opacity:.3;cursor:not-allowed"':'') + ' style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff;padding:6px 14px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit">← Prev</button>' +
+        '<span style="font-size:12px;color:rgba(255,255,255,.4)">Page ' + page + ' of ' + totalPages + ' · ' + d.total + ' messages</span>' +
+        '<button onclick="loadMessages(' + (page+1) + ')" ' + (page>=totalPages?'disabled style="opacity:.3;cursor:not-allowed"':'') + ' style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff;padding:6px 14px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit">Next →</button>' +
+        '</div>' : '';
+      el.innerHTML = el.innerHTML + pager;
     }
-    el.dataset.loaded = '1';
+    // el.dataset.loaded = '1'; // removed for pagination
   } catch(e) { el.innerHTML = '<div style="color:#f87171">Error loading messages</div>'; }
 }
 async function loadContacts() {
@@ -671,11 +683,15 @@ router.get('/messages-data', requireAuth, async (req, res) => {
     const tenants = await pool.query('SELECT id FROM tenants WHERE LOWER(email) = $1', [user.rows[0].email.toLowerCase()]);
     const ids = tenants.rows.map(t => t.id);
     if (!ids.length) return res.json({ messages: [] });
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const offset = (page - 1) * limit;
+    const total = await pool.query('SELECT COUNT(*) FROM messages m WHERE m.tenant_id = ANY($1)', [ids]);
     const result = await pool.query(
-      'SELECT m.body, m.direction, m.created_at, c.wa_number FROM messages m JOIN contacts c ON c.id = m.contact_id WHERE m.tenant_id = ANY($1) ORDER BY m.created_at DESC LIMIT 50',
-      [ids]
+      'SELECT m.body, m.direction, m.created_at, c.wa_number FROM messages m JOIN contacts c ON c.id = m.contact_id WHERE m.tenant_id = ANY($1) ORDER BY m.created_at DESC LIMIT $2 OFFSET $3',
+      [ids, limit, offset]
     );
-    res.json({ messages: result.rows });
+    res.json({ messages: result.rows, total: parseInt(total.rows[0].count), page, limit });
   } catch(e) { res.json({ messages: [] }); }
 });
 
