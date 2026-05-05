@@ -298,7 +298,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
           : ""}
       </div>
       <div class="ws-grid">${workspaceCards}</div>
-      ${!canAddWorkspace ? `
 
     <!-- ACCOUNT TAB -->
     <div id="tab-account" class="panel">
