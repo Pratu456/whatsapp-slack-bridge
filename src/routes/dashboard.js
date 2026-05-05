@@ -299,6 +299,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
       </div>
       <div class="ws-grid">${workspaceCards}</div>
 
+    </div>
+    <!-- MESSAGES TAB -->
+    <div id="tab-messages" class="panel">
+      <div class="page-title">Messages</div>
+      <div class="page-sub">All messages across your workspaces</div>
+      <div id="msg-list" style="color:rgba(255,255,255,.4);font-size:13px">Loading...</div>
+    </div>
+    <!-- CONTACTS TAB -->
+    <div id="tab-contacts" class="panel">
+      <div class="page-title">Contacts</div>
+      <div class="page-sub">All WhatsApp contacts across your workspaces</div>
+      <div id="cnt-list" style="color:rgba(255,255,255,.4);font-size:13px">Loading...</div>
+    </div>
     <!-- ACCOUNT TAB -->
     <div id="tab-account" class="panel">
       <div class="page-title">Account</div>
