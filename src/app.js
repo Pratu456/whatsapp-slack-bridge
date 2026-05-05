@@ -20,6 +20,7 @@ const dashboardRoute = require('./routes/dashboard');
 const commandsRoute = require('./routes/commands');
 const slackCommandsRoute = require('./routes/slackCommands');
 const { sendWaitlistConfirmationEmail } = require('./services/emailService');
+const { migrateAdminSettings } = require('./services/adminSettings');
 const server = express();
 server.set('trust proxy', 1);
 server.use(session({

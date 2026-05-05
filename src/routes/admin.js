@@ -1133,13 +1133,23 @@ router.post('/add', auth, async (req, res) => {
     } catch (err) { res.json({ success: false }); }
 });
 router.post('/change-password', auth, async (req, res) => {
-   try {
-     const { current, newPassword } = req.body;
-     if (current !== process.env.ADMIN_PASSWORD) return res.json({ success: false, error: 'Current password is incorrect' });
-     if (!newPassword || newPassword.length < 8) return res.json({ success: false, error: 'New password must be at least 8 characters' });
-     process.env.ADMIN_PASSWORD = newPassword;
-     res.json({ success: true });
-   } catch (err) { res.json({ success: false, error: err.message }); }
+  try {
+    const { current, newPassword } = req.body;
+    if (current !== process.env.ADMIN_PASSWORD) return res.json({ success: false, error: 'Current password is incorrect' });
+    if (!newPassword || newPassword.length < 6) return res.json({ success: false, error: 'Password must be at least 6 characters' });
+
+    // Save to DB so it persists across restarts
+    await pool.query(
+      `INSERT INTO admin_settings (key, value) VALUES ('admin_password', $1)
+       ON CONFLICT (key) DO UPDATE SET value = $1`,
+      [newPassword]
+    );
+
+    // Also update in memory for current session
+    process.env.ADMIN_PASSWORD = newPassword;
+
+    res.json({ success: true });
+  } catch(e) { res.json({ success: false, error: e.message }); }
 });
 
 router.post('/delete-all', auth, async (req, res) => {
