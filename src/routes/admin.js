@@ -1109,7 +1109,7 @@ router.post('/extend-trial', auth, async (req, res) => {
     const { id, days } = req.body;
     const d = parseInt(days) || 7;
     await pool.query(
-      `UPDATE tenants SET trial_ends_at = GREATEST(trial_ends_at, NOW()) + (($1 || ` days`)::INTERVAL), trial_extended_days = trial_extended_days + $1 WHERE id = $2`,
+      'UPDATE tenants SET trial_ends_at = GREATEST(trial_ends_at, NOW()) + ( * INTERVAL '1 day'), trial_extended_days = trial_extended_days +  WHERE id = ',
       [d, id]
     );
     const { rows } = await pool.query('SELECT trial_ends_at FROM tenants WHERE id = $1', [id]);
