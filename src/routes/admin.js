@@ -132,6 +132,7 @@ router.get('/', auth, async (req, res) => {
           ${!t.is_active
             ? `<button onclick="activate(${t.id},'${t.email||''}')" class="btn-xs btn-xs-green">Activate</button>`
             : `<button onclick="deactivate(${t.id})" class="btn-xs btn-xs-orange">Deactivate</button>`}
+          ${t.paid ? '<span style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700">✓ Paid</span>' : '<button onclick="markPaid('+t.id+')" class="btn-xs" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2)">✓ Mark Paid</button>'}
           <button onclick="deleteTenant(${t.id})" class="btn-xs btn-xs-red">Delete</button>
         </td>
       </tr>`).join('');
@@ -915,6 +916,17 @@ async function deactivate(id){
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
+async function markPaid(id) {
+  if (!confirm('Mark this tenant as paid? This will activate full plan and disable trial limits.')) return;
+  const r = await fetch('/admin/mark-paid', {
+    method: 'POST', credentials: 'same-origin',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({id})
+  });
+  const d = await r.json();
+  if (d.success) { location.reload(); }
+  else alert('Error: ' + d.error);
+}
 async function deleteTenant(id){
   if(!confirm('Permanently delete this company and all its data?'))return;
   const r=await fetch('/admin/delete', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
@@ -1076,6 +1088,15 @@ router.post('/deactivate', auth, async (req, res) => {
     await pool.query('UPDATE tenants SET is_active = FALSE WHERE id = $1', [req.body.id]);
     res.json({ success: true });
   } catch(err){ res.json({ success: false, error: err.message }); }
+});
+
+router.post('/mark-paid', auth, async (req, res) => {
+  try {
+    const { id } = req.body;
+    await pool.query('UPDATE tenants SET paid = TRUE, plan = $1 WHERE id = $2', ['pro', id]);
+    console.log('[ADMIN] Tenant', id, 'marked as paid');
+    res.json({ success: true });
+  } catch(e) { res.json({ success: false, error: e.message }); }
 });
 
 router.post('/delete', auth, async (req, res) => {
