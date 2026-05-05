@@ -381,7 +381,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
           <div style="border:2px solid rgba(255,255,255,.08);border-radius:14px;padding:20px">
             <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Starter</div>
             <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px">€0 <span style="font-size:13px;color:rgba(255,255,255,.35);font-weight:400">/mo</span></div>
-            <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px;line-height:1.8">✓ 200 messages/day<br>✓ 1 workspace<br>✓ Basic support</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px;line-height:1.8">✓ 14-day free trial<br>✓ 50 messages/day<br>✓ 1 workspace</div>
           </div>
           <div style="border:2px solid #25D366;border-radius:14px;padding:20px">
             <div style="font-size:11px;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Pro ⭐</div>
