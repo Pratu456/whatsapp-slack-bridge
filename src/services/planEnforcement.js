@@ -7,6 +7,7 @@ const PLANS = {
 };
 
 const TRIAL_DAILY_LIMIT = 50;
+const TRIAL_DAYS = 14;
 
 const checkMessageLimit = async (tenantId) => {
   const tenant = await pool.query(

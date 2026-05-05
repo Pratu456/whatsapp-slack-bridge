@@ -132,7 +132,7 @@ router.get('/', auth, async (req, res) => {
           ${!t.is_active
             ? `<button onclick="activate(${t.id},'${t.email||''}')" class="btn-xs btn-xs-green">Activate</button>`
             : `<button onclick="deactivate(${t.id})" class="btn-xs btn-xs-orange">Deactivate</button>`}
-          ${t.paid ? '<span style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700">✓ Paid</span>' : '<button onclick="markPaid('+t.id+')" class="btn-xs" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2)">✓ Mark Paid</button>'}
+          ${t.paid ? '<span style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700">✓ Paid</span>' : '<button onclick="extendTrial('+t.id+')" class="btn-xs" style="background:rgba(59,130,246,.1);color:#60a5fa;border:1px solid rgba(59,130,246,.2)">+Trial</button><button onclick="markPaid('+t.id+')" class="btn-xs" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2)">✓ Paid</button>'}
           <button onclick="deleteTenant(${t.id})" class="btn-xs btn-xs-red">Delete</button>
         </td>
       </tr>`).join('');
@@ -916,6 +916,20 @@ async function deactivate(id){
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
+async function extendTrial(id) {
+  const days = prompt('Extend trial by how many days?', '7');
+  if (!days) return;
+  const r = await fetch('/admin/extend-trial', {
+    method: 'POST', credentials: 'same-origin',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({id, days: parseInt(days)})
+  });
+  const d = await r.json();
+  if (d.success) {
+    alert('✅ Trial extended! New end date: ' + new Date(d.newTrialEnd).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}));
+    location.reload();
+  } else alert('Error: ' + d.error);
+}
 async function markPaid(id) {
   if (!confirm('Mark this tenant as paid? This will activate full plan and disable trial limits.')) return;
   const r = await fetch('/admin/mark-paid', {
@@ -1088,6 +1102,20 @@ router.post('/deactivate', auth, async (req, res) => {
     await pool.query('UPDATE tenants SET is_active = FALSE WHERE id = $1', [req.body.id]);
     res.json({ success: true });
   } catch(err){ res.json({ success: false, error: err.message }); }
+});
+
+router.post('/extend-trial', auth, async (req, res) => {
+  try {
+    const { id, days } = req.body;
+    const d = parseInt(days) || 7;
+    await pool.query(
+      `UPDATE tenants SET trial_ends_at = GREATEST(trial_ends_at, NOW()) + (($1 || ` days`)::INTERVAL), trial_extended_days = trial_extended_days + $1 WHERE id = $2`,
+      [d, id]
+    );
+    const { rows } = await pool.query('SELECT trial_ends_at FROM tenants WHERE id = $1', [id]);
+    console.log('[ADMIN] Trial extended for tenant', id, 'by', d, 'days. New end:', rows[0].trial_ends_at);
+    res.json({ success: true, newTrialEnd: rows[0].trial_ends_at });
+  } catch(e) { res.json({ success: false, error: e.message }); }
 });
 
 router.post('/mark-paid', auth, async (req, res) => {
