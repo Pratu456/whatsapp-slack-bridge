@@ -23,17 +23,19 @@ const { sendWaitlistConfirmationEmail } = require('./services/emailService');
 const { migrateAdminSettings } = require('./services/adminSettings');
 const server = express();
 server.set('trust proxy', 1);
-server.use(session({
+// Session configured after Redis connects — see below
+let sessionMiddleware = session({
     secret: process.env.SESSION_SECRET || 'syncora-secret-key',
-    resave: true,
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: 'lax',
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     },
-  }));
+  });
+server.use((req, res, next) => sessionMiddleware(req, res, next));
 
 // ✅ STEP 1 — raw body parser for Slack MUST come before express.json()
 server.post('/slack/events', express.raw({ type: '*/*' }), async (req, res) => {
