@@ -367,6 +367,7 @@ router.get('/slack', (req, res) => {
   const companyName = req.query.company || req.session.companyName || 'Unknown Company';
   const email       = req.query.email   || req.session.userEmail   || '';
 
+  const scopes = [
     'channels:manage','channels:read','channels:history',
     'chat:write','files:write','files:read',
     'im:write','groups:write','groups:read','groups:history',
