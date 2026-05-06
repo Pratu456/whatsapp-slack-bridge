@@ -1129,9 +1129,37 @@ router.post('/mark-paid', auth, async (req, res) => {
 
 router.post('/delete', auth, async (req, res) => {
   try {
-    await pool.query('DELETE FROM tenants WHERE id = $1', [req.body.id]);
+    const { id } = req.body;
+    const { rows: tenants } = await pool.query("SELECT * FROM tenants WHERE id = $1", [id]);
+    if (!tenants.length) return res.json({ success: false, error: "Tenant not found" });
+    const tenant = tenants[0];
+    if (tenant.slack_bot_token) {
+      const { WebClient } = require("@slack/web-api");
+      const slack = new WebClient(tenant.slack_bot_token);
+      const { rows: contacts } = await pool.query("SELECT slack_channel FROM contacts WHERE tenant_id = $1 AND slack_channel IS NOT NULL", [id]);
+      for (const c of contacts) {
+        try { await slack.conversations.archive({ channel: c.slack_channel }); console.log("[DELETE] Archived:", c.slack_channel); }
+        catch(e) { console.log("[DELETE] Archive failed:", c.slack_channel, e.data?.error); }
+      }
+      const { rows: groups } = await pool.query("SELECT slack_channel FROM wa_groups WHERE tenant_id = $1 AND slack_channel IS NOT NULL", [id]);
+      for (const g of groups) {
+        try { await slack.conversations.archive({ channel: g.slack_channel }); }
+        catch(e) { console.log("[DELETE] Group archive failed:", e.data?.error); }
+      }
+      try {
+        await slack.apps.uninstall({ client_id: process.env.SLACK_CLIENT_ID, client_secret: process.env.SLACK_CLIENT_SECRET });
+        console.log("[DELETE] App uninstalled from:", tenant.slack_team_name);
+      } catch(e) { console.log("[DELETE] Uninstall failed:", e.data?.error || e.message); }
+    }
+    await pool.query("DELETE FROM messages WHERE tenant_id = $1", [id]);
+    await pool.query("DELETE FROM wa_group_members WHERE tenant_id = $1", [id]);
+    await pool.query("DELETE FROM wa_groups WHERE tenant_id = $1", [id]);
+    await pool.query("DELETE FROM tenant_agents WHERE tenant_id = $1", [id]);
+    await pool.query("DELETE FROM contacts WHERE tenant_id = $1", [id]);
+    await pool.query("DELETE FROM tenants WHERE id = $1", [id]);
+    console.log("[DELETE] Tenant", id, tenant.company_name, "fully deleted");
     res.json({ success: true });
-  } catch(err){ res.json({ success: false, error: err.message }); }
+  } catch(err) { console.error("[DELETE ERROR]", err.message); res.json({ success: false, error: err.message }); }
 });
 
 router.post('/add', auth, async (req, res) => {
