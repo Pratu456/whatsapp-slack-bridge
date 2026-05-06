@@ -373,6 +373,7 @@ router.get('/slack', (req, res) => {
     'im:write','groups:write','groups:read','groups:history',
     'users:read','users:read.email',
   ].join(',');
+  const state = Buffer.from(JSON.stringify({ companyName, email })).toString('base64');
   const url = `https://slack.com/oauth/v2/authorize?client_id=${process.env.SLACK_CLIENT_ID}&scope=${scopes}&redirect_uri=${process.env.APP_URL}/auth/slack/callback&state=${state}`;
   res.redirect(url);
 });
