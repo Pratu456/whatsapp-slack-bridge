@@ -914,7 +914,7 @@ async function deactivate(id){
   if(!confirm('Deactivate this company?'))return;
   const r=await fetch('/admin/deactivate', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   const d=await r.json();
-  if(d.success)location.reload();else alert('Error: '+d.error);
+  if(d.success){ const btn=document.querySelector('.btn-primary[onclick="addTenant()"]'); if(btn){btn.textContent='✅ Company added!';btn.style.background='#25D366';btn.style.color='#000';} setTimeout(()=>location.reload(), 1500); }else alert('Error: '+d.error);
 }
 async function extendTrial(id) {
   const days = prompt('Extend trial by how many days?', '7');
