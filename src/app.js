@@ -493,8 +493,27 @@ server.post('/contact', async (req, res) => {
 // ── Start ─────────────────────────────────────────────────
 const start = async () => {
   try {
-    await connectRedis();
-console.log('Session store: memory');
+    const redisClient = await connectRedis();
+
+    // Upgrade session store to Redis for persistence
+    if (redisClient) {
+      sessionMiddleware = session({
+        store: new RedisStore({ client: redisClient }),
+        secret: process.env.SESSION_SECRET || 'syncora-secret-key',
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+          secure: process.env.NODE_ENV === 'production',
+          httpOnly: true,
+          sameSite: 'lax',
+          maxAge: 30 * 24 * 60 * 60 * 1000,
+        },
+      });
+      console.log('Session store: Redis ✅');
+    } else {
+      console.log('Session store: memory (Redis unavailable)');
+    }
+
     server.listen(process.env.PORT || 3000, () => {
       console.log(`Server running on port ${process.env.PORT || 3000} in HTTP mode`);
     });
