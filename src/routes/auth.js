@@ -129,19 +129,14 @@ router.post('/register', async (req, res) => {
     );
     // Remove from waitlist if exists
     await pool.query('DELETE FROM waitlist WHERE email = $1', [email.trim().toLowerCase()]);
-    // Send verification email
-    try {
-      const { sendVerificationEmail } = require('../services/emailService');
-      await sendVerificationEmail({
-        to: email.trim().toLowerCase(),
-        fullName: full_name.trim(),
-        verifyToken: verify_token,
-      });
-    } catch (emailErr) {
-      console.error('[VERIFY EMAIL ERROR]', emailErr.message);
-    }
-
-    res.redirect('/auth/verify-sent?email=' + encodeURIComponent(email.trim().toLowerCase()));
+     // Auto-verify user (skip email verification for now)
+     await pool.query("UPDATE users SET verified = TRUE WHERE email = $1", [email.trim().toLowerCase()]);
+     const newUser = await pool.query("SELECT * FROM users WHERE email = $1", [email.trim().toLowerCase()]);
+     req.session.userId = newUser.rows[0].id;
+     req.session.userName = newUser.rows[0].full_name;
+     req.session.userEmail = newUser.rows[0].email;
+     req.session.companyName = newUser.rows[0].company_name;
+     res.redirect("/onboarding?email=" + encodeURIComponent(email.trim().toLowerCase()));
   } catch (err) {
     console.error('[REGISTER ERROR]', err.message);
     res.redirect('/auth/register?error=' + encodeURIComponent('Something went wrong — please try again'));
