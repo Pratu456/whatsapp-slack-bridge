@@ -1,27 +1,17 @@
-const nodemailer = require('nodemailer');
-
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendEmail = async ({ to, subject, html }) => {
-  const info = await transporter.sendMail({
-    from: '"Syncora" <' + process.env.GMAIL_USER + '>',
-    to,
+  // Use Resend API (works on Render, no SMTP needed)
+  const { data, error } = await resend.emails.send({
+    from: 'Syncora <onboarding@resend.dev>',
+    to: process.env.NODE_ENV === 'production' ? to : process.env.GMAIL_USER,
     subject,
     html,
   });
-  console.log('[EMAIL] Sent to', to, '| id:', info.messageId);
-  return info;
+  if (error) throw new Error(JSON.stringify(error));
+  console.log('[EMAIL] Sent | id:', data?.id);
+  return data;
 };
 
 const sendVerificationEmail = async ({ to, fullName, verifyToken }) => {
