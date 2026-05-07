@@ -203,6 +203,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
   <a class="sb-link" href="#" onclick="showTab('workspaces',this);closeDrawer();return false"><span class="sb-icon">🔗</span>Workspaces</a>
   <a class="sb-link" href="#" onclick="showTab('messages',this);closeDrawer();return false"><span class="sb-icon">💬</span>Messages</a>
   <a class="sb-link" href="#" onclick="showTab('contacts',this);closeDrawer();return false"><span class="sb-icon">👤</span>Contacts</a>
+  <a class="sb-link" href="#" onclick="showTab('invite',this);closeDrawer();return false"><span class="sb-icon">✉</span>Invite</a>
   <a class="sb-link" href="#" onclick="showTab('account',this);closeDrawer();return false"><span class="sb-icon">⚙</span>Account</a>
   <div style="height:1px;background:rgba(255,255,255,.06);margin:12px 0"></div>
   <a class="sb-link" href="/auth/logout" onclick="closeDrawer()"><span class="sb-icon">→</span>Sign out</a>
@@ -218,6 +219,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
     <a class="sb-link" href="#" onclick="showTab('workspaces',this);return false"><span class="sb-icon">🔗</span>Workspaces</a>
     <a class="sb-link" href="#" onclick="showTab('messages',this);return false"><span class="sb-icon">💬</span>Messages</a>
     <a class="sb-link" href="#" onclick="showTab('contacts',this);return false"><span class="sb-icon">👤</span>Contacts</a>
+    <a class="sb-link" href="#" onclick="showTab('invite',this);return false"><span class="sb-icon">✉</span>Invite</a>
     <a class="sb-link" href="#" onclick="showTab('account',this);return false"><span class="sb-icon">⚙</span>Account</a>
     <div class="sb-section">Plan</div>
     <div style="margin:4px 10px 0;background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.12);border-radius:10px;padding:12px">
@@ -299,6 +301,52 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
       </div>
       <div class="ws-grid">${workspaceCards}</div>
 
+    </div>
+    <!-- INVITE TAB -->
+    <div id="tab-invite" class="panel">
+      <div class="page-title">Invite to WhatsApp</div>
+      <div class="page-sub">Send WhatsApp invite links to your contacts</div>
+
+      <!-- Single invite -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">👤 Invite individual</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:16px">Send a personal invite — creates a private 1-on-1 chat</div>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+          <div>
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.3);display:block;margin-bottom:7px">Contact email</label>
+            <input type="email" id="inviteEmail" placeholder="customer@email.com"
+              style="width:100%;padding:11px 14px;background:#16161f;border:1px solid rgba(255,255,255,.08);border-radius:10px;font-size:14px;color:#fff;outline:none;font-family:inherit"/>
+          </div>
+          <button onclick="sendInvite()" style="background:#25D366;color:#000;border:none;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Send invite →</button>
+        </div>
+        <div id="inviteMsg" style="display:none;margin-top:12px;font-size:13px"></div>
+      </div>
+
+      <!-- Group invite -->
+      <div class="card">
+        <div class="card-title">👥 Invite to group</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:16px">Invite multiple people to a WhatsApp group</div>
+        
+        <div style="margin-bottom:14px">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.3);display:block;margin-bottom:7px">Group name</label>
+          <input type="text" id="groupName" placeholder="e.g. Sales Team"
+            style="width:100%;padding:11px 14px;background:#16161f;border:1px solid rgba(255,255,255,.08);border-radius:10px;font-size:14px;color:#fff;outline:none;font-family:inherit"/>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.3);display:block;margin-bottom:7px">Member emails</label>
+          <div id="emailInputs">
+            <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px">
+              <input type="email" class="group-email" placeholder="member@email.com"
+                style="width:100%;padding:11px 14px;background:#16161f;border:1px solid rgba(255,255,255,.08);border-radius:10px;font-size:14px;color:#fff;outline:none;font-family:inherit"/>
+              <button onclick="addEmailField()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff;padding:11px 16px;border-radius:10px;font-size:18px;cursor:pointer">+</button>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="sendGroupInvite()" style="background:#25D366;color:#000;border:none;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Send group invites →</button>
+        <div id="groupInviteMsg" style="display:none;margin-top:12px;font-size:13px"></div>
+      </div>
     </div>
     <!-- MESSAGES TAB -->
     <div id="tab-messages" class="panel">
@@ -425,6 +473,71 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
 </div>
 
 <script>
+
+async function sendInvite() {
+  var email = document.getElementById('inviteEmail').value.trim();
+  var msg = document.getElementById('inviteMsg');
+  if (!email) { showInviteMsg(msg, 'Please enter an email address', false); return; }
+  var btn = event.target;
+  btn.textContent = 'Sending...'; btn.disabled = true;
+  try {
+    var r = await fetch('/dashboard/send-invite', {
+      method: 'POST', credentials: 'same-origin',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email: email, type: 'individual' })
+    });
+    var d = await r.json();
+    if (d.success) {
+      showInviteMsg(msg, '✅ Invite sent to ' + email, true);
+      document.getElementById('inviteEmail').value = '';
+    } else {
+      showInviteMsg(msg, '❌ Error: ' + d.error, false);
+    }
+  } catch(e) { showInviteMsg(msg, '❌ Error: ' + e.message, false); }
+  btn.textContent = 'Send invite →'; btn.disabled = false;
+}
+
+function addEmailField() {
+  var container = document.getElementById('emailInputs');
+  var div = document.createElement('div');
+  div.style.cssText = 'display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px';
+  div.innerHTML = '<input type="email" class="group-email" placeholder="member@email.com" style="width:100%;padding:11px 14px;background:#16161f;border:1px solid rgba(255,255,255,.08);border-radius:10px;font-size:14px;color:#fff;outline:none;font-family:inherit"/>' +
+    '<button onclick="this.parentElement.remove()" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#f87171;padding:11px 16px;border-radius:10px;font-size:18px;cursor:pointer">×</button>';
+  container.appendChild(div);
+}
+
+async function sendGroupInvite() {
+  var groupName = document.getElementById('groupName').value.trim();
+  var emails = Array.from(document.querySelectorAll('.group-email')).map(i => i.value.trim()).filter(e => e);
+  var msg = document.getElementById('groupInviteMsg');
+  if (!groupName) { showInviteMsg(msg, 'Please enter a group name', false); return; }
+  if (!emails.length) { showInviteMsg(msg, 'Please add at least one email', false); return; }
+  var btn = event.target;
+  btn.textContent = 'Sending...'; btn.disabled = true;
+  try {
+    var r = await fetch('/dashboard/send-invite', {
+      method: 'POST', credentials: 'same-origin',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ emails: emails, groupName: groupName, type: 'group' })
+    });
+    var d = await r.json();
+    if (d.success) {
+      showInviteMsg(msg, '✅ Invites sent to ' + d.sent + ' people for group: ' + groupName, true);
+      document.getElementById('groupName').value = '';
+      document.querySelectorAll('.group-email').forEach((i,idx) => { if(idx > 0) i.parentElement.remove(); else i.value = ''; });
+    } else {
+      showInviteMsg(msg, '❌ Error: ' + d.error, false);
+    }
+  } catch(e) { showInviteMsg(msg, '❌ Error: ' + e.message, false); }
+  btn.textContent = 'Send group invites →'; btn.disabled = false;
+}
+
+function showInviteMsg(el, text, success) {
+  el.textContent = text;
+  el.style.color = success ? '#4ade80' : '#f87171';
+  el.style.display = 'block';
+  if (success) setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
 window.history.pushState({tab:"overview"},"","/dashboard");
 window.addEventListener("popstate",function(e){var tab=(e.state&&e.state.tab)||"overview";showTab(tab,null,true);});
 function showTab(name, el, noPush) {
@@ -654,6 +767,59 @@ router.post('/delete-account', requireAuth, async (req, res) => {
 });
 
 // ── Logout ────────────────────────────────────────────────
+router.post('/send-invite', requireAuth, async (req, res) => {
+  try {
+    const { email, emails, groupName, type } = req.body;
+    const user = await pool.query('SELECT * FROM users WHERE id = $1', [req.session.userId]);
+    const tenants = await pool.query('SELECT * FROM tenants WHERE LOWER(email) = $1 AND is_active = TRUE', [user.rows[0].email.toLowerCase()]);
+    if (!tenants.rows.length) return res.json({ success: false, error: 'No active workspace found' });
+    const tenant = tenants.rows[0];
+    const twilioNumber = tenant.twilio_number?.replace('+', '') || '14155238886';
+
+    if (type === 'individual') {
+      // Send individual invite
+      const waLink = 'https://wa.me/' + twilioNumber + '?text=' + encodeURIComponent(tenant.claim_code);
+      const { sendInviteEmail } = require('../services/emailService');
+      await sendInviteEmail({
+        to: email,
+        companyName: tenant.company_name,
+        waLink,
+        type: 'individual'
+      });
+      res.json({ success: true, sent: 1 });
+
+    } else if (type === 'group') {
+      // Create group with auto claim code
+      const claimCode = 'grp-' + Math.random().toString(36).slice(2,8);
+      const { rows: group } = await pool.query(
+        'INSERT INTO wa_groups (tenant_id, name, claim_code) VALUES ($1, $2, $3) RETURNING *',
+        [tenant.id, groupName, claimCode]
+      );
+      const waLink = 'https://wa.me/' + twilioNumber + '?text=' + encodeURIComponent(claimCode);
+      const { sendInviteEmail } = require('../services/emailService');
+      let sent = 0;
+      for (const em of emails) {
+        try {
+          await sendInviteEmail({
+            to: em,
+            companyName: tenant.company_name,
+            waLink,
+            groupName,
+            type: 'group'
+          });
+          sent++;
+        } catch(e) {
+          console.error('[INVITE] Failed to send to', em, e.message);
+        }
+      }
+      res.json({ success: true, sent, groupCode: claimCode });
+    }
+  } catch(e) {
+    console.error('[INVITE ERROR]', e.message);
+    res.json({ success: false, error: e.message });
+  }
+});
+
 router.post('/upgrade-plan', requireAuth, async (req, res) => {
   try {
     const { plan } = req.body;

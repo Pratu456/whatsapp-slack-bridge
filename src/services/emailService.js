@@ -311,3 +311,35 @@ const sendWaitlistInviteEmail = async ({ to }) => {
     console.log(`Verification email sent to ${to}`);
   };
 module.exports = { sendActivationEmail, sendWaitlistConfirmationEmail, sendWaitlistInviteEmail, sendVerificationEmail };
+const sendInviteEmail = async ({ to, companyName, waLink, groupName, type }) => {
+  const subject = type === 'group'
+    ? `You're invited to join ${groupName} on WhatsApp`
+    : `${companyName} wants to chat with you on WhatsApp`;
+
+  const body = type === 'group'
+    ? `<p>You've been invited to join <strong>${groupName}</strong> group chat by <strong>${companyName}</strong>.</p>
+       <p>Click the button below to join the group on WhatsApp:</p>`
+    : `<p><strong>${companyName}</strong> wants to connect with you on WhatsApp.</p>
+       <p>Click the button below to start chatting:</p>`;
+
+  const { data, error } = await resend.emails.send({
+    from: 'Syncora <onboarding@resend.dev>',
+    to,
+    subject,
+    html: `<!DOCTYPE html><html><body style="font-family:Inter,sans-serif;background:#f9f9f9;padding:40px 20px">
+      <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;padding:40px;box-shadow:0 2px 8px rgba(0,0,0,.08)">
+        <img src="https://syncora-ar26.onrender.com/logo_text.png" style="height:28px;margin-bottom:24px;filter:invert(1)" alt="Syncora"/>
+        <h2 style="font-size:22px;font-weight:800;color:#111;margin-bottom:12px">${subject}</h2>
+        ${body}
+        <a href="${waLink}" style="display:inline-block;margin-top:20px;background:#25D366;color:#000;padding:14px 28px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none">
+          💬 Open WhatsApp Chat →
+        </a>
+        <p style="margin-top:24px;font-size:12px;color:#999">Powered by Syncora · WhatsApp ↔ Slack Bridge</p>
+      </div>
+    </body></html>`
+  });
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+module.exports = { ...module.exports, sendInviteEmail };
