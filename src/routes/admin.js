@@ -910,6 +910,16 @@ async function confirmActivate(){
     setTimeout(()=>{closeModal();location.reload()},2500);
   }else{btn.disabled=false;btn.textContent='Activate + Send email →';alert('Error: '+d.error);}
 }
+async function updatePlan(id, plan) {
+  const r = await fetch('/admin/update-plan', {
+    method: 'POST', credentials: 'same-origin',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({id, plan})
+  });
+  const d = await r.json();
+  if (!d.success) alert('Error: ' + d.error);
+}
+
 async function deactivate(id){
   if(!confirm('Deactivate this company?'))return;
   const r=await fetch('/admin/deactivate', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
