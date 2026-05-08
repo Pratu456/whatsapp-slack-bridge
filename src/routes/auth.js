@@ -73,10 +73,10 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;text-a
   <h1>Create your account</h1>
   <p class="sub">Start connecting WhatsApp to Slack in minutes</p>
   ${error ? `<div class="err">${error}</div>` : ''}
-  <form method="POST" action="/auth/register">
-    <div class="fg"><label>Full name</label><input type="text" name="full_name" placeholder="Jane Smith" required autocomplete="name"/></div>
-    <div class="fg"><label>Company name</label><input type="text" name="company_name" placeholder="Acme Corp" required autocomplete="organization"/></div>
-    <div class="fg"><label>Work email</label><input type="email" name="email" placeholder="you@company.com" required autocomplete="email"/></div>
+  <form method="POST" action="/auth/register" autocomplete="off">
+    <div class="fg"><label>Full name</label><input type="text" name="full_name" placeholder="Jane Smith" required autocomplete="off"/></div>
+    <div class="fg"><label>Company name</label><input type="text" name="company_name" placeholder="Acme Corp" required autocomplete="off"/></div>
+    <div class="fg"><label>Work email</label><input type="email" name="email" placeholder="you@company.com" required autocomplete="off"/></div>
     <div class="fg"><label>Password</label><input type="password" name="password" placeholder="Minimum 8 characters" required minlength="8"/></div>
     <button type="submit" class="btn">Create account →</button>
   </form>
