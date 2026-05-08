@@ -279,65 +279,6 @@ async function handleSlackEvent(event) {
 }
 
 // ── Slash commands ────────────────────────────────────────
-server.post('/slack/commands', express.urlencoded({ extended: true }), async (req, res) => {
-  const { command, channel_id } = req.body;
-  res.status(200).send('');
-
-  try {
-    const r = await pool.query(
-      `SELECT t.*, c.wa_number FROM tenants t JOIN contacts c ON c.tenant_id = t.id
-       WHERE c.slack_channel = $1 AND t.is_active = TRUE LIMIT 1`,
-      [channel_id]
-    );
-
-    const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
-
-    if (!r.rows.length) {
-      await slack.chat.postMessage({
-        channel: channel_id,
-        text:    '❌ Channel not linked to any contact.',
-      });
-      return;
-    }
-
-    const { wa_number, id: tenantId } = r.rows[0];
-
-    if (command === '/history') {
-      const msgs = await pool.query(
-        `SELECT m.body, m.direction, m.created_at FROM messages m
-         JOIN contacts c ON c.id = m.contact_id
-         WHERE c.wa_number = $1 AND m.tenant_id = $2
-         ORDER BY m.created_at DESC LIMIT 10`,
-        [wa_number, tenantId]
-      );
-      if (!msgs.rows.length) {
-        await slack.chat.postMessage({ channel: channel_id, text: '📭 No messages found.' });
-        return;
-      }
-      const lines = msgs.rows.reverse().map(m =>
-        `*${m.direction === 'inbound' ? '📱' : '💬'}* ${new Date(m.created_at).toLocaleTimeString()}\n${m.body}`
-      );
-      await slack.chat.postMessage({
-        channel: channel_id,
-        text:    `📋 Last ${msgs.rows.length} messages:\n\n${lines.join('\n\n')}`,
-      });
-    } else if (command === '/block') {
-      await pool.query(
-        'UPDATE contacts SET blocked = TRUE WHERE wa_number = $1 AND tenant_id = $2',
-        [wa_number, tenantId]
-      );
-      await slack.chat.postMessage({ channel: channel_id, text: `🚫 ${wa_number} blocked.` });
-    } else if (command === '/unblock') {
-      await pool.query(
-        'UPDATE contacts SET blocked = FALSE WHERE wa_number = $1 AND tenant_id = $2',
-        [wa_number, tenantId]
-      );
-      await slack.chat.postMessage({ channel: channel_id, text: `✅ ${wa_number} unblocked.` });
-    }
-  } catch (err) {
-    console.error('[COMMAND ERROR]', err.message);
-  }
-});
 
  
  

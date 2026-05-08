@@ -224,6 +224,31 @@ router.post('/commands', express.urlencoded({ extended: true }), verifySlack, as
       return;
     }
 
+    if (command === '/history') {
+      const { channel_id } = req.body;
+      const { rows: contacts } = await pool.query(
+        'SELECT c.wa_number, c.id FROM contacts c WHERE c.slack_channel = $1 AND c.tenant_id = $2',
+        [channel_id, tenant.id]
+      );
+      if (!contacts.length) {
+        await respond(response_url, '❌ Channel not linked to any contact.');
+        return;
+      }
+      const msgs = await pool.query(
+        'SELECT m.body, m.direction, m.created_at FROM messages m WHERE m.contact_id = $1 ORDER BY m.created_at DESC LIMIT 10',
+        [contacts[0].id]
+      );
+      if (!msgs.rows.length) {
+        await respond(response_url, '📭 No messages found.');
+        return;
+      }
+      const lines = msgs.rows.reverse().map(m =>
+        (m.direction === 'inbound' ? '📱 ' : '💬 ') + new Date(m.created_at).toLocaleTimeString() + '\n' + m.body
+      ).join('\n\n');
+      await respond(response_url, lines);
+      return;
+    }
+
     await respond(response_url, '❌ Unknown command. Use `/syncora-add`, `/syncora-remove`, `/syncora-groups`, or `/syncora-create-group`');
 
   } catch(e) {
