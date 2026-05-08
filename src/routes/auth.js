@@ -73,7 +73,7 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;text-a
   <h1>Create your account</h1>
   <p class="sub">Start connecting WhatsApp to Slack in minutes</p>
   ${error ? `<div class="err">${error}</div>` : ''}
-  <form method="POST" action="/auth/register" autocomplete="off">
+  <form method="POST" action="/auth/register" autocomplete="off"><input type="text" style="display:none" name="fake_user"/><input type="password" style="display:none" name="fake_pass"/>
     <div class="fg"><label>Full name</label><input type="text" name="full_name" placeholder="Jane Smith" required autocomplete="off"/></div>
     <div class="fg"><label>Company name</label><input type="text" name="company_name" placeholder="Acme Corp" required autocomplete="off"/></div>
     <div class="fg"><label>Work email</label><input type="email" name="email" placeholder="you@company.com" required autocomplete="off"/></div>
