@@ -370,7 +370,7 @@ router.get('/slack', (req, res) => {
   const scopes = [
     'channels:manage','channels:read','channels:history',
     'chat:write','files:write','files:read',
-    'im:write','groups:write','groups:read','groups:history',
+    'im:write','groups:write','groups:read','groups:history','commands',
     'users:read','users:read.email',
   ].join(',');
   const state = Buffer.from(JSON.stringify({ companyName, email })).toString('base64');
