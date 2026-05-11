@@ -10,6 +10,48 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
 
   for (const word of words) {
     if (!word) continue;
+
+    // 1. Check GROUP claim codes FIRST
+    const groupMatch = await pool.query(
+      `SELECT g.id, g.name, g.slack_channel, g.claim_code, g.tenant_id,
+              t.id as tid, t.company_name, t.slack_bot_token, t.twilio_number, t.plan, t.claim_code as tenant_claim_code
+       FROM wa_groups g JOIN tenants t ON t.id = g.tenant_id
+       WHERE LOWER(g.claim_code) = $1 AND t.is_active = TRUE`,
+      [word]
+    );
+    if (groupMatch.rows.length > 0) {
+      const row = groupMatch.rows[0];
+      const tenant = {
+        id: row.tid, company_name: row.company_name,
+        slack_bot_token: row.slack_bot_token, twilio_number: row.twilio_number,
+        claim_code: row.tenant_claim_code, plan: row.plan
+      };
+      const group = { id: row.id, name: row.name, slack_channel: row.slack_channel, claim_code: row.claim_code };
+
+      // Add to group members
+      await pool.query(
+        `INSERT INTO wa_group_members (group_id, wa_number, display_name, tenant_id)
+         VALUES ($1, $2, $3, $4) ON CONFLICT (group_id, wa_number) DO NOTHING`,
+        [group.id, fromNumber, fromNumber, tenant.id]
+      );
+
+      // Set active group session — update or insert contact
+      const existingContact = await pool.query(
+        'SELECT id FROM contacts WHERE wa_number = $1 AND tenant_id = $2',
+        [fromNumber, tenant.id]
+      );
+      if (existingContact.rows.length > 0) {
+        await pool.query(
+          'UPDATE contacts SET active_group_id = $1, last_active = NOW() WHERE wa_number = $2 AND tenant_id = $3',
+          [group.id, fromNumber, tenant.id]
+        );
+      }
+
+      console.log(`[GROUP] ${fromNumber} joined/re-joined group: ${group.name}`);
+      return { tenant, isNew: false, claimCodeUsed: true, group };
+    }
+
+    // 2. Check TENANT claim codes
     const match = await pool.query(
       `SELECT * FROM tenants WHERE LOWER(claim_code) = $1 AND is_active = TRUE`,
       [word]
@@ -22,41 +64,46 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
       );
       if (existing.rows.length > 0) {
         await pool.query(
-          'UPDATE contacts SET last_active = NOW() WHERE wa_number = $1 AND tenant_id = $2',
+          'UPDATE contacts SET last_active = NOW(), active_group_id = NULL WHERE wa_number = $1 AND tenant_id = $2',
           [fromNumber, tenant.id]
         );
-        console.log(`Contact ${fromNumber} re-activated for tenant: ${tenant.company_name}`);
-        return { tenant, isNew: false, claimCodeUsed: true };
+        console.log(`Contact ${fromNumber} switched to private chat for tenant: ${tenant.company_name}`);
+        return { tenant, isNew: false, claimCodeUsed: true, group: null };
       } else {
         console.log(`New contact ${fromNumber} mapped to tenant: ${tenant.company_name}`);
-        return { tenant, isNew: true, claimCodeUsed: true };
+        return { tenant, isNew: true, claimCodeUsed: true, group: null };
       }
     }
   }
 
+  // 3. No claim code — check existing contact
   const contact = await pool.query(
-    `SELECT t.* FROM contacts c
+    `SELECT t.*, c.active_group_id FROM contacts c
      JOIN tenants t ON t.id = c.tenant_id
      WHERE c.wa_number = $1 AND t.is_active = TRUE
      ORDER BY c.last_active DESC NULLS LAST, c.created_at DESC
      LIMIT 1`,
     [fromNumber]
   );
-
   if (contact.rows.length > 0) {
+    const tenant = contact.rows[0];
     await pool.query(
       'UPDATE contacts SET last_active = NOW() WHERE wa_number = $1 AND tenant_id = $2',
-      [fromNumber, contact.rows[0].id]
+      [fromNumber, tenant.id]
     );
-    return { tenant: contact.rows[0], isNew: false, claimCodeUsed: false };
+    if (contact.rows[0].active_group_id) {
+      const groupResult = await pool.query('SELECT * FROM wa_groups WHERE id = $1', [contact.rows[0].active_group_id]);
+      if (groupResult.rows.length > 0) {
+        console.log(`[GROUP SESSION] ${fromNumber} → group: ${groupResult.rows[0].name}`);
+        return { tenant, isNew: false, claimCodeUsed: false, group: groupResult.rows[0] };
+      }
+    }
+    return { tenant, isNew: false, claimCodeUsed: false, group: null };
   }
 
-  return { tenant: null, isNew: false, claimCodeUsed: false };
+  return { tenant: null, isNew: false, claimCodeUsed: false, group: null };
 };
 
-/**
- * Pick the next agent for a tenant using round-robin
- */
 const pickAgent = async (tenantId) => {
   const agents = await pool.query(
     'SELECT slack_user_id, slack_name FROM tenant_agents WHERE tenant_id = $1 ORDER BY id',
