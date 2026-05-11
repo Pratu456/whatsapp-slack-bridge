@@ -45,6 +45,14 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
           'UPDATE contacts SET active_group_id = $1, last_active = NOW() WHERE wa_number = $2 AND tenant_id = $3',
           [group.id, fromNumber, tenant.id]
         );
+      } else {
+        // Create contact with active group
+        await pool.query(
+          `INSERT INTO contacts (wa_number, tenant_id, active_group_id, last_active, display_name)
+           VALUES ($1, $2, $3, NOW(), $1)
+           ON CONFLICT (wa_number, tenant_id) DO UPDATE SET active_group_id = $3, last_active = NOW()`,
+          [fromNumber, tenant.id, group.id]
+        );
       }
 
       console.log(`[GROUP] ${fromNumber} joined/re-joined group: ${group.name}`);
