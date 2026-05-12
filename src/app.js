@@ -6,7 +6,8 @@ const session = require('express-session');
 const { RedisStore } = require('connect-redis');
 const whatsappRoute = require('./routes/whatsapp');
 const { connect: connectRedis } = require('./cache/redis');
-const { sendWhatsApp, sendWhatsAppMedia } = require('./services/twilioService');
+// ✅ CHANGED: replaced twilioService with metaService
+const { sendWhatsAppMessage, sendWhatsAppMedia } = require('./services/metaService');
 const { getWaNumberForTenant } = require('./services/tenantService');
 const { logMessage } = require('./services/messageLogger');
 const path = require('path');
@@ -153,7 +154,7 @@ async function handleSlackEvent(event) {
   );
   if (groupResult.rows.length) {
     const row = groupResult.rows[0];
-    const grpTenant = { id: row.tenant_id, company_name: row.company_name, slack_bot_token: row.slack_bot_token, twilio_number: row.twilio_number };
+    const grpTenant = { id: row.tenant_id, company_name: row.company_name, slack_bot_token: row.slack_bot_token };
     const groupId = row.group_id;
     console.log("[GROUP REPLY] Broadcasting to group:", row.group_name);
     if (event.text) {
@@ -167,9 +168,10 @@ async function handleSlackEvent(event) {
       } catch(e) {}
       for (const member of members) {
         try {
-          const sid = await sendWhatsApp(member.wa_number, "*" + agentName + "*: " + event.text, grpTenant.twilio_number);
-          console.log("[GROUP REPLY] Sent to", member.wa_number, sid);
-          await logMessage({ waNumber: member.wa_number, body: event.text, direction: "outbound", twilioSid: sid, slackTs: event.ts, tenantId: grpTenant.id });
+          // ✅ CHANGED: sendWhatsApp → sendWhatsAppMessage (no twilioNumber param)
+          const msgId = await sendWhatsAppMessage(member.wa_number, "*" + agentName + "*: " + event.text);
+          console.log("[GROUP REPLY] Sent to", member.wa_number, msgId);
+          await logMessage({ waNumber: member.wa_number, body: event.text, direction: "outbound", twilioSid: msgId, slackTs: event.ts, tenantId: grpTenant.id });
         } catch(e) { console.warn("[GROUP REPLY] Failed:", member.wa_number, e.message); }
       }
     }
@@ -191,7 +193,7 @@ async function handleSlackEvent(event) {
   }
 
   const tenant = tenantResult.rows[0];
-  console.log('[TENANT]', tenant.company_name, '| twilio_number:', tenant.twilio_number);
+  console.log('[TENANT]', tenant.company_name);
 
   const waNumber = await getWaNumberForTenant(event.channel, tenant.id);
   if (!waNumber) {
@@ -199,7 +201,7 @@ async function handleSlackEvent(event) {
     return;
   }
 
-  console.log('[OUTBOUND] to WhatsApp:', waNumber, '| from:', tenant.twilio_number);
+  console.log('[OUTBOUND] to WhatsApp:', waNumber);
 
   // ── Handle file attachments ───────────────────────────
   if (event.files && event.files.length > 0) {
@@ -232,24 +234,25 @@ async function handleSlackEvent(event) {
 
         const publicUrl = `${process.env.APP_URL}/media/${encodeURIComponent(safeFileName)}`;
 
-        const sid = await sendWhatsAppMedia(
+        // ✅ CHANGED: sendWhatsAppMedia now uses Meta API (no twilioNumber param)
+        const msgId = await sendWhatsAppMedia(
           waNumber,
           publicUrl,
           event.text || '',
-          tenant.twilio_number
+          file.mimetype
         );
 
         await logMessage({
           waNumber,
           body:      file.name,
           direction: 'outbound',
-          twilioSid: sid,
+          twilioSid: msgId,
           slackTs:   event.ts,
           mediaType: file.mimetype,
           tenantId:  tenant.id,
         });
 
-        console.log('[TWILIO MEDIA SENT]', sid);
+        console.log('[META MEDIA SENT]', msgId);
         setTimeout(() => { try { fs.unlinkSync(tmpPath); } catch (e) {} }, 60000);
 
       } catch (fileErr) {
@@ -262,20 +265,21 @@ async function handleSlackEvent(event) {
   // ── Handle text message ───────────────────────────────
   if (event.text) {
     try {
-      const sid = await sendWhatsApp(waNumber, event.text, tenant.twilio_number);
+      // ✅ CHANGED: sendWhatsApp → sendWhatsAppMessage (no twilioNumber param)
+      const msgId = await sendWhatsAppMessage(waNumber, event.text);
 
       await logMessage({
         waNumber,
         body:      event.text,
         direction: 'outbound',
-        twilioSid: sid,
+        twilioSid: msgId,
         slackTs:   event.ts,
         tenantId:  tenant.id,
       });
 
-      console.log('[TWILIO TEXT SENT]', sid);
+      console.log('[META TEXT SENT]', msgId);
     } catch (err) {
-      console.error('[TWILIO SEND ERROR]', err.message);
+      console.error('[META SEND ERROR]', err.message);
     }
   }
 }
@@ -343,13 +347,13 @@ server.post('/slack/interactions', express.urlencoded({ extended: true }), async
       if (!tenantResult.rows.length) return;
       const tenant = tenantResult.rows[0];
 
-      // Send to WhatsApp
-      const sid = await sendWhatsApp(waNumber, replyText, tenant.twilio_number);
+      // ✅ CHANGED: sendWhatsApp → sendWhatsAppMessage (no twilioNumber param)
+      const msgId = await sendWhatsAppMessage(waNumber, replyText);
       await logMessage({
         waNumber,
         body: replyText,
         direction: 'outbound',
-        twilioSid: sid,
+        twilioSid: msgId,
         tenantId: tenant.id,
       });
 

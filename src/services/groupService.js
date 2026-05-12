@@ -1,6 +1,8 @@
+// src/services/groupService.js
 const { pool } = require('../db');
 const { WebClient } = require('@slack/web-api');
-const { sendWhatsApp } = require('./twilioService');
+// ✅ CHANGED: replaced twilioService with metaService
+const { sendWhatsAppMessage } = require('./metaService');
 
 /**
  * Check if a WA number belongs to any group for this tenant
@@ -112,17 +114,18 @@ const postGroupMessageToSlack = async (tenant, channelId, text, senderName, send
 };
 
 /**
- * Broadcast message to all group members except sender
+ * Broadcast message to all group members except sender.
+ * ✅ CHANGED: removed twilioNumber param, now uses Meta API
  */
-const broadcastToGroup = async (groupId, excludeNumber, senderName, text, twilioNumber) => {
+const broadcastToGroup = async (groupId, excludeNumber, senderName, text) => {
   const others = await getOtherMembers(groupId, excludeNumber);
   console.log('[GROUP] Broadcasting to', others.length, 'members');
   for (const member of others) {
     try {
-      await sendWhatsApp(
+      // ✅ CHANGED: sendWhatsApp → sendWhatsAppMessage
+      await sendWhatsAppMessage(
         member.wa_number,
-        '*' + senderName + '*: ' + text,
-        twilioNumber
+        '*' + senderName + '*: ' + text
       );
       console.log('[GROUP] Sent to', member.wa_number);
     } catch(e) {
@@ -132,17 +135,18 @@ const broadcastToGroup = async (groupId, excludeNumber, senderName, text, twilio
 };
 
 /**
- * Broadcast Slack reply to ALL group members
+ * Broadcast Slack reply to ALL group members.
+ * ✅ CHANGED: removed twilioNumber param, now uses Meta API
  */
-const broadcastReplyToGroup = async (groupId, agentName, text, twilioNumber) => {
+const broadcastReplyToGroup = async (groupId, agentName, text) => {
   const members = await getAllMembers(groupId);
   console.log('[GROUP REPLY] Broadcasting to', members.length, 'members');
   for (const member of members) {
     try {
-      await sendWhatsApp(
+      // ✅ CHANGED: sendWhatsApp → sendWhatsAppMessage
+      await sendWhatsAppMessage(
         member.wa_number,
-        '*' + agentName + '* (Support): ' + text,
-        twilioNumber
+        '*' + agentName + '* (Support): ' + text
       );
       console.log('[GROUP REPLY] Sent to', member.wa_number);
     } catch(e) {
