@@ -40,7 +40,7 @@ const sendActivationEmail = async ({ to, companyName, claimCode, whatsappNumber 
         <p style="color:#555;margin-bottom:20px">Hi ${companyName}, your Syncora workspace is ready.</p>
         <div style="background:#f4f4f4;border-radius:10px;padding:20px;margin-bottom:20px">
           <p style="margin:0 0 8px;font-size:13px;color:#777">YOUR WHATSAPP NUMBER</p>
-          <p style="margin:0;font-size:20px;font-weight:800;color:#111">${twilioNumber}</p>
+          <p style="margin:0;font-size:20px;font-weight:800;color:#111">${whatsappNumber}</p>
         </div>
         <div style="background:#f0fff4;border:1px solid #25D366;border-radius:10px;padding:20px;margin-bottom:20px">
           <p style="margin:0 0 8px;font-size:13px;color:#777">YOUR CLAIM CODE</p>
