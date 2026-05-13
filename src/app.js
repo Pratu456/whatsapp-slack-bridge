@@ -160,6 +160,7 @@ async function handleSlackEvent(event) {
     [event.channel]
   );
   if (groupResult.rows.length) {
+    if (!event.user) return;
     const row = groupResult.rows[0];
     const grpTenant = { id: row.tenant_id, company_name: row.company_name, slack_bot_token: row.slack_bot_token };
     const groupId = row.group_id;
