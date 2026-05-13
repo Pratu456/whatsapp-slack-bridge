@@ -137,12 +137,19 @@ server.use('/media', express.static(path.join(__dirname, 'tmp')));
     });
   });
 
+const processed = new Set();
+
 // ── Slack event handler ───────────────────────────────────
 async function handleSlackEvent(event) {
   if (event.type !== 'message') return;
   if (event.subtype === 'bot_message' || event.bot_id) return;
   if (event.subtype === 'channel_join' || event.subtype === 'channel_leave' || event.subtype === 'channel_topic' || event.subtype === 'channel_purpose') return;
   if (!event.text && (!event.files || event.files.length === 0)) return;
+
+  const eventKey = `${event.channel}:${event.ts}`;
+  if (processed.has(eventKey)) return;
+  processed.add(eventKey);
+  setTimeout(() => processed.delete(eventKey), 60000);
 
   // Check if this is a GROUP channel
   const groupResult = await pool.query(
