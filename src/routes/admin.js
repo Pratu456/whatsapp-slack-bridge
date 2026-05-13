@@ -460,7 +460,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
       <div id="mob-co" style="display:none">${mobileCompanyRows}</div>
       <div class="tbl-wrap" id="desk-co">
         <table>
-          <thead><tr><th>Company</th><th>Plan</th><th>Claim code</th><th class="hide-mob">Twilio number</th><th>Status</th><th class="hide-mob">Created</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Company</th><th>Plan</th><th>Claim code</th><th class="hide-mob">WhatsApp number</th><th>Status</th><th class="hide-mob">Created</th><th>Actions</th></tr></thead>
           <tbody>${tenantRows}</tbody>
         </table>
       </div>
@@ -484,7 +484,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <div class="form-grid">
             <div class="fg"><label>Company name</label><input type="text" id="nCo" placeholder="e.g. Acme Corp"/></div>
             <div class="fg"><label>Company email</label><input type="email" id="nEmail" placeholder="hello@acmecorp.com"/><div class="hint">Activation email will be sent here</div></div>
-            <div class="fg"><label>Twilio WhatsApp number</label><input type="text" id="nTwilio" placeholder="+14155238886"/></div>
+            <div class="fg"><label>WhatsApp number</label><input type="text" id="nWhatsapp" placeholder="+15556404018"/></div>
             <div class="fg"><label>Slack bot token</label><input type="text" id="nToken" placeholder="xoxb-..."/></div>
           </div>
           <div style="margin-bottom:6px">
@@ -614,8 +614,8 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
       <input type="email" id="mEmail" placeholder="hello@company.com"/>
       <div class="hint">Required — activation email will be sent here</div>
     </div>
-    <div class="fg"><label>Twilio WhatsApp number</label>
-      <input type="text" id="mTwilio" placeholder="+14155238886"/>
+    <div class="fg"><label>WhatsApp number</label>
+      <input type="text" id="mWhatsapp" placeholder="+15556404018"/>
     </div>
     
     <div class="divider"></div>
@@ -873,7 +873,7 @@ async function sendInvite(email,btn){
 function activate(id,email){
   document.getElementById('mId').value=id;
   document.getElementById('mEmail').value=email||'';
-  document.getElementById('mTwilio').value='';
+  document.getElementById('mWhatsapp').value='';
   currentModalCode=genCode();
   document.getElementById('mCodePreview').textContent=currentModalCode;
   document.getElementById('mCustomWrap').style.display='none';
@@ -889,13 +889,13 @@ document.getElementById('actModal').addEventListener('click',function(e){if(e.ta
 async function confirmActivate(){
   const id=document.getElementById('mId').value;
   const email=document.getElementById('mEmail').value.trim();
-  const twilio=document.getElementById("mTwilio").value.trim();
+  const twilio=document.getElementById("mWhatsapp").value.trim();
   
   const customVisible=document.getElementById('mCustomWrap').style.display!=='none';
   const code=customVisible?document.getElementById('mCustomCode').value.trim().toLowerCase():currentModalCode;
   if(!email){alert('Please enter the company email address');return}
   if(!email.includes('@')){alert('Please enter a valid email address');return}
-  if(!twilio){alert('Please enter a Twilio number');return}
+  if(!twilio){alert('Please enter a WhatsApp number');return}
   if(!code){alert('Please enter a claim code');return}
   if(customVisible&&!validateCustomCode(document.getElementById('mCustomCode'))){return}
   const btn=document.getElementById('mConfirmBtn');
@@ -960,7 +960,7 @@ async function deleteTenant(id){
 async function addTenant(){
   const co=document.getElementById('nCo').value.trim();
   const email=document.getElementById('nEmail').value.trim();
-  const tw=document.getElementById('nTwilio').value.trim();
+  const tw=document.getElementById('nWhatsapp').value.trim();
   const tok=document.getElementById('nToken').value.trim();
   const customVisible=document.getElementById('customCodeWrap').style.display!=='none';
   const code=customVisible?document.getElementById('nCustomCode').value.trim().toLowerCase():currentAddCode;
@@ -1100,7 +1100,7 @@ router.post('/activate', auth, async (req, res) => {
       [twilio_number, claim_code.toLowerCase().trim(), email.trim(), default_slack_channel || null, id]);
     let emailSent = false;
     try {
-      await sendActivationEmail({ to: email.trim(), companyName: (await pool.query('SELECT company_name FROM tenants WHERE id = $1', [id])).rows[0].company_name, claimCode: claim_code.toLowerCase().trim(), twilioNumber: twilio_number });
+      await sendActivationEmail({ to: email.trim(), companyName: (await pool.query('SELECT company_name FROM tenants WHERE id = $1', [id])).rows[0].company_name, claimCode: claim_code.toLowerCase().trim(), whatsappNumber: twilio_number });
       emailSent = true;
     } catch (emailErr) { console.error('Email send failed:', emailErr.message); }
     res.json({ success: true, emailSent, emailTo: email.trim() });

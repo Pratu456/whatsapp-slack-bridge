@@ -30,7 +30,7 @@ const sendVerificationEmail = async ({ to, fullName, verifyToken }) => {
   });
 };
 
-const sendActivationEmail = async ({ to, companyName, claimCode, twilioNumber }) => {
+const sendActivationEmail = async ({ to, companyName, claimCode, whatsappNumber }) => {
   await sendEmail({
     to,
     subject: 'Your Syncora workspace is ready!',
