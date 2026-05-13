@@ -4,6 +4,9 @@ const { WebClient } = require('@slack/web-api');
 // ✅ CHANGED: replaced twilioService with metaService
 const { sendWhatsAppMessage } = require('./metaService');
 
+// Normalise to no-plus format for DB lookups (DB stores without +)
+const stripPlus = (n) => n.replace(/^\+/, '');
+
 /**
  * Check if a WA number belongs to any group for this tenant
  */
@@ -12,9 +15,9 @@ const getGroupForContact = async (waNumber, tenantId) => {
     SELECT g.*, gm.display_name as sender_name
     FROM wa_groups g
     JOIN wa_group_members gm ON gm.group_id = g.id
-    WHERE gm.wa_number = $1 AND g.tenant_id = $2
+    WHERE (gm.wa_number = $1 OR gm.wa_number = $2) AND g.tenant_id = $3
     LIMIT 1
-  `, [waNumber, tenantId]);
+  `, [waNumber, stripPlus(waNumber), tenantId]);
   return result.rows[0] || null;
 };
 
@@ -24,8 +27,8 @@ const getGroupForContact = async (waNumber, tenantId) => {
 const getOtherMembers = async (groupId, excludeNumber) => {
   const result = await pool.query(`
     SELECT wa_number, display_name FROM wa_group_members
-    WHERE group_id = $1 AND wa_number != $2
-  `, [groupId, excludeNumber]);
+    WHERE group_id = $1 AND wa_number != $2 AND wa_number != $3
+  `, [groupId, excludeNumber, stripPlus(excludeNumber)]);
   return result.rows;
 };
 
