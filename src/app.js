@@ -97,6 +97,8 @@ server.post('/slack/events', express.raw({ type: '*/*' }), async (req, res) => {
 });
 
 // ✅ STEP 2 — all other middleware comes AFTER Slack events route
+server.use('/stripe/webhook', express.raw({ type: "application/json" }));
+server.use('/stripe', stripeRoute);
 server.use(express.urlencoded({ extended: false }));
 server.use(express.json());
 server.use(express.static(path.join(__dirname, '../public')));
@@ -115,7 +117,7 @@ server.get('/auth/logout', (req, res) => { req.session.destroy(); res.redirect('
 server.use('/commands', commandsRoute);
 server.use('/slack', slackCommandsRoute);
 server.use('/webhook/meta', metaWebhookRoute);
-server.use('/stripe', stripeRoute);
+
 server.get('/auth/me', (req, res) => {
   if (req.session && req.session.userId) {
     res.json({ loggedIn: true, name: req.session.userName, email: req.session.userEmail });
