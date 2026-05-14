@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const Stripe = require('stripe');
 const { pool } = require('../db');
+const { sendUpgradeEmail, sendCancellationEmail } = require('../services/emailService');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -100,6 +101,15 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             [s.metadata.plan, s.subscription, s.metadata.tenant_id]
           );
           console.log('[STRIPE] Tenant', s.metadata.tenant_id, 'upgraded to', s.metadata.plan);
+          // Send upgrade email
+          const tenantResult = await pool.query('SELECT * FROM tenants WHERE id = $1', [s.metadata.tenant_id]);
+          const t = tenantResult.rows[0];
+          if (t && t.email) {
+            const sub = await stripe.subscriptions.retrieve(s.subscription);
+            const nextBilling = new Date(sub.current_period_end * 1000).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+            const amount = s.metadata.plan === 'pro' ? '€29.00' : '€79.00';
+            await sendUpgradeEmail({ to: t.email, companyName: t.company_name, plan: s.metadata.plan, amount, nextBillingDate: nextBilling }).catch(e => console.warn('[STRIPE] Upgrade email failed:', e.message));
+          }
         }
         break;
       }
@@ -131,6 +141,12 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             ['starter', tenantId]
           );
           console.log('[STRIPE] Tenant', tenantId, 'downgraded to starter');
+          const tResult = await pool.query('SELECT * FROM tenants WHERE id = $1', [tenantId]);
+          const t2 = tResult.rows[0];
+          if (t2 && t2.email) {
+            const planEnd = new Date(sub.current_period_end * 1000).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+            await sendCancellationEmail({ to: t2.email, companyName: t2.company_name, planEnd }).catch(e => console.warn('[STRIPE] Cancellation email failed:', e.message));
+          }
         }
         break;
       }

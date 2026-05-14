@@ -100,9 +100,107 @@ const sendInviteEmail = async ({ to, companyName, waLink, groupName, type }) => 
   });
 };
 
+
+const sendUpgradeEmail = async ({ to, companyName, plan, amount, nextBillingDate }) => {
+  const planFeatures = {
+    pro: [
+      '3 Slack workspaces',
+      'Unlimited messages',
+      'Real-time WhatsApp routing',
+      'Media forwarding',
+      'Full message history',
+      'Priority support'
+    ],
+    business: [
+      'Unlimited Slack workspaces',
+      'Unlimited messages',
+      'Real-time WhatsApp routing',
+      'Media forwarding',
+      'Full message history',
+      'Priority support',
+      'Dedicated onboarding',
+      'Custom integrations',
+      'SLA guarantee'
+    ]
+  };
+  const features = planFeatures[plan] || [];
+  const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+  const featureRows = features.map(f =>
+    '<tr><td style="padding:6px 0;font-size:14px;color:#333;border-bottom:1px solid #f0f0f0">&#10003; ' + f + '</td></tr>'
+  ).join('');
+
+  await sendEmail({
+    to,
+    subject: 'Your Syncora ' + planLabel + ' plan is now active',
+    html: '<!DOCTYPE html><html><body style="font-family:Inter,sans-serif;background:#f9f9f9;padding:40px 20px">'
+      + '<div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)">'
+      + '<div style="background:#111;padding:28px 32px;display:flex;align-items:center">'
+      + '<span style="font-size:22px;font-weight:900;color:#25D366;letter-spacing:-0.5px">Syncora</span>'
+      + '<span style="margin-left:8px;font-size:12px;background:#25D366;color:#000;padding:2px 8px;border-radius:20px;font-weight:700">' + planLabel + '</span>'
+      + '</div>'
+      + '<div style="padding:32px">'
+      + '<h2 style="margin:0 0 8px;color:#111;font-size:22px">Payment confirmed</h2>'
+      + '<p style="color:#555;margin:0 0 24px;font-size:14px">Hi ' + companyName + ', your upgrade to <strong>' + planLabel + '</strong> is now active.</p>'
+      + '<div style="background:#f9f9f9;border-radius:12px;padding:20px;margin-bottom:24px">'
+      + '<div style="display:flex;justify-content:space-between;margin-bottom:12px">'
+      + '<span style="font-size:13px;color:#777">Plan</span>'
+      + '<span style="font-size:13px;font-weight:700;color:#111">Syncora ' + planLabel + '</span>'
+      + '</div>'
+      + '<div style="display:flex;justify-content:space-between;margin-bottom:12px">'
+      + '<span style="font-size:13px;color:#777">Amount</span>'
+      + '<span style="font-size:13px;font-weight:700;color:#111">' + amount + '/month</span>'
+      + '</div>'
+      + '<div style="display:flex;justify-content:space-between;border-top:1px solid #eee;padding-top:12px">'
+      + '<span style="font-size:13px;color:#777">Next billing date</span>'
+      + '<span style="font-size:13px;font-weight:700;color:#111">' + nextBillingDate + '</span>'
+      + '</div>'
+      + '</div>'
+      + '<p style="font-size:13px;color:#777;margin:0 0 12px">Included in your plan:</p>'
+      + '<table style="width:100%;border-collapse:collapse">' + featureRows + '</table>'
+      + '<div style="margin-top:24px;padding-top:24px;border-top:1px solid #eee;text-align:center">'
+      + '<a href="' + process.env.APP_URL + '/dashboard" style="display:inline-block;background:#25D366;color:#000;padding:12px 28px;border-radius:10px;font-weight:700;text-decoration:none;font-size:14px">Go to Dashboard &rarr;</a>'
+      + '</div>'
+      + '<p style="margin-top:24px;font-size:11px;color:#bbb;text-align:center">Powered by Syncora &middot; To manage your subscription visit your dashboard</p>'
+      + '</div></div>'
+      + '</body></html>'
+  });
+};
+
+const sendCancellationEmail = async ({ to, companyName, planEnd }) => {
+  await sendEmail({
+    to,
+    subject: 'Your Syncora subscription has been cancelled',
+    html: '<!DOCTYPE html><html><body style="font-family:Inter,sans-serif;background:#f9f9f9;padding:40px 20px">'
+      + '<div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)">'
+      + '<div style="background:#111;padding:28px 32px">'
+      + '<span style="font-size:22px;font-weight:900;color:#25D366;letter-spacing:-0.5px">Syncora</span>'
+      + '</div>'
+      + '<div style="padding:32px">'
+      + '<h2 style="margin:0 0 8px;color:#111;font-size:22px">Subscription cancelled</h2>'
+      + '<p style="color:#555;margin:0 0 24px;font-size:14px">Hi ' + companyName + ', your Syncora subscription has been cancelled.</p>'
+      + '<div style="background:#fff8f0;border:1px solid #fbd38d;border-radius:12px;padding:20px;margin-bottom:24px">'
+      + '<p style="margin:0;font-size:14px;color:#92400e">Your plan will remain active until <strong>' + planEnd + '</strong>. After that your account will revert to the free Starter plan.</p>'
+      + '</div>'
+      + '<p style="font-size:14px;color:#555">On the Starter plan you will have:</p>'
+      + '<ul style="color:#555;font-size:14px;padding-left:20px">'
+      + '<li>1 Slack workspace</li>'
+      + '<li>50 messages/day</li>'
+      + '<li>Basic WhatsApp routing</li>'
+      + '</ul>'
+      + '<div style="margin-top:24px;padding-top:24px;border-top:1px solid #eee;text-align:center">'
+      + '<a href="' + process.env.APP_URL + '/dashboard" style="display:inline-block;background:#25D366;color:#000;padding:12px 28px;border-radius:10px;font-weight:700;text-decoration:none;font-size:14px">Reactivate plan &rarr;</a>'
+      + '</div>'
+      + '<p style="margin-top:24px;font-size:11px;color:#bbb;text-align:center">Powered by Syncora</p>'
+      + '</div></div>'
+      + '</body></html>'
+  });
+};
+
 module.exports = {
   sendVerificationEmail,
   sendActivationEmail,
   sendWaitlistConfirmationEmail,
   sendInviteEmail,
+  sendUpgradeEmail,
+  sendCancellationEmail,
 };
