@@ -47,6 +47,14 @@ const sendActivationEmail = async ({ to, companyName, claimCode, whatsappNumber 
           <p style="margin:0;font-size:24px;font-weight:900;color:#25D366;letter-spacing:4px">${claimCode}</p>
         </div>
         <p style="color:#555;font-size:13px">Share this claim code with your customers. They send it to your WhatsApp number to connect.</p>
+        <div style="background:#f8f8f8;border-radius:10px;padding:20px;margin:24px 0;border:1px solid #e5e5e5">
+          <p style="margin:0 0 8px;font-size:13px;color:#777">STEP 1 — INSTALL SYNCORA IN YOUR SLACK WORKSPACE</p>
+          <p style="margin:0 0 16px;font-size:13px;color:#555">Click below to add Syncora to your Slack workspace. Takes a few seconds.</p>
+          <a href="${process.env.APP_URL}/auth/slack" style="display:inline-block;background:#4A154B;color:#fff;padding:12px 24px;border-radius:10px;font-weight:700;text-decoration:none;font-size:14px">Add to Slack →</a>
+        </div>
+        <div style="background:#f0fff4;border-radius:10px;padding:16px;margin-bottom:20px;border:1px solid #25D366">
+          <p style="margin:0;font-size:13px;color:#555">📱 <strong>STEP 2</strong> — Ask your customers to message <strong>${whatsappNumber}</strong> on WhatsApp with code <strong style="color:#25D366">${claimCode}</strong> to connect.</p>
+        </div>
         <p style="margin-top:24px;font-size:12px;color:#999">Powered by Syncora</p>
       </div>
     </body></html>`
