@@ -21,6 +21,7 @@ const dashboardRoute = require('./routes/dashboard');
 const commandsRoute = require('./routes/commands');
 const slackCommandsRoute = require('./routes/slackCommands');
 const { router: metaWebhookRoute } = require('./routes/metaWebhook');
+const stripeRoute = require('./routes/stripe');
 const { sendWaitlistConfirmationEmail } = require('./services/emailService');
 const { migrateAdminSettings } = require('./services/adminSettings');
 const server = express();
@@ -114,6 +115,7 @@ server.get('/auth/logout', (req, res) => { req.session.destroy(); res.redirect('
 server.use('/commands', commandsRoute);
 server.use('/slack', slackCommandsRoute);
 server.use('/webhook/meta', metaWebhookRoute);
+server.use('/stripe', stripeRoute);
 server.get('/auth/me', (req, res) => {
   if (req.session && req.session.userId) {
     res.json({ loggedIn: true, name: req.session.userName, email: req.session.userEmail });

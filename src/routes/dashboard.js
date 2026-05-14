@@ -649,18 +649,26 @@ function copyCode(code) {
   });
 }
 async function upgradePlan(plan) {
-  if (!confirm("Upgrade to " + plan + " plan? You will be contacted for payment.")) return;
-  const r = await fetch("/dashboard/upgrade-plan", {
-    method: "POST",
-    credentials: "same-origin",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({plan})
-  });
-  const d = await r.json();
-  if (d.success) {
-    alert("✅ Upgrade request received! Our team will contact you at " + d.email + " within 24 hours.");
-  } else {
-    alert("Error: " + d.error);
+  try {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = "Loading...";
+    const r = await fetch("/stripe/create-checkout", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({plan})
+    });
+    const d = await r.json();
+    if (d.url) {
+      window.location.href = d.url;
+    } else {
+      alert("Error: " + (d.error || "Something went wrong"));
+      btn.disabled = false;
+      btn.textContent = "Upgrade to " + plan.charAt(0).toUpperCase() + plan.slice(1) + " →";
+    }
+  } catch(err) {
+    alert("Error: " + err.message);
   }
 }
 
