@@ -98,7 +98,7 @@ server.post('/slack/events', express.raw({ type: '*/*' }), async (req, res) => {
 
 // ✅ STEP 2 — all other middleware comes AFTER Slack events route
 server.use('/stripe/webhook', express.raw({ type: "application/json" }));
-server.use('/stripe', stripeRoute);
+server.use('/stripe', express.json(), stripeRoute);
 server.use(express.urlencoded({ extended: false }));
 server.use(express.json());
 server.use(express.static(path.join(__dirname, '../public')));
