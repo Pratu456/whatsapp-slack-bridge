@@ -95,11 +95,7 @@ router.get('/', auth, async (req, res) => {
     const { tenants, totalMessages, todayMessages, totalContacts } = await getStats();
 
     const inactiveTenants = await pool.query(`
-      SELECT t.id, t.company_name, t.slack_team_name, MAX(m.created_at) as last_msg
-      FROM tenants t LEFT JOIN messages m ON m.tenant_id = t.id
-      WHERE t.is_active = TRUE
-      GROUP BY t.id, t.company_name, t.slack_team_name
-      HAVING MAX(m.created_at) < NOW() - INTERVAL '14 days' OR MAX(m.created_at) IS NULL
+      SELECT id, company_name, email FROM tenants WHERE is_active = FALSE
     `).catch(() => ({ rows: [] }));
 
     const msgActivity = await pool.query(`
