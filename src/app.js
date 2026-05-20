@@ -226,14 +226,14 @@ async function handleSlackEvent(event) {
           headers:          { Authorization: `Bearer ${tenant.slack_bot_token}` },
           responseType:     'arraybuffer',
           timeout:          60000,
-          maxContentLength: 16 * 1024 * 1024,
+          maxContentLength: 100 * 1024 * 1024, // 100MB limit
         });
 
-        if (response.data.byteLength > 16 * 1024 * 1024) {
+        if (response.data.byteLength > 100 * 1024 * 1024) {
           const slack = new WebClient(tenant.slack_bot_token);
           await slack.chat.postMessage({
             channel: event.channel,
-            text:    '⚠️ File too large to forward (max 16MB)',
+            text: '⚠️ File too large to forward to WhatsApp (max 100MB). Please compress the file and try again.',
           });
           continue;
         }
