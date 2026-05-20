@@ -271,6 +271,7 @@ async function handleSlackEvent(event) {
           form,
           { headers: { ...form.getHeaders(), Authorization: `Bearer ${process.env.META_ACCESS_TOKEN}` }, maxContentLength: 100*1024*1024, maxBodyLength: 100*1024*1024 }
         );
+        console.log("[META UPLOAD RESP]", JSON.stringify(uploadResp.data));
         const metaMediaId = uploadResp.data.id;
         console.log("[META UPLOAD] Media ID:", metaMediaId);
         const msgId = await sendWhatsAppMedia(waNumber, metaMediaId, event.text || "", file.mimetype, true);
@@ -289,7 +290,7 @@ async function handleSlackEvent(event) {
         setTimeout(() => { try { fs.unlinkSync(tmpPath); } catch (e) {} }, 60000);
 
       } catch (fileErr) {
-        console.error('[FILE ERROR]', fileErr.message);
+        console.error('[FILE ERROR]', fileErr.message, fileErr.response?.data ? JSON.stringify(fileErr.response.data) : '');
       }
     }
     return;
