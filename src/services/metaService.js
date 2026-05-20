@@ -52,7 +52,7 @@ async function sendWhatsAppMessage(to, body) {
  * Meta fetches the file from the public URL you provide.
  * Returns the Meta message ID string.
  */
-async function sendWhatsAppMedia(to, mediaUrl, caption = '', mimeType = '') {
+async function sendWhatsAppMedia(to, mediaUrlOrId, caption = '', mimeType = '', isMediaId = false) {
   const { phoneNumberId, accessToken } = getConfig();
 
   // Determine media type from MIME type
@@ -61,7 +61,7 @@ async function sendWhatsAppMedia(to, mediaUrl, caption = '', mimeType = '') {
   if (mimeType.startsWith('video/')) type = 'video';
   if (mimeType.startsWith('audio/')) type = 'audio';
 
-  const mediaPayload = { link: mediaUrl };
+  const mediaPayload = isMediaId ? { id: mediaUrlOrId } : { link: mediaUrlOrId };
   if (caption && type !== 'audio') mediaPayload.caption = caption;
 
   const { data } = await axios.post(
