@@ -274,9 +274,6 @@ async function handleSlackEvent(event) {
         const metaMediaId = uploadResp.data.id;
         console.log("[META UPLOAD] Media ID:", metaMediaId);
         const msgId = await sendWhatsAppMedia(waNumber, metaMediaId, event.text || "", file.mimetype, true);
-          event.text || '',
-          file.mimetype
-        );
 
         await logMessage({
           waNumber,
