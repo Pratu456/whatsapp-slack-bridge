@@ -145,17 +145,8 @@ const getOrCreateChannelForTenant = async (tenant, waNumber, displayName) => {
       );
       return tenant.default_slack_channel;
     }
-    if (existing.rows[0].slack_channel) {
-      // Verify channel still exists
-      try {
-        await slack.conversations.info({ channel: existing.rows[0].slack_channel });
-        return existing.rows[0].slack_channel;
-      } catch(e) {
-        console.log('[CHANNEL] Stale channel detected, creating new one for', waNumber);
-        await pool.query('UPDATE contacts SET slack_channel = NULL WHERE wa_number = $1 AND tenant_id = $2', [waNumber, tenant.id]);
-      }
-    }
-    // Channel is null or stale - fall through to create new one
+    if (existing.rows[0].slack_channel) return existing.rows[0].slack_channel;
+    // Channel is null - fall through to create new one
   console.log("[CHANNEL] Contact exists but channel is null, creating new channel for", waNumber);
   }
 
