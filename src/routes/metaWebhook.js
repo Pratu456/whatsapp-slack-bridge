@@ -160,10 +160,13 @@ router.post('/', async (req, res) => {
               // Upload to Slack
               const { WebClient } = require('@slack/web-api');
               const slack = new WebClient(tenant.slack_bot_token);
+              // Determine file extension from mime type
+              const extMap = {'image/jpeg':'jpg','image/png':'png','image/gif':'gif','image/webp':'webp','video/mp4':'mp4','audio/ogg':'ogg','audio/mpeg':'mp3','application/pdf':'pdf'};
+              const ext = extMap[mimeType] || message.type;
               const uploadResp = await slack.filesUploadV2({
                 channel_id: channelId,
-                content: mediaBuffer,
-                filename: filename || message.type,
+                file: mediaBuffer,
+                filename: `${filename || message.type}.${ext}`,
                 initial_comment: `*${ProfileName}* (${waNumber})${caption ? ': ' + caption : ''}`
               });
               console.log('[META MEDIA] Uploaded to Slack ✅');
