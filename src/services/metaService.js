@@ -1,5 +1,8 @@
 // src/services/metaService.js
 const axios = require('axios');
+// Increase default limits for media
+axios.defaults.maxContentLength = 100 * 1024 * 1024; // 100MB
+axios.defaults.maxBodyLength = 100 * 1024 * 1024; // 100MB
 
 const BASE_URL = 'https://graph.facebook.com/v19.0';
 
