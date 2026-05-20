@@ -222,8 +222,9 @@ async function handleSlackEvent(event) {
         const axios = require('axios');
         const fs    = require('fs');
 
-        const response = await axios.get(file.url_private_download, {
-          headers:          { Authorization: `Bearer ${tenant.slack_bot_token}` },
+        const downloadUrl = file.url_private_download || file.url_private;
+        const response = await axios.get(downloadUrl, {
+          headers:          { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN || tenant.slack_bot_token}` },
           responseType:     'arraybuffer',
           timeout:          60000,
           maxContentLength: 100 * 1024 * 1024, // 100MB limit
