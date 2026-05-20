@@ -221,18 +221,38 @@ async function handleSlackEvent(event) {
       try {
         const axios = require('axios');
         const fs = require('fs');
-        const slackDl = new WebClient(tenant.slack_bot_token);
-        const fileInfo = await slackDl.files.info({ file: file.id });
-        const downloadUrl = fileInfo.file?.url_private_download || file.url_private_download;
-        console.log('[FILE DL] url:', downloadUrl?.slice(0,80));
-        const response = await axios.get(downloadUrl, {
-          headers: { Authorization: `Bearer ${tenant.slack_bot_token}` },
-          responseType: 'arraybuffer',
-          timeout: 120000,
-          maxContentLength: 100 * 1024 * 1024,
+        // Download file using Slack token
+        const https = require('https');
+        const downloadUrl = file.url_private_download || file.url_private;
+        const token = tenant.slack_bot_token;
+        console.log('[FILE DL] Downloading file:', file.name, '|', file.mimetype);
+        const mediaBuffer = await new Promise((resolve, reject) => {
+          const options = {
+            headers: { Authorization: `Bearer ${token}` }
+          };
+          https.get(downloadUrl, options, (res) => {
+            if (res.statusCode === 301 || res.statusCode === 302) {
+              https.get(res.headers.location, options, (res2) => {
+                const chunks = [];
+                res2.on('data', c => chunks.push(c));
+                res2.on('end', () => resolve(Buffer.concat(chunks)));
+                res2.on('error', reject);
+              });
+            } else {
+              const chunks = [];
+              res.on('data', c => chunks.push(c));
+              res.on('end', () => resolve(Buffer.concat(chunks)));
+              res.on('error', reject);
+            }
+          }).on('error', reject);
         });
-
-        if (response.data.byteLength > 100 * 1024 * 1024) {
+        console.log('[FILE DL] Size:', Math.round(mediaBuffer.length/1024), 'KB');
+        if (mediaBuffer.length > 100 * 1024 * 1024) {
+          const slackWarn = new WebClient(tenant.slack_bot_token);
+          await slackWarn.chat.postMessage({ channel: event.channel, text: '⚠️ File too large (max 100MB)' });
+          continue;
+        }
+        if (mediaBuffer.length > 100 * 1024 * 1024) {
           const slack = new WebClient(tenant.slack_bot_token);
           await slack.chat.postMessage({
             channel: event.channel,
@@ -245,7 +265,7 @@ async function handleSlackEvent(event) {
         if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
         const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
         const tmpPath      = path.join(tmpDir, safeFileName);
-        fs.writeFileSync(tmpPath, Buffer.from(response.data));
+        fs.writeFileSync(tmpPath, mediaBuffer);
 
         const publicUrl = `${process.env.APP_URL}/media/${encodeURIComponent(safeFileName)}`;
 
