@@ -132,6 +132,90 @@ router.post('/', async (req, res) => {
             const slackTs = await postToTenantSlack(tenant, channelId, Body, ProfileName, waNumber);
             console.log('[META SLACK POST] success | ts:', slackTs);
             await logMessage({ waNumber, body: Body, direction: 'inbound', twilioSid: MessageSid, slackTs, tenantId: tenant.id });
+          } else if (['image','video','audio','document','sticker'].includes(message.type)) {
+            // Handle media messages from Meta
+            const mediaObj = message[message.type];
+            const mediaId = mediaObj?.id;
+            const caption = mediaObj?.caption || '';
+            const mimeType = mediaObj?.mime_type || '';
+            const filename = mediaObj?.filename || message.type;
+
+            console.log('[META MEDIA IN] type:', message.type, '| id:', mediaId);
+
+            try {
+              // Get media URL from Meta
+              const mediaUrlResp = await fetch(
+                `https://graph.facebook.com/v19.0/${mediaId}`,
+                { headers: { Authorization: `Bearer ${process.env.META_ACCESS_TOKEN}` } }
+              );
+              const mediaData = await mediaUrlResp.json();
+              const mediaUrl = mediaData.url;
+
+              // Download media
+              const mediaResp = await fetch(mediaUrl, {
+                headers: { Authorization: `Bearer ${process.env.META_ACCESS_TOKEN}` }
+              });
+              const mediaBuffer = Buffer.from(await mediaResp.arrayBuffer());
+
+              // Upload to Slack
+              const { WebClient } = require('@slack/web-api');
+              const slack = new WebClient(tenant.slack_bot_token);
+              const uploadResp = await slack.filesUploadV2({
+                channel_id: channelId,
+                content: mediaBuffer,
+                filename: filename || message.type,
+                initial_comment: `*${ProfileName}* (${waNumber})${caption ? ': ' + caption : ''}`
+              });
+              console.log('[META MEDIA] Uploaded to Slack ✅');
+              await logMessage({ waNumber, body: caption || '[media]', direction: 'inbound', twilioSid: MessageSid, slackTs: null, tenantId: tenant.id, mediaType: mimeType });
+            } catch(e) {
+              console.error('[META MEDIA ERROR]', e.message);
+              // Fallback — post media URL as text
+              const slackTs = await postToTenantSlack(tenant, channelId, `[${message.type}] ${caption || ''}`, ProfileName, waNumber);
+              await logMessage({ waNumber, body: `[${message.type}]`, direction: 'inbound', twilioSid: MessageSid, slackTs, tenantId: tenant.id });
+            }
+          } else if (['image','video','audio','document','sticker'].includes(message.type)) {
+            // Handle media messages from Meta
+            const mediaObj = message[message.type];
+            const mediaId = mediaObj?.id;
+            const caption = mediaObj?.caption || '';
+            const mimeType = mediaObj?.mime_type || '';
+            const filename = mediaObj?.filename || message.type;
+
+            console.log('[META MEDIA IN] type:', message.type, '| id:', mediaId);
+
+            try {
+              // Get media URL from Meta
+              const mediaUrlResp = await fetch(
+                `https://graph.facebook.com/v19.0/${mediaId}`,
+                { headers: { Authorization: `Bearer ${process.env.META_ACCESS_TOKEN}` } }
+              );
+              const mediaData = await mediaUrlResp.json();
+              const mediaUrl = mediaData.url;
+
+              // Download media
+              const mediaResp = await fetch(mediaUrl, {
+                headers: { Authorization: `Bearer ${process.env.META_ACCESS_TOKEN}` }
+              });
+              const mediaBuffer = Buffer.from(await mediaResp.arrayBuffer());
+
+              // Upload to Slack
+              const { WebClient } = require('@slack/web-api');
+              const slack = new WebClient(tenant.slack_bot_token);
+              const uploadResp = await slack.filesUploadV2({
+                channel_id: channelId,
+                content: mediaBuffer,
+                filename: filename || message.type,
+                initial_comment: `*${ProfileName}* (${waNumber})${caption ? ': ' + caption : ''}`
+              });
+              console.log('[META MEDIA] Uploaded to Slack ✅');
+              await logMessage({ waNumber, body: caption || '[media]', direction: 'inbound', twilioSid: MessageSid, slackTs: null, tenantId: tenant.id, mediaType: mimeType });
+            } catch(e) {
+              console.error('[META MEDIA ERROR]', e.message);
+              // Fallback — post media URL as text
+              const slackTs = await postToTenantSlack(tenant, channelId, `[${message.type}] ${caption || ''}`, ProfileName, waNumber);
+              await logMessage({ waNumber, body: `[${message.type}]`, direction: 'inbound', twilioSid: MessageSid, slackTs, tenantId: tenant.id });
+            }
           }
         }
       }
