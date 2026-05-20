@@ -218,6 +218,7 @@ async function handleSlackEvent(event) {
   // ── Handle file attachments ───────────────────────────
   if (event.files && event.files.length > 0) {
     for (const file of event.files) {
+      try {
         const axios = require('axios');
         const fs = require('fs');
         const slackDl = new WebClient(tenant.slack_bot_token);
