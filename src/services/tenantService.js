@@ -147,6 +147,7 @@ const getOrCreateChannelForTenant = async (tenant, waNumber, displayName) => {
     }
     if (existing.rows[0].slack_channel) return existing.rows[0].slack_channel;
     // Channel is null - fall through to create new one
+  console.log("[CHANNEL] Contact exists but channel is null, creating new channel for", waNumber);
   }
 
   const slack = new WebClient(tenant.slack_bot_token);
