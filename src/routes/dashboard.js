@@ -782,7 +782,7 @@ router.post('/send-invite', requireAuth, async (req, res) => {
     const tenants = await pool.query('SELECT * FROM tenants WHERE LOWER(email) = $1 AND is_active = TRUE', [user.rows[0].email.toLowerCase()]);
     if (!tenants.rows.length) return res.json({ success: false, error: 'No active workspace found' });
     const tenant = tenants.rows[0];
-    const twilioNumber = tenant.twilio_number?.replace('+', '') || '15556404018';
+    const twilioNumber = (tenant.twilio_number || '+918177822021').replace('+', '');
 
     if (type === 'individual') {
       // Send individual invite
