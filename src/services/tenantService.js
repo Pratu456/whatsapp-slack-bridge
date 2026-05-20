@@ -229,7 +229,7 @@ const getOrCreateChannelForTenant = async (tenant, waNumber, displayName) => {
   await pool.query(
     `INSERT INTO contacts (wa_number, slack_channel, display_name, tenant_id, last_active)
      VALUES ($1, $2, $3, $4, NOW())
-     ON CONFLICT (wa_number, tenant_id) DO UPDATE SET last_active = NOW()`,
+     ON CONFLICT (wa_number, tenant_id) DO UPDATE SET slack_channel = $2, last_active = NOW()`
     [waNumber, channelId, displayName || waNumber, tenant.id]
   );
 
