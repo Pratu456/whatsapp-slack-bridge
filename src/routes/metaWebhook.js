@@ -104,7 +104,7 @@ router.post('/', async (req, res) => {
           if (isNew && claimCodeUsed) {
             await getOrCreateChannelForTenant(tenant, waNumber, ProfileName);
             await sendMetaMessage(waNumber,
-              '✅ You\'re now connected to *' + tenant.company_name + '*. Send your message and their team will reply shortly.',
+              '👋 Hi ' + ProfileName + '! Welcome to *' + tenant.company_name + '*. \n\nYou are now connected and our team will be with you shortly. Feel free to send your message! 😊',
               numId, accessToken
             );
             continue;
