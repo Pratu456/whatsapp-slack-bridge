@@ -260,19 +260,20 @@ async function handleSlackEvent(event) {
           });
           continue;
         }
-
-        const tmpDir       = path.join(__dirname, 'tmp');
-        if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
-        const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-        const tmpPath      = path.join(tmpDir, safeFileName);
-        fs.writeFileSync(tmpPath, mediaBuffer);
-
-        const publicUrl = `${process.env.APP_URL}/media/${encodeURIComponent(safeFileName)}`;
-
-        // ✅ CHANGED: sendWhatsAppMedia now uses Meta API (no twilioNumber param)
-        const msgId = await sendWhatsAppMedia(
-          waNumber,
-          publicUrl,
+        // Upload directly to Meta Media API
+        const FormData = require("form-data");
+        const axios2 = require("axios");
+        const form = new FormData();
+        form.append("file", mediaBuffer, { filename: file.name || "media", contentType: file.mimetype });
+        form.append("messaging_product", "whatsapp");
+        const uploadResp = await axios2.post(
+          `https://graph.facebook.com/v19.0/${process.env.META_PHONE_NUMBER_ID}/media`,
+          form,
+          { headers: { ...form.getHeaders(), Authorization: `Bearer ${process.env.META_ACCESS_TOKEN}` }, maxContentLength: 100*1024*1024, maxBodyLength: 100*1024*1024 }
+        );
+        const metaMediaId = uploadResp.data.id;
+        console.log("[META UPLOAD] Media ID:", metaMediaId);
+        const msgId = await sendWhatsAppMedia(waNumber, metaMediaId, event.text || "", file.mimetype, true);
           event.text || '',
           file.mimetype
         );
