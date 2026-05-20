@@ -259,13 +259,30 @@ const getWaNumberForTenant = async (channelId, tenantId) => {
  */
 const postToTenantSlack = async (tenant, channelId, text, senderName, waNumber) => {
   const slack = new WebClient(tenant.slack_bot_token);
-  const result = await slack.chat.postMessage({
-    channel: channelId,
-    text: `*${senderName}* (WhatsApp · ${waNumber}):
+  try {
+    const result = await slack.chat.postMessage({
+      channel: channelId,
+      text: `*${senderName}* (WhatsApp · ${waNumber}):
 ${text}`,
-    mrkdwn: true,
-  });
-  return result.ts;
+      mrkdwn: true,
+    });
+    return result.ts;
+  } catch(e) {
+    if (e.data?.error === 'channel_not_found' || e.data?.error === 'is_archived') {
+      // Clear stale channel and recreate
+      console.log('[CHANNEL] Channel not found/archived, recreating for', waNumber);
+      await pool.query('UPDATE contacts SET slack_channel = NULL WHERE wa_number = $1 AND tenant_id = $2', [waNumber, tenant.id]);
+      const newChannelId = await getOrCreateChannelForTenant(tenant, waNumber, senderName);
+      const result = await slack.chat.postMessage({
+        channel: newChannelId,
+        text: `*${senderName}* (WhatsApp · ${waNumber}):
+${text}`,
+        mrkdwn: true,
+      });
+      return result.ts;
+    }
+    throw e;
+  }
 };
 
 /**
