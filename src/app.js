@@ -218,16 +218,17 @@ async function handleSlackEvent(event) {
   // ── Handle file attachments ───────────────────────────
   if (event.files && event.files.length > 0) {
     for (const file of event.files) {
-      try {
         const axios = require('axios');
-        const fs    = require('fs');
-
-        const downloadUrl = file.url_private_download || file.url_private;
+        const fs = require('fs');
+        const slackDl = new WebClient(tenant.slack_bot_token);
+        const fileInfo = await slackDl.files.info({ file: file.id });
+        const downloadUrl = fileInfo.file?.url_private_download || file.url_private_download;
+        console.log('[FILE DL] url:', downloadUrl?.slice(0,80));
         const response = await axios.get(downloadUrl, {
-          headers:          { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN || tenant.slack_bot_token}` },
-          responseType:     'arraybuffer',
-          timeout:          60000,
-          maxContentLength: 100 * 1024 * 1024, // 100MB limit
+          headers: { Authorization: `Bearer ${tenant.slack_bot_token}` },
+          responseType: 'arraybuffer',
+          timeout: 120000,
+          maxContentLength: 100 * 1024 * 1024,
         });
 
         if (response.data.byteLength > 100 * 1024 * 1024) {
