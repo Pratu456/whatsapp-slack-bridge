@@ -25,7 +25,7 @@ function cleanNumber(to) {
  * Returns the Meta message ID string (wamid.xxx).
  */
 async function sendWhatsAppMessage(to, body, type = 'private') {
-  const { phoneNumberId, accessToken } = getConfig(msgType);
+  const { phoneNumberId, accessToken } = getConfig(type);
 
   const { data } = await axios.post(
     `${BASE_URL}/${phoneNumberId}/messages`,
@@ -55,7 +55,7 @@ async function sendWhatsAppMessage(to, body, type = 'private') {
  * Returns the Meta message ID string.
  */
 async function sendWhatsAppMedia(to, mediaUrlOrId, caption = '', mimeType = '', isMediaId = false, msgType = 'private') {
-  const { phoneNumberId, accessToken } = getConfig(type);
+  const { phoneNumberId, accessToken } = getConfig(msgType);
 
   // Determine media type from MIME type
   let type = 'document';
