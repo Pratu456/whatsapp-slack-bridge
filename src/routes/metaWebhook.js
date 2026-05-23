@@ -75,7 +75,7 @@ router.post('/', async (req, res) => {
           console.log('[META IN] from:', waNumber, '| body:', Body?.slice(0,50));
 
           const accessToken = process.env.META_ACCESS_TOKEN;
-          const numId = process.env.META_PHONE_NUMBER_ID;
+          const numId = process.env.META_PHONE_NUMBER_ID_PRIVATE || process.env.META_PHONE_NUMBER_ID;
 
           const { tenant, isNew, claimCodeUsed, group } = await getTenantForIncomingMessage(waNumber, Body);
 
