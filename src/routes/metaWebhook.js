@@ -122,11 +122,11 @@ router.post('/', async (req, res) => {
 
           if (group) {
             const channelId = await getOrCreateGroupChannel(tenant, group);
-            if (claimCodeUsed) {
+              await sendMetaMessage(waNumber,
+                '✅ You're now in *' + group.name + '*. Your messages will be shared with the group.',
                 groupNumId || numId, accessToken
-                '✅ You\'re now in *' + group.name + '*. Your messages will be shared with the group.',
-                numId, accessToken
               );
+              continue;
               continue;
             }
             const slackTs = await postGroupMessageToSlack(tenant, channelId, Body, ProfileName, waNumber);
