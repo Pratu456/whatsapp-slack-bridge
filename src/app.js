@@ -181,7 +181,7 @@ async function handleSlackEvent(event) {
       for (const member of members) {
         try {
           // ✅ CHANGED: sendWhatsApp → sendWhatsAppMessage (no twilioNumber param)
-          const msgId = await sendWhatsAppMessage(member.wa_number, "*" + agentName + "*: " + event.text);
+          const msgId = await sendWhatsAppMessage(member.wa_number, "*" + agentName + "*: " + event.text, "group");
           console.log("[GROUP REPLY] Sent to", member.wa_number, msgId);
           await logMessage({ waNumber: member.wa_number, body: event.text, direction: "outbound", twilioSid: msgId, slackTs: event.ts, tenantId: grpTenant.id });
         } catch(e) { console.warn("[GROUP REPLY] Failed:", member.wa_number, e.message); }
@@ -300,7 +300,7 @@ async function handleSlackEvent(event) {
   if (event.text) {
     try {
       // ✅ CHANGED: sendWhatsApp → sendWhatsAppMessage (no twilioNumber param)
-      const msgId = await sendWhatsAppMessage(waNumber, event.text);
+      const msgId = await sendWhatsAppMessage(waNumber, event.text, "private");
 
       await logMessage({
         waNumber,
@@ -382,7 +382,7 @@ server.post('/slack/interactions', express.urlencoded({ extended: true }), async
       const tenant = tenantResult.rows[0];
 
       // ✅ CHANGED: sendWhatsApp → sendWhatsAppMessage (no twilioNumber param)
-      const msgId = await sendWhatsAppMessage(waNumber, replyText);
+      const msgId = await sendWhatsAppMessage(waNumber, replyText, "private");
       await logMessage({
         waNumber,
         body: replyText,
