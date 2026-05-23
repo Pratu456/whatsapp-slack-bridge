@@ -84,12 +84,10 @@ router.post('/', async (req, res) => {
             await sendMetaMessage(waNumber, 'This number is for group chats only. Please send a group claim code.', numId, accessToken);
             continue;
           }
+          if (!isGroupNumber && group && claimCodeUsed) {
             await sendMetaMessage(waNumber, 'To join a group please send the group claim code to our group number.', numId, accessToken);
             group = null; claimCodeUsed = false;
           }
-          const numId = process.env.META_PHONE_NUMBER_ID_PRIVATE || process.env.META_PHONE_NUMBER_ID;
-
-          const { tenant, isNew, claimCodeUsed, group } = await getTenantForIncomingMessage(waNumber, Body);
 
           if (!tenant) {
             await sendMetaMessage(waNumber,
