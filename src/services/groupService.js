@@ -127,9 +127,8 @@ const broadcastToGroup = async (groupId, excludeNumber, senderName, text) => {
     try {
       // ✅ CHANGED: sendWhatsApp → sendWhatsAppMessage
       await sendWhatsAppMessage(
-        member.wa_number,
-        '*' + senderName + '*: ' + text
-      );
+        member.wa_number, '*' + senderName + '*: ' + text
+      , 'group');
       console.log('[GROUP] Sent to', member.wa_number);
     } catch(e) {
       console.warn('[GROUP] Failed to send to', member.wa_number, ':', e.message);
@@ -148,8 +147,7 @@ const broadcastReplyToGroup = async (groupId, agentName, text) => {
     try {
       // ✅ CHANGED: sendWhatsApp → sendWhatsAppMessage
       await sendWhatsAppMessage(
-        member.wa_number,
-        '*' + agentName + '* (Support): ' + text
+        member.wa_number, '*' + agentName + '* (Support, 'group'): ' + text
       );
       console.log('[GROUP REPLY] Sent to', member.wa_number);
     } catch(e) {

@@ -6,10 +6,12 @@ axios.defaults.maxBodyLength = 100 * 1024 * 1024; // 100MB
 
 const BASE_URL = 'https://graph.facebook.com/v19.0';
 
-function getConfig() {
+function getConfig(type = 'private') {
   return {
-    phoneNumberId: process.env.META_PHONE_NUMBER_ID,
-    accessToken:   process.env.META_ACCESS_TOKEN,
+    phoneNumberId: type === 'group'
+      ? (process.env.META_PHONE_NUMBER_ID_GROUP || process.env.META_PHONE_NUMBER_ID)
+      : (process.env.META_PHONE_NUMBER_ID_PRIVATE || process.env.META_PHONE_NUMBER_ID),
+    accessToken: process.env.META_ACCESS_TOKEN,
   };
 }
 
@@ -22,8 +24,8 @@ function cleanNumber(to) {
  * Send a plain-text WhatsApp message via Meta Cloud API.
  * Returns the Meta message ID string (wamid.xxx).
  */
-async function sendWhatsAppMessage(to, body) {
-  const { phoneNumberId, accessToken } = getConfig();
+async function sendWhatsAppMessage(to, body, type = 'private') {
+  const { phoneNumberId, accessToken } = getConfig(type);
 
   const { data } = await axios.post(
     `${BASE_URL}/${phoneNumberId}/messages`,
@@ -52,8 +54,8 @@ async function sendWhatsAppMessage(to, body) {
  * Meta fetches the file from the public URL you provide.
  * Returns the Meta message ID string.
  */
-async function sendWhatsAppMedia(to, mediaUrlOrId, caption = '', mimeType = '', isMediaId = false) {
-  const { phoneNumberId, accessToken } = getConfig();
+async function sendWhatsAppMedia(to, mediaUrlOrId, caption = '', mimeType = '', isMediaId = false, type = 'private') {
+  const { phoneNumberId, accessToken } = getConfig(type);
 
   // Determine media type from MIME type
   let type = 'document';
