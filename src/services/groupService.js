@@ -147,7 +147,7 @@ const broadcastReplyToGroup = async (groupId, agentName, text) => {
     try {
       // ✅ CHANGED: sendWhatsApp → sendWhatsAppMessage
       await sendWhatsAppMessage(
-        member.wa_number, '*' + agentName + '* (Support, 'group'): ' + text
+        member.wa_number, '*' + agentName + '*: ' + text, 'group'
       );
       console.log('[GROUP REPLY] Sent to', member.wa_number);
     } catch(e) {
