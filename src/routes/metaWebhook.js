@@ -71,10 +71,22 @@ router.post('/', async (req, res) => {
           const Body = message.text?.body || '';
           const MessageSid = message.id;
           const ProfileName = value.contacts?.[0]?.profile?.name || waNumber;
-
           console.log('[META IN] from:', waNumber, '| body:', Body?.slice(0,50));
-
           const accessToken = process.env.META_ACCESS_TOKEN;
+          const numId = process.env.META_PHONE_NUMBER_ID_PRIVATE || process.env.META_PHONE_NUMBER_ID;
+          const groupNumId = process.env.META_PHONE_NUMBER_ID_GROUP;
+          const isGroupNumber = groupNumId && phoneNumberId === groupNumId;
+          console.log('[META ROUTING] incoming to:', isGroupNumber ? 'GROUP number' : 'PRIVATE number');
+          const result = await getTenantForIncomingMessage(waNumber, Body);
+          let { tenant, isNew, claimCodeUsed, group } = result;
+          // Enforce number routing
+          if (isGroupNumber && group === null && claimCodeUsed === false && tenant) {
+            await sendMetaMessage(waNumber, 'This number is for group chats only. Please send a group claim code.', numId, accessToken);
+            continue;
+          }
+            await sendMetaMessage(waNumber, 'To join a group please send the group claim code to our group number.', numId, accessToken);
+            group = null; claimCodeUsed = false;
+          }
           const numId = process.env.META_PHONE_NUMBER_ID_PRIVATE || process.env.META_PHONE_NUMBER_ID;
 
           const { tenant, isNew, claimCodeUsed, group } = await getTenantForIncomingMessage(waNumber, Body);
