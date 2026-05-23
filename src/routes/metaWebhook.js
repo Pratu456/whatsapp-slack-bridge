@@ -123,7 +123,7 @@ router.post('/', async (req, res) => {
           if (group) {
             const channelId = await getOrCreateGroupChannel(tenant, group);
               await sendMetaMessage(waNumber,
-                '✅ You're now in *' + group.name + '*. Your messages will be shared with the group.',
+                "You are now in *" + group.name + "*. Your messages will be shared with the group.",
                 groupNumId || numId, accessToken
               );
               continue;
