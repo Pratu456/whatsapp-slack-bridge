@@ -63,7 +63,7 @@ router.post('/', async (req, res) => {
 
           console.log('[META ROUTING] incoming to:', isGroupNumber ? 'GROUP number' : 'PRIVATE number');
 
-          const result = await getTenantForIncomingMessage(waNumber, Body);
+          const result = await getTenantForIncomingMessage(waNumber, Body, isGroupNumber);
           let { tenant, isNew, claimCodeUsed, group } = result;
 
           if (!tenant) {

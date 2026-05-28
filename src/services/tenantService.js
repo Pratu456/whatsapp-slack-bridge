@@ -5,7 +5,7 @@ const { WebClient } = require('@slack/web-api');
 /**
  * Get tenant for incoming message.
  */
-const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
+const getTenantForIncomingMessage = async (fromNumber, messageBody, isGroupNumber = false) => {
   const words = (messageBody || '').toLowerCase().trim().split(/\s+/);
 
   for (const word of words) {
@@ -99,7 +99,7 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody) => {
       'UPDATE contacts SET last_active = NOW() WHERE wa_number = $1 AND tenant_id = $2',
       [fromNumber, tenant.id]
     );
-    if (contact.rows[0].active_group_id) {
+    if (contact.rows[0].active_group_id && isGroupNumber) {
       const groupResult = await pool.query('SELECT * FROM wa_groups WHERE id = $1', [contact.rows[0].active_group_id]);
       if (groupResult.rows.length > 0) {
         console.log(`[GROUP SESSION] ${fromNumber} → group: ${groupResult.rows[0].name}`);
