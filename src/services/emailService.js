@@ -30,35 +30,25 @@ const sendVerificationEmail = async ({ to, fullName, verifyToken }) => {
   });
 };
 
-const sendActivationEmail = async ({ to, companyName, claimCode, whatsappNumber, loginEmail, loginPassword, loginUrl }) => {
+const sendActivationEmail = async ({ to, companyName, claimCode, whatsappNumber }) => {
   await sendEmail({
     to,
     subject: 'Your Syncora workspace is ready!',
-    html: `<!DOCTYPE html><html><body style="font-family:Inter,sans-serif;background:#f9f9f9;padding:40px 20px">
-      <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;padding:40px">
-        <h2 style="color:#111;margin-bottom:12px">🎉 Your workspace is active!</h2>
-        <p style="color:#555;margin-bottom:20px">Hi ${companyName}, your Syncora workspace is ready.</p>
-        <div style="background:#f4f4f4;border-radius:10px;padding:20px;margin-bottom:20px">
-          <p style="margin:0 0 8px;font-size:13px;color:#777">YOUR WHATSAPP NUMBER</p>
-          <p style="margin:0;font-size:20px;font-weight:800;color:#111">${whatsappNumber}</p>
-        </div>
-        <div style="background:#f0fff4;border:1px solid #25D366;border-radius:10px;padding:20px;margin-bottom:20px">
-          <p style="margin:0 0 8px;font-size:13px;color:#777">YOUR CLAIM CODE</p>
-          <p style="margin:0;font-size:24px;font-weight:900;color:#25D366;letter-spacing:4px">${claimCode}</p>
-        </div>
-        <p style="color:#555;font-size:13px">Share this claim code with your customers. They send it to your WhatsApp number to connect.</p>
-        <div style="background:#f8f8f8;border-radius:10px;padding:20px;margin:24px 0;border:1px solid #e5e5e5">
-          <p style="margin:0 0 8px;font-size:13px;color:#777">STEP 1 — INSTALL SYNCORA IN YOUR SLACK WORKSPACE</p>
-          <p style="margin:0 0 16px;font-size:13px;color:#555">Click below to add Syncora to your Slack workspace. Takes a few seconds.</p>
-          <a href="${process.env.APP_URL}/auth/slack" style="display:inline-block;background:#4A154B;color:#fff;padding:12px 24px;border-radius:10px;font-weight:700;text-decoration:none;font-size:14px">Add to Slack →</a>
-        </div>
-        <div style="background:#f0fff4;border-radius:10px;padding:16px;margin-bottom:20px;border:1px solid #25D366">
-          <p style="margin:0;font-size:13px;color:#555">📱 <strong>STEP 2</strong> — Ask your customers to message <strong>${whatsappNumber}</strong> on WhatsApp with code <strong style="color:#25D366">${claimCode}</strong> to connect.</p>
-        </div>
-        ' + (loginEmail ? '<div style="background:#f0f4ff;border:1px solid #c7d7ff;border-radius:10px;padding:20px;margin:20px 0"><p style="margin:0 0 12px;font-size:13px;color:#777;text-transform:uppercase">YOUR DASHBOARD LOGIN</p><table style="width:100%;border-collapse:collapse"><tr><td style="padding:4px 0;font-size:13px;color:#555;width:80px">URL:</td><td style="font-size:13px;font-weight:600;color:#111">' + loginUrl + '</td></tr><tr><td style="padding:4px 0;font-size:13px;color:#555">Email:</td><td style="font-size:13px;font-weight:600;color:#111">' + loginEmail + '</td></tr><tr><td style="padding:4px 0;font-size:13px;color:#555">Password:</td><td style="font-size:14px;font-weight:900;color:#4A154B;font-family:monospace;letter-spacing:3px">' + loginPassword + '</td></tr></table><p style="margin:12px 0 0;font-size:12px;color:#888">Please change your password after first login.</p></div><div style="text-align:center;margin:16px 0"><a href="' + loginUrl + '" style="display:inline-block;background:#4A154B;color:#fff;padding:12px 28px;border-radius:10px;font-weight:700;text-decoration:none;font-size:14px">Login to Dashboard &rarr;</a></div>' : '') + '
-        <p style="margin-top:24px;font-size:12px;color:#999">Powered by Syncora</p>
-      </div>
-    </body></html>`
+    html: '<!DOCTYPE html><html><body style="font-family:Inter,sans-serif;background:#f9f9f9;padding:40px 20px">'
+      + '<div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;padding:40px">'
+      + '<h2 style="color:#111;margin-bottom:12px">&#x1F389; Your workspace is active!</h2>'
+      + '<p style="color:#555;margin-bottom:20px">Hi ' + companyName + ', your Syncora workspace is ready. Share the details below with your customers.</p>'
+      + '<div style="background:#f4f4f4;border-radius:10px;padding:20px;margin-bottom:20px">'
+      + '<p style="margin:0 0 8px;font-size:13px;color:#777">YOUR WHATSAPP NUMBER</p>'
+      + '<p style="margin:0;font-size:20px;font-weight:800;color:#111">' + whatsappNumber + '</p>'
+      + '</div>'
+      + '<div style="background:#f0fff4;border:1px solid #25D366;border-radius:10px;padding:20px;margin-bottom:20px">'
+      + '<p style="margin:0 0 8px;font-size:13px;color:#777">YOUR CLAIM CODE</p>'
+      + '<p style="margin:0;font-size:24px;font-weight:900;color:#25D366;letter-spacing:4px">' + claimCode + '</p>'
+      + '</div>'
+      + '<p style="color:#555;font-size:13px">Share this claim code with your customers. They send it to your WhatsApp number to connect with your team on Slack.</p>'
+      + '<p style="margin-top:24px;font-size:11px;color:#bbb;text-align:center">Powered by Syncora</p>'
+      + '</div></body></html>'
   });
 };
 
