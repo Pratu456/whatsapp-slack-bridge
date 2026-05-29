@@ -779,7 +779,8 @@ router.post('/send-invite', requireAuth, async (req, res) => {
   try {
     const { email, emails, groupName, type } = req.body;
     const user = await pool.query('SELECT * FROM users WHERE id = $1', [req.session.userId]);
-    const tenants = await pool.query('SELECT * FROM tenants WHERE LOWER(email) = $1 AND is_active = TRUE', [user.rows[0].email.toLowerCase()]);
+    if (!user.rows.length) return res.json({ success: false, error: 'User not found' });
+    const tenants = await pool.query('SELECT t.* FROM tenants t WHERE LOWER(t.email) = $1 AND t.is_active = TRUE LIMIT 1', [user.rows[0].email.toLowerCase()]);
     if (!tenants.rows.length) return res.json({ success: false, error: 'No active workspace found' });
     const tenant = tenants.rows[0];
     const privateNumber = process.env.META_PHONE_NUMBER_PRIVATE || '381653229717';
