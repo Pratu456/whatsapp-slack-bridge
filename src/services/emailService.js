@@ -232,6 +232,41 @@ const sendLoginCredentialsEmail = async ({ to, companyName, loginEmail, loginPas
   });
 };
 
+
+const sendConnectWorkspaceEmail = async ({ to, companyName }) => {
+  const installUrl = process.env.APP_URL + '/auth/slack';
+  await sendEmail({
+    to,
+    subject: 'Connect your Slack workspace to Syncora',
+    html: '<!DOCTYPE html><html><body style="font-family:Inter,sans-serif;background:#f9f9f9;padding:40px 20px">'
+      + '<div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)">'
+      + '<div style="background:#111;padding:28px 32px">'
+      + '<span style="font-size:22px;font-weight:900;color:#25D366;letter-spacing:-0.5px">Syncora</span>'
+      + '</div>'
+      + '<div style="padding:32px">'
+      + '<h2 style="margin:0 0 8px;color:#111;font-size:22px">Welcome to Syncora!</h2>'
+      + '<p style="color:#555;margin:0 0 24px;font-size:14px">Hi ' + companyName + ', your Syncora account has been created. The next step is to connect your Slack workspace.</p>'
+      + '<div style="background:#f9f9f9;border-radius:12px;padding:20px;margin-bottom:24px">'
+      + '<p style="margin:0 0 12px;font-size:13px;font-weight:600;color:#111">How it works:</p>'
+      + '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px">'
+      + '<span style="background:#25D366;color:#000;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</span>'
+      + '<p style="margin:0;font-size:13px;color:#555">Click the button below to connect your Slack workspace</p></div>'
+      + '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px">'
+      + '<span style="background:#25D366;color:#000;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</span>'
+      + '<p style="margin:0;font-size:13px;color:#555">Approve Syncora access to your Slack workspace</p></div>'
+      + '<div style="display:flex;align-items:flex-start;gap:12px">'
+      + '<span style="background:#25D366;color:#000;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</span>'
+      + '<p style="margin:0;font-size:13px;color:#555">You will receive your login credentials and claim code after connecting</p></div>'
+      + '</div>'
+      + '<div style="text-align:center;margin:24px 0">'
+      + '<a href="' + installUrl + '" style="display:inline-block;background:#4A154B;color:#fff;padding:14px 32px;border-radius:10px;font-weight:700;text-decoration:none;font-size:15px">Connect Slack Workspace &rarr;</a>'
+      + '</div>'
+      + '<p style="margin-top:24px;font-size:11px;color:#bbb;text-align:center">Powered by Syncora</p>'
+      + '</div></div>'
+      + '</body></html>'
+  });
+};
+
 module.exports = {
   sendVerificationEmail,
   sendActivationEmail,
@@ -240,4 +275,5 @@ module.exports = {
   sendUpgradeEmail,
   sendCancellationEmail,
   sendLoginCredentialsEmail,
+  sendConnectWorkspaceEmail,
 };

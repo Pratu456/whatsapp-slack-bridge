@@ -427,7 +427,32 @@ router.get('/slack/callback', async (req, res) => {
       );
     }
 
-        return res.redirect('/dashboard');
+        // Create user account and send login credentials
+                if (email) {
+                  try {
+                    const bcrypt = require('bcrypt');
+                    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+                    let tempPassword = '';
+                    for (let i = 0; i < 8; i++) tempPassword += chars[Math.floor(Math.random() * chars.length)];
+                    tempPassword += '!';
+                    const passwordHash = await bcrypt.hash(tempPassword, 10);
+                    const existingUser = await pool.query('SELECT id FROM users WHERE email = $1', [email.trim().toLowerCase()]);
+                    if (!existingUser.rows.length) {
+                      await pool.query('INSERT INTO users (full_name, email, company_name, password_hash, verified) VALUES ($1, $2, $3, $4, TRUE)',
+                        [companyName, email.trim().toLowerCase(), companyName, passwordHash]);
+                      const { sendLoginCredentialsEmail } = require('../services/emailService');
+                      await sendLoginCredentialsEmail({
+                        to: email.trim(),
+                        companyName,
+                        loginEmail: email.trim(),
+                        loginPassword: tempPassword,
+                        loginUrl: process.env.APP_URL + '/auth/login'
+                      });
+                      console.log('[SLACK OAUTH] Login credentials sent to', email);
+                    }
+                  } catch(e) { console.error('[SLACK OAUTH] User creation failed:', e.message); }
+                }
+                return res.redirect('/dashboard');
 
 res.send(`<!DOCTYPE html>
 <html lang="en">

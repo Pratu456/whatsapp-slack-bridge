@@ -1191,19 +1191,8 @@ router.post('/add', auth, async (req, res) => {
           [company, email.trim().toLowerCase(), company, passwordHash]);
       }
       try {
-        const { sendActivationEmail, sendLoginCredentialsEmail } = require('../services/emailService');
-        await sendActivationEmail({
-          to: email.trim(), companyName: company,
-          claimCode: claim_code.toLowerCase().trim(),
-          whatsappNumber: twilio_number || process.env.META_PHONE_NUMBER_PRIVATE || '+381653229717',
-        });
-        await sendLoginCredentialsEmail({
-          to: email.trim(),
-          companyName: company,
-          loginEmail: email.trim(),
-          loginPassword: tempPassword,
-          loginUrl: process.env.APP_URL + '/auth/login'
-        });
+        const { sendConnectWorkspaceEmail } = require('../services/emailService');
+        await sendConnectWorkspaceEmail({ to: email.trim(), companyName: company });
       } catch(emailErr) { console.error('[ADD COMPANY] Email failed:', emailErr.message); }
     }
     res.json({ success: true });
