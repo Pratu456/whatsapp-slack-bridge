@@ -782,11 +782,12 @@ router.post('/send-invite', requireAuth, async (req, res) => {
     const tenants = await pool.query('SELECT * FROM tenants WHERE LOWER(email) = $1 AND is_active = TRUE', [user.rows[0].email.toLowerCase()]);
     if (!tenants.rows.length) return res.json({ success: false, error: 'No active workspace found' });
     const tenant = tenants.rows[0];
-    const twilioNumber = (tenant.twilio_number || '+918177822021').replace('+', '');
+    const privateNumber = process.env.META_PHONE_NUMBER_PRIVATE || '381653229717';
+    const groupNumber = process.env.META_PHONE_NUMBER_GROUP || '381665789626';
 
     if (type === 'individual') {
       // Send individual invite
-      const waLink = 'https://wa.me/' + twilioNumber + '?text=' + encodeURIComponent(tenant.claim_code);
+      const waLink = 'https://wa.me/' + privateNumber + '?text=' + encodeURIComponent(tenant.claim_code);
       const { sendInviteEmail } = require('../services/emailService');
       await sendInviteEmail({
         to: email,
@@ -803,7 +804,7 @@ router.post('/send-invite', requireAuth, async (req, res) => {
         'INSERT INTO wa_groups (tenant_id, name, claim_code) VALUES ($1, $2, $3) RETURNING *',
         [tenant.id, groupName, claimCode]
       );
-      const waLink = 'https://wa.me/' + twilioNumber + '?text=' + encodeURIComponent(claimCode);
+      const waLink = 'https://wa.me/' + groupNumber + '?text=' + encodeURIComponent(claimCode);
       const { sendInviteEmail } = require('../services/emailService');
       let sent = 0;
       for (const em of emails) {
