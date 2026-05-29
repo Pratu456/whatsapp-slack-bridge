@@ -30,7 +30,7 @@ const sendVerificationEmail = async ({ to, fullName, verifyToken }) => {
   });
 };
 
-const sendActivationEmail = async ({ to, companyName, claimCode, whatsappNumber }) => {
+const sendActivationEmail = async ({ to, companyName, claimCode, whatsappNumber, loginEmail, loginPassword, loginUrl }) => {
   await sendEmail({
     to,
     subject: 'Your Syncora workspace is ready!',
@@ -55,6 +55,7 @@ const sendActivationEmail = async ({ to, companyName, claimCode, whatsappNumber 
         <div style="background:#f0fff4;border-radius:10px;padding:16px;margin-bottom:20px;border:1px solid #25D366">
           <p style="margin:0;font-size:13px;color:#555">📱 <strong>STEP 2</strong> — Ask your customers to message <strong>${whatsappNumber}</strong> on WhatsApp with code <strong style="color:#25D366">${claimCode}</strong> to connect.</p>
         </div>
+        ' + (loginEmail ? '<div style="background:#f0f4ff;border:1px solid #c7d7ff;border-radius:10px;padding:20px;margin:20px 0"><p style="margin:0 0 12px;font-size:13px;color:#777;text-transform:uppercase">YOUR DASHBOARD LOGIN</p><table style="width:100%;border-collapse:collapse"><tr><td style="padding:4px 0;font-size:13px;color:#555;width:80px">URL:</td><td style="font-size:13px;font-weight:600;color:#111">' + loginUrl + '</td></tr><tr><td style="padding:4px 0;font-size:13px;color:#555">Email:</td><td style="font-size:13px;font-weight:600;color:#111">' + loginEmail + '</td></tr><tr><td style="padding:4px 0;font-size:13px;color:#555">Password:</td><td style="font-size:14px;font-weight:900;color:#4A154B;font-family:monospace;letter-spacing:3px">' + loginPassword + '</td></tr></table><p style="margin:12px 0 0;font-size:12px;color:#888">Please change your password after first login.</p></div><div style="text-align:center;margin:16px 0"><a href="' + loginUrl + '" style="display:inline-block;background:#4A154B;color:#fff;padding:12px 28px;border-radius:10px;font-weight:700;text-decoration:none;font-size:14px">Login to Dashboard &rarr;</a></div>' : '') + '
         <p style="margin-top:24px;font-size:12px;color:#999">Powered by Syncora</p>
       </div>
     </body></html>`
@@ -196,6 +197,41 @@ const sendCancellationEmail = async ({ to, companyName, planEnd }) => {
   });
 };
 
+
+const sendLoginCredentialsEmail = async ({ to, companyName, loginEmail, loginPassword, loginUrl }) => {
+  await sendEmail({
+    to,
+    subject: 'Your Syncora login credentials',
+    html: '<!DOCTYPE html><html><body style="font-family:Inter,sans-serif;background:#f9f9f9;padding:40px 20px">'
+      + '<div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)">'
+      + '<div style="background:#111;padding:28px 32px">'
+      + '<span style="font-size:22px;font-weight:900;color:#25D366;letter-spacing:-0.5px">Syncora</span>'
+      + '</div>'
+      + '<div style="padding:32px">'
+      + '<h2 style="margin:0 0 8px;color:#111;font-size:22px">Your login credentials</h2>'
+      + '<p style="color:#555;margin:0 0 24px;font-size:14px">Hi ' + companyName + ', here are your Syncora dashboard login details.</p>'
+      + '<div style="background:#f0f4ff;border:1px solid #c7d7ff;border-radius:12px;padding:24px;margin-bottom:24px">'
+      + '<table style="width:100%;border-collapse:collapse">'
+      + '<tr><td style="padding:8px 0;font-size:13px;color:#555;width:80px;border-bottom:1px solid #e5e5e5">Login URL</td>'
+      + '<td style="padding:8px 0;font-size:13px;font-weight:600;color:#111;border-bottom:1px solid #e5e5e5">' + loginUrl + '</td></tr>'
+      + '<tr><td style="padding:8px 0;font-size:13px;color:#555;border-bottom:1px solid #e5e5e5">Email</td>'
+      + '<td style="padding:8px 0;font-size:13px;font-weight:600;color:#111;border-bottom:1px solid #e5e5e5">' + loginEmail + '</td></tr>'
+      + '<tr><td style="padding:8px 0;font-size:13px;color:#555">Password</td>'
+      + '<td style="padding:8px 0;font-size:18px;font-weight:900;color:#4A154B;font-family:monospace;letter-spacing:4px">' + loginPassword + '</td></tr>'
+      + '</table>'
+      + '</div>'
+      + '<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:14px;margin-bottom:24px">'
+      + '<p style="margin:0;font-size:13px;color:#856404">Please change your password after your first login for security.</p>'
+      + '</div>'
+      + '<div style="text-align:center">'
+      + '<a href="' + loginUrl + '" style="display:inline-block;background:#4A154B;color:#fff;padding:14px 32px;border-radius:10px;font-weight:700;text-decoration:none;font-size:15px">Login to Dashboard &rarr;</a>'
+      + '</div>'
+      + '<p style="margin-top:24px;font-size:11px;color:#bbb;text-align:center">Powered by Syncora</p>'
+      + '</div></div>'
+      + '</body></html>'
+  });
+};
+
 module.exports = {
   sendVerificationEmail,
   sendActivationEmail,
@@ -203,4 +239,5 @@ module.exports = {
   sendInviteEmail,
   sendUpgradeEmail,
   sendCancellationEmail,
+  sendLoginCredentialsEmail,
 };

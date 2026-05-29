@@ -1178,6 +1178,34 @@ router.post('/add', auth, async (req, res) => {
     if (existing.rows.length) return res.json({ success: false, error: 'This claim code is already taken' });
     await pool.query(`INSERT INTO tenants (company_name, email, twilio_number, slack_bot_token, slack_team_id, slack_team_name, claim_code, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE)`,
       [company, email || null, twilio_number, slack_bot_token, 'MANUAL', company, claim_code.toLowerCase().trim()]);
+    if (email) {
+      const bcrypt = require('bcrypt');
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let tempPassword = '';
+      for (let i = 0; i < 8; i++) tempPassword += chars[Math.floor(Math.random() * chars.length)];
+      tempPassword += '!';
+      const passwordHash = await bcrypt.hash(tempPassword, 10);
+      const existingUser = await pool.query('SELECT id FROM users WHERE email = $1', [email.trim().toLowerCase()]);
+      if (!existingUser.rows.length) {
+        await pool.query('INSERT INTO users (full_name, email, company_name, password_hash, verified) VALUES ($1, $2, $3, $4, TRUE)',
+          [company, email.trim().toLowerCase(), company, passwordHash]);
+      }
+      try {
+        const { sendActivationEmail, sendLoginCredentialsEmail } = require('../services/emailService');
+        await sendActivationEmail({
+          to: email.trim(), companyName: company,
+          claimCode: claim_code.toLowerCase().trim(),
+          whatsappNumber: twilio_number || process.env.META_PHONE_NUMBER_PRIVATE || '+381653229717',
+        });
+        await sendLoginCredentialsEmail({
+          to: email.trim(),
+          companyName: company,
+          loginEmail: email.trim(),
+          loginPassword: tempPassword,
+          loginUrl: process.env.APP_URL + '/auth/login'
+        });
+      } catch(emailErr) { console.error('[ADD COMPANY] Email failed:', emailErr.message); }
+    }
     res.json({ success: true });
   } catch(err){ res.json({ success: false, error: err.message }); }
 });
