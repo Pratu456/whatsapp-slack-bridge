@@ -4,7 +4,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const sendEmail = async ({ to, subject, html }) => {
   // Use Resend API (works on Render, no SMTP needed)
   const { data, error } = await resend.emails.send({
-    from: 'Syncora <onboarding@resend.dev>',
+    from: 'Syncora <noreply@syncora.one>',
     to: process.env.NODE_ENV === 'production' ? to : process.env.GMAIL_USER,
     subject,
     html,
