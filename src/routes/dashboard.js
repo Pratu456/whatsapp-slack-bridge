@@ -430,14 +430,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div class="fg" style="margin-bottom:0">
               <label>Meta Phone Number ID</label>
-              <input type="text" id="metaPhoneId" value="${tenant.meta_phone_number_id || ''}" placeholder="e.g. 1234567890"/>
+              <input type="text" id="metaPhoneId" value="${tenants[0]?.meta_phone_number_id || ''}" placeholder="e.g. 1234567890"/>
             </div>
             <div class="fg" style="margin-bottom:0">
               <label>Meta Access Token</label>
-              <input type="password" id="metaToken" value="${tenant.meta_access_token || ''}" placeholder="EAAcqZ..."/>
+              <input type="password" id="metaToken" value="${tenants[0]?.meta_access_token || ''}" placeholder="EAAcqZ..."/>
             </div>
           </div>
-          ${tenant.meta_phone_number_id ? '<div style="margin-top:10px;padding:8px 12px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);border-radius:8px;font-size:12px;color:#25D366">✅ Custom WhatsApp number connected</div>' : '<div style="margin-top:10px;padding:8px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:12px;color:rgba(255,255,255,.4)">📱 Using Syncora shared number (+381 65 3229717)</div>'}
+          ${tenants[0]?.meta_phone_number_id ? '<div style="margin-top:10px;padding:8px 12px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);border-radius:8px;font-size:12px;color:#25D366">✅ Custom WhatsApp number connected</div>' : '<div style="margin-top:10px;padding:8px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:12px;color:rgba(255,255,255,.4)">📱 Using Syncora shared number (+381 65 3229717)</div>'}
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <button class="btn-primary" onclick="saveWhatsAppSettings()">Verify & Save</button>
