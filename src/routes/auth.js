@@ -420,11 +420,31 @@ router.get('/slack/callback', async (req, res) => {
         [botToken, teamName, companyName, email, teamId]
       );
     } else {
-      await pool.query(
-        `INSERT INTO tenants (company_name, email, twilio_number, slack_bot_token, slack_team_id, slack_team_name, is_active)
-         VALUES ($1, $2, $3, $4, $5, $6, FALSE)`,
-        [companyName, email || null, 'PENDING', botToken, teamId, teamName]
-      );
+      // Auto-generate claim code
+            const claimChars = 'abcdefghijklmnpqrstuvwxyz23456789';
+            let autoClaimCode = '';
+            for (let i = 0; i < 7; i++) autoClaimCode += claimChars[Math.floor(Math.random() * claimChars.length)];
+            // Check claim code is unique
+            const claimExists = await pool.query('SELECT id FROM tenants WHERE claim_code = $1', [autoClaimCode]);
+            if (claimExists.rows.length) autoClaimCode = autoClaimCode + Math.floor(Math.random() * 99);
+            const privateNumber = process.env.META_PHONE_NUMBER_PRIVATE ? '+' + process.env.META_PHONE_NUMBER_PRIVATE : '+381653229717';
+            await pool.query(
+              `INSERT INTO tenants (company_name, email, twilio_number, slack_bot_token, slack_team_id, slack_team_name, is_active, claim_code) VALUES ($1, $2, $3, $4, $5, $6, TRUE, $7)`,
+              [companyName, email || null, privateNumber, botToken, teamId, teamName, autoClaimCode]
+            );
+            // Send activation email with claim code
+            if (email) {
+              try {
+                const { sendActivationEmail } = require('../services/emailService');
+                await sendActivationEmail({
+                  to: email.trim(),
+                  companyName,
+                  claimCode: autoClaimCode,
+                  whatsappNumber: privateNumber
+                });
+                console.log('[SLACK OAUTH] Activation email sent to', email);
+              } catch(e) { console.error('[SLACK OAUTH] Activation email failed:', e.message); }
+            }
     }
 
         // Create user account and send login credentials
