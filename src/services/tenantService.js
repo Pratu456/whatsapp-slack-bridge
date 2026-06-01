@@ -5,7 +5,31 @@ const { WebClient } = require('@slack/web-api');
 /**
  * Get tenant for incoming message.
  */
-const getTenantForIncomingMessage = async (fromNumber, messageBody, isGroupNumber = false) => {
+const getTenantForIncomingMessage = async (fromNumber, messageBody, isGroupNumber = false, incomingPhoneNumberId = null) => {
+  // Check if this phone_number_id belongs to a specific tenant (dedicated number)
+  if (incomingPhoneNumberId) {
+    const dedicatedTenant = await pool.query(
+      'SELECT * FROM tenants WHERE meta_phone_number_id = $1 AND is_active = TRUE LIMIT 1',
+      [incomingPhoneNumberId]
+    );
+    if (dedicatedTenant.rows.length > 0) {
+      const tenant = dedicatedTenant.rows[0];
+      console.log('[DEDICATED NUMBER] Tenant found:', tenant.company_name);
+      // Check existing contact
+      const contact = await pool.query(
+        'SELECT * FROM contacts WHERE wa_number = $1 AND tenant_id = $2',
+        [fromNumber, tenant.id]
+      );
+      if (contact.rows.length === 0) {
+        // New contact - create automatically
+        await pool.query(
+          'INSERT INTO contacts (wa_number, tenant_id, display_name, last_active) VALUES ($1, $2, $3, NOW()) ON CONFLICT DO NOTHING',
+          [fromNumber, tenant.id, fromNumber]
+        );
+      }
+      return { tenant, isNew: contact.rows.length === 0, claimCodeUsed: false, group: null };
+    }
+  }
   const words = (messageBody || '').toLowerCase().trim().split(/\s+/);
 
   for (const word of words) {

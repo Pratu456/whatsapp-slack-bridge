@@ -63,7 +63,7 @@ router.post('/', async (req, res) => {
 
           console.log('[META ROUTING] incoming to:', isGroupNumber ? 'GROUP number' : 'PRIVATE number');
 
-          const result = await getTenantForIncomingMessage(waNumber, Body, isGroupNumber);
+          const result = await getTenantForIncomingMessage(waNumber, Body, isGroupNumber, phoneNumberId);
           let { tenant, isNew, claimCodeUsed, group } = result;
 
           if (!tenant) {
@@ -114,7 +114,7 @@ router.post('/', async (req, res) => {
               continue;
             }
             const slackTs = await postGroupMessageToSlack(tenant, channelId, Body, ProfileName, waNumber);
-            await broadcastToGroup(group.id, waNumber, ProfileName, Body, null, groupNumId || privateNumId, accessToken);
+            await broadcastToGroup(group.id, waNumber, ProfileName, Body, null, groupNumId || privateNumId, accessToken, tenant);
             await logMessage({ waNumber, body: Body, direction: 'inbound', twilioSid: MessageSid, slackTs, tenantId: tenant.id });
             continue;
           }
