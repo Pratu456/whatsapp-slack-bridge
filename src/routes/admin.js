@@ -896,7 +896,7 @@ async function confirmActivate(){
   if(customVisible&&!validateCustomCode(document.getElementById('mCustomCode'))){return}
   const btn=document.getElementById('mConfirmBtn');
   btn.disabled=true;btn.textContent='Activating...';
-  const r=await fetch('/admin/activate', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,email,twilio_number:twilio,claim_code:code,default_slack_channel:null})});
+  const r=await fetch('/admin/activate', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,email,twilio_number:twilio,default_slack_channel:null})});
   const d=await r.json();
   if(d.success){
     const status=document.getElementById('emailStatus');
@@ -962,7 +962,7 @@ async function addTenant(){
   const code=customVisible?document.getElementById('nCustomCode').value.trim().toLowerCase():currentAddCode;
   if(!co||!tw||!tok){alert('Please fill in all fields');return}
   if(customVisible&&!validateCustomCode(document.getElementById('nCustomCode'))){return}
-  const r=await fetch('/admin/add', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company:co,email,twilio_number:tw,slack_bot_token:tok,claim_code:code})});
+  const r=await fetch('/admin/add', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company:co,email,twilio_number:tw,slack_bot_token:tok})});
   const d=await r.json();
   if(d.success)location.reload();else alert('Error: '+d.error);
 }
