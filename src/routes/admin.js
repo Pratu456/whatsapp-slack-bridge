@@ -483,8 +483,8 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
             <div class="fg"><label>WhatsApp number</label><input type="text" id="nWhatsapp" placeholder="+381653229717 (leave empty for shared number)"/></div>
             <div class="fg"><label>Slack bot token</label><input type="text" id="nToken" placeholder="xoxb-..."/></div>
           </div>
-          <div style="margin-bottom:6px">
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t4);margin-bottom:8px">Claim code</div>
+          <div style="display:none">
+            <div style="display:none"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t4);margin-bottom:8px">Claim code</div>
             <div class="code-preview">
               <div><div style="font-size:11px;color:var(--t4);margin-bottom:4px">Auto-generated</div><div class="code-preview-val" id="codePreview">------</div></div>
               <button class="code-preview-btn" onclick="regenerateCode()">↻ Regenerate</button>
@@ -615,7 +615,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     </div>
     
     <div class="divider"></div>
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t4);margin-bottom:8px">Claim code</div>
+    <div style="display:none">    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t4);margin-bottom:8px">Claim code</div>
     <div class="code-preview">
       <div><div style="font-size:11px;color:var(--t4);margin-bottom:4px">Auto-generated</div><div class="code-preview-val" id="mCodePreview">------</div></div>
       <button class="code-preview-btn" onclick="regenModalCode()">↻ Regenerate</button>
@@ -624,7 +624,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div id="mCustomWrap" style="display:none;margin-top:8px">
       <div class="fg"><label>Custom claim code</label><input type="text" id="mCustomCode" placeholder="e.g. mycompany" oninput="validateCustomCode(this)"/><div class="hint" id="mCustomHint">3–20 chars · lowercase letters, numbers and _ only</div></div>
     </div>
-    <div id="emailStatus" class="email-status"></div>
+    </div>    </div><div id="emailStatus" class="email-status"></div>
     <input type="hidden" id="mId"/>
     <div class="modal-btns">
       <button class="mbtn-cancel" onclick="closeModal()">Cancel</button>
