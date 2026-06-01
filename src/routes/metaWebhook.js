@@ -67,7 +67,9 @@ router.post('/', async (req, res) => {
           let { tenant, isNew, claimCodeUsed, group } = result;
 
           if (!tenant) {
-            await sendMetaMessage(waNumber, 'Welcome to Syncora!\n\nTo connect with a company, send their claim code as your first message.', numId, accessToken);
+            if (isGroupNumber) {
+              await sendMetaMessage(waNumber, 'Welcome! To join a group, please send your group claim code.', numId, accessToken);
+            }
             continue;
           }
 
