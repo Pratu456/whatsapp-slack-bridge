@@ -139,8 +139,9 @@ router.post('/', async (req, res) => {
               const mediaBuffer = Buffer.from(await mediaResp.arrayBuffer());
               const { WebClient } = require('@slack/web-api');
               const slack = new WebClient(tenant.slack_bot_token);
+              const normalizedMime = mimeType.split(";")[0].trim();
               const extMap = {'image/jpeg':'jpg','image/png':'png','image/gif':'gif','image/webp':'webp','video/mp4':'mp4','audio/ogg':'ogg','audio/mpeg':'mp3','application/pdf':'pdf'};
-              const ext = extMap[mimeType] || message.type;
+              const ext = extMap[normalizedMime] || (normalizedMime.startsWith("audio") ? "ogg" : message.type);
               await slack.filesUploadV2({
                 channel_id: channelId,
                 file: mediaBuffer,
