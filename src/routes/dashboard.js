@@ -422,6 +422,29 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
         </div>
       </div>
 
+      <!-- WhatsApp Settings -->
+      <div class="card">
+        <div class="card-title">📱 WhatsApp Settings</div>
+        <div style="margin-bottom:16px">
+          <p style="font-size:13px;color:rgba(255,255,255,.5);margin:0 0 16px">Connect your own WhatsApp Business number for a dedicated branded experience. Leave empty to use Syncora's shared number.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="fg" style="margin-bottom:0">
+              <label>Meta Phone Number ID</label>
+              <input type="text" id="metaPhoneId" value="${tenant.meta_phone_number_id || ''}" placeholder="e.g. 1234567890"/>
+            </div>
+            <div class="fg" style="margin-bottom:0">
+              <label>Meta Access Token</label>
+              <input type="password" id="metaToken" value="${tenant.meta_access_token || ''}" placeholder="EAAcqZ..."/>
+            </div>
+          </div>
+          ${tenant.meta_phone_number_id ? '<div style="margin-top:10px;padding:8px 12px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);border-radius:8px;font-size:12px;color:#25D366">✅ Custom WhatsApp number connected</div>' : '<div style="margin-top:10px;padding:8px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:12px;color:rgba(255,255,255,.4)">📱 Using Syncora shared number (+381 65 3229717)</div>'}
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <button class="btn-primary" onclick="saveWhatsAppSettings()">Verify & Save</button>
+          <button onclick="clearWhatsAppSettings()" style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Remove custom number</button>
+          <div id="waSettingsMsg" class="msg"></div>
+        </div>
+      </div>
       <!-- Pricing plans -->
       <div class="card">
         <div class="card-title">⚡ Upgrade your plan</div>
@@ -648,6 +671,44 @@ function copyCode(code) {
     setTimeout(function(){ btn.textContent = orig; btn.style.color = ''; }, 2000);
   });
 }
+async function saveWhatsAppSettings() {
+  const phoneId = document.getElementById('metaPhoneId').value.trim();
+  const token = document.getElementById('metaToken').value.trim();
+  const msg = document.getElementById('waSettingsMsg');
+  msg.textContent = 'Verifying...';
+  msg.style.color = 'rgba(255,255,255,.5)';
+  try {
+    const r = await fetch('/dashboard/save-whatsapp-settings', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ meta_phone_number_id: phoneId, meta_access_token: token })
+    });
+    const d = await r.json();
+    if (d.success) {
+      msg.textContent = '✅ ' + (d.message || 'Saved successfully');
+      msg.style.color = '#4ade80';
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      msg.textContent = '❌ ' + (d.error || 'Failed to save');
+      msg.style.color = '#f87171';
+    }
+  } catch(e) {
+    msg.textContent = '❌ Error: ' + e.message;
+    msg.style.color = '#f87171';
+  }
+}
+async function clearWhatsAppSettings() {
+  if (!confirm('Remove your custom WhatsApp number? You will revert to Syncora shared number.')) return;
+  const r = await fetch('/dashboard/save-whatsapp-settings', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ meta_phone_number_id: '', meta_access_token: '' })
+  });
+  const d = await r.json();
+  if (d.success) location.reload();
+}
 async function upgradePlan(plan) {
   try {
     const btn = event.target;
@@ -775,6 +836,50 @@ router.post('/delete-account', requireAuth, async (req, res) => {
 });
 
 // ── Logout ────────────────────────────────────────────────
+router.post('/save-whatsapp-settings', requireAuth, async (req, res) => {
+  try {
+    const { meta_phone_number_id, meta_access_token } = req.body;
+    const user = await pool.query('SELECT * FROM users WHERE id = $1', [req.session.userId]);
+    if (!user.rows.length) return res.json({ success: false, error: 'User not found' });
+    const tenants = await pool.query(
+      'SELECT t.* FROM tenants t WHERE LOWER(t.email) = $1 AND t.is_active = TRUE LIMIT 1',
+      [user.rows[0].email.toLowerCase()]
+    );
+    if (!tenants.rows.length) return res.json({ success: false, error: 'No active workspace found' });
+    const tenant = tenants.rows[0];
+
+    // If credentials provided, verify them first
+    if (meta_phone_number_id && meta_access_token) {
+      try {
+        const verifyResp = await fetch(
+          'https://graph.facebook.com/v19.0/' + meta_phone_number_id + '?access_token=' + meta_access_token
+        );
+        const verifyData = await verifyResp.json();
+        if (verifyData.error) {
+          return res.json({ success: false, error: 'Invalid credentials: ' + verifyData.error.message });
+        }
+        // Save verified credentials
+        await pool.query(
+          'UPDATE tenants SET meta_phone_number_id = $1, meta_access_token = $2 WHERE id = $3',
+          [meta_phone_number_id, meta_access_token, tenant.id]
+        );
+        return res.json({ success: true, message: 'WhatsApp number verified and connected: ' + (verifyData.display_phone_number || meta_phone_number_id) });
+      } catch(e) {
+        return res.json({ success: false, error: 'Verification failed: ' + e.message });
+      }
+    } else {
+      // Clear credentials — revert to shared number
+      await pool.query(
+        'UPDATE tenants SET meta_phone_number_id = NULL, meta_access_token = NULL WHERE id = $1',
+        [tenant.id]
+      );
+      return res.json({ success: true, message: 'Reverted to shared number' });
+    }
+  } catch(e) {
+    res.json({ success: false, error: e.message });
+  }
+});
+
 router.post('/send-invite', requireAuth, async (req, res) => {
   try {
     const { email, emails, groupName, type } = req.body;
