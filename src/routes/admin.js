@@ -483,7 +483,6 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
             <div class="fg"><label>WhatsApp number</label><input type="text" id="nWhatsapp" placeholder="+381653229717 (leave empty for shared number)"/></div>
             <div class="fg"><label>Slack bot token</label><input type="text" id="nToken" placeholder="xoxb-..."/></div>
           </div>
-          <div style="display:none">
             <div style="display:none"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t4);margin-bottom:8px">Claim code</div>
             <div class="code-preview">
               <div><div style="font-size:11px;color:var(--t4);margin-bottom:4px">Auto-generated</div><div class="code-preview-val" id="codePreview">------</div></div>
