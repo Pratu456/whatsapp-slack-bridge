@@ -63,6 +63,7 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;text-a
 .divider{display:flex;align-items:center;gap:12px;margin:20px 0}
 .divider span{font-size:12px;color:var(--t4)}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--b1)}
+.pw-wrap{position:relative}.pw-wrap input{padding-right:42px!important}.eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--t4);padding:4px;display:flex;align-items:center}
 </style>
 </head>
 <body>
