@@ -24,6 +24,7 @@ input::placeholder{color:rgba(255,255,255,.25)}
 button{width:100%;padding:14px;background:#25D366;color:#000;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
 button:hover{background:#1aad52}
 .err{color:#f87171;font-size:13px;margin-bottom:12px}
+.pw-wrap{position:relative;display:flex;align-items:center}.pw-wrap input{width:100%;padding-right:42px}.eye-btn{position:absolute;right:10px;background:none;border:none;cursor:pointer;color:#555;padding:4px;display:flex;align-items:center}
 </style></head>
 <body><div class="wrap">
 <img src="/logo_full.png" alt="Syncora" style="height:72px;width:auto;margin:0 auto 16px;display:block"/>
@@ -32,10 +33,10 @@ button:hover{background:#1aad52}
 <div class="card">
 ${req.query.error ? '<div class="err">Incorrect password — try again</div>' : ''}
 <form method="POST" action="/admin/login">
-<input type="password" name="pwd" placeholder="Admin password" autofocus/>
+<div class="pw-wrap"><input type="password" name="pwd" placeholder="Admin password" autofocus/><button type="button" class="eye-btn" onclick="togglePw(this)" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
 <button type="submit">Sign in →</button>
 </form>
-</div></div></body></html>`);
+</div></div><script>function togglePw(btn){var inp=btn.previousElementSibling;inp.type=inp.type==="password"?"text":"password";}</script></body></html>`);
 };
 
 // ── Login POST ────────────────────────────────────────────
@@ -542,8 +543,8 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
         <div class="card" style="margin-bottom:16px">
           <div class="card-hd"><div class="card-hd-left"><div class="card-hd-icon" style="background:rgba(59,130,246,.1);color:#60a5fa;font-weight:800">⚿</div><div><div class="card-hd-title">Change password</div><div class="card-hd-sub">Update your admin password</div></div></div></div>
           <div class="form-grid" style="margin-top:16px">
-            <div class="fg"><label>Current password</label><input type="password" id="sCurrPwd" placeholder="Current password"/></div>
-            <div class="fg"><label>New password</label><input type="password" id="sNewPwd" placeholder="New password (min 8 chars)"/></div>
+            <div class="fg"><label>Current password</label><div style="position:relative;display:flex;align-items:center"><input type="password" id="sCurrPwd" placeholder="Current password" style="padding-right:42px;width:100%"/><button type="button" style="position:absolute;right:10px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);padding:4px;display:flex;align-items:center" onclick="togglePw(this)" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+            <div class="fg"><label>New password</label><div style="position:relative;display:flex;align-items:center"><input type="password" id="sNewPwd" placeholder="New password (min 8 chars)" style="padding-right:42px;width:100%"/><button type="button" style="position:absolute;right:10px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);padding:4px;display:flex;align-items:center" onclick="togglePw(this)" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
           </div>
           <button class="btn-primary" onclick="changePassword()">Change password</button>
           <div id="pwdMsg" style="display:none;font-size:13px;margin-top:10px"></div>
