@@ -98,6 +98,7 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;text-a
     <a href="/contact.html" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.08);border-radius:100px;transition:color .2s" onmouseover="this.style.color='#25D366';this.style.borderColor='rgba(37,211,102,.3)'" onmouseout="this.style.color='rgba(255,255,255,.4)';this.style.borderColor='rgba(255,255,255,.08)'">Contact</a>
   </div>
 </footer>
+<script>function togglePw(btn){var inp=btn.previousElementSibling;inp.type=inp.type==="password"?"text":"password";}</script>
 </body>
 </html>`);
 });
