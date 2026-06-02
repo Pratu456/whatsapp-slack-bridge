@@ -426,18 +426,37 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
       <div class="card">
         <div class="card-title">📱 WhatsApp Settings</div>
         <div style="margin-bottom:16px">
-          <p style="font-size:13px;color:rgba(255,255,255,.5);margin:0 0 16px">Connect your own WhatsApp Business number for a dedicated branded experience. Leave empty to use Syncora's shared number.</p>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div class="fg" style="margin-bottom:0">
-              <label>Meta Phone Number ID</label>
-              <input type="text" id="metaPhoneId" value="${tenants[0]?.meta_phone_number_id || ''}" placeholder="e.g. 1234567890"/>
+          <p style="font-size:13px;color:rgba(255,255,255,.5);margin:0 0 16px">Connect your own WhatsApp Business numbers. Leave empty to use Syncora's shared numbers.</p>
+          
+          <div style="background:rgba(37,211,102,.05);border:1px solid rgba(37,211,102,.15);border-radius:10px;padding:16px;margin-bottom:14px">
+            <div style="font-size:12px;font-weight:700;color:#25D366;margin-bottom:12px">💬 PRIVATE CHAT NUMBER</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div class="fg" style="margin-bottom:0">
+                <label>Phone Number ID</label>
+                <input type="text" id="metaPhoneId" value="${tenants[0]?.meta_phone_number_id || ''}" placeholder="e.g. 1234567890"/>
+              </div>
+              <div class="fg" style="margin-bottom:0">
+                <label>Access Token</label>
+                <input type="password" id="metaToken" value="${tenants[0]?.meta_access_token || ''}" placeholder="EAAcqZ..."/>
+              </div>
             </div>
-            <div class="fg" style="margin-bottom:0">
-              <label>Meta Access Token</label>
-              <input type="password" id="metaToken" value="${tenants[0]?.meta_access_token || ''}" placeholder="EAAcqZ..."/>
-            </div>
+            ${tenants[0]?.meta_phone_number_id ? '<div style="margin-top:8px;font-size:12px;color:#25D366">✅ Connected</div>' : '<div style="margin-top:8px;font-size:12px;color:rgba(255,255,255,.3)">Using Syncora shared: +381 65 3229717</div>'}
           </div>
-          ${tenants[0]?.meta_phone_number_id ? '<div style="margin-top:10px;padding:8px 12px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);border-radius:8px;font-size:12px;color:#25D366">✅ Custom WhatsApp number connected</div>' : '<div style="margin-top:10px;padding:8px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:12px;color:rgba(255,255,255,.4)">📱 Using Syncora shared number (+381 65 3229717)</div>'}
+
+          <div style="background:rgba(96,165,250,.05);border:1px solid rgba(96,165,250,.15);border-radius:10px;padding:16px;margin-bottom:14px">
+            <div style="font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:12px">👥 GROUP CHAT NUMBER</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div class="fg" style="margin-bottom:0">
+                <label>Phone Number ID</label>
+                <input type="text" id="metaGroupPhoneId" value="${tenants[0]?.meta_group_phone_number_id || ''}" placeholder="e.g. 9876543210"/>
+              </div>
+              <div class="fg" style="margin-bottom:0">
+                <label>Access Token</label>
+                <input type="password" id="metaGroupToken" value="${tenants[0]?.meta_group_access_token || ''}" placeholder="EAAcqZ..."/>
+              </div>
+            </div>
+            ${tenants[0]?.meta_group_phone_number_id ? '<div style="margin-top:8px;font-size:12px;color:#60a5fa">✅ Connected</div>' : '<div style="margin-top:8px;font-size:12px;color:rgba(255,255,255,.3)">Using Syncora shared: +381 66 5789626</div>'}
+          </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <button class="btn-primary" onclick="saveWhatsAppSettings()">Verify & Save</button>
@@ -674,6 +693,8 @@ function copyCode(code) {
 async function saveWhatsAppSettings() {
   const phoneId = document.getElementById('metaPhoneId').value.trim();
   const token = document.getElementById('metaToken').value.trim();
+  const groupPhoneId = document.getElementById('metaGroupPhoneId').value.trim();
+  const groupToken = document.getElementById('metaGroupToken').value.trim();
   const msg = document.getElementById('waSettingsMsg');
   msg.textContent = 'Verifying...';
   msg.style.color = 'rgba(255,255,255,.5)';
@@ -682,7 +703,7 @@ async function saveWhatsAppSettings() {
       method: 'POST',
       credentials: 'same-origin',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ meta_phone_number_id: phoneId, meta_access_token: token })
+      body: JSON.stringify({ meta_phone_number_id: phoneId, meta_access_token: token, meta_group_phone_number_id: groupPhoneId, meta_group_access_token: groupToken })
     });
     const d = await r.json();
     if (d.success) {
@@ -838,7 +859,7 @@ router.post('/delete-account', requireAuth, async (req, res) => {
 // ── Logout ────────────────────────────────────────────────
 router.post('/save-whatsapp-settings', requireAuth, async (req, res) => {
   try {
-    const { meta_phone_number_id, meta_access_token } = req.body;
+    const { meta_phone_number_id, meta_access_token, meta_group_phone_number_id, meta_group_access_token } = req.body;
     const user = await pool.query('SELECT * FROM users WHERE id = $1', [req.session.userId]);
     if (!user.rows.length) return res.json({ success: false, error: 'User not found' });
     const tenants = await pool.query(
@@ -860,8 +881,8 @@ router.post('/save-whatsapp-settings', requireAuth, async (req, res) => {
         }
         // Save verified credentials
         await pool.query(
-          'UPDATE tenants SET meta_phone_number_id = $1, meta_access_token = $2 WHERE id = $3',
-          [meta_phone_number_id, meta_access_token, tenant.id]
+          'UPDATE tenants SET meta_phone_number_id = $1, meta_access_token = $2, meta_group_phone_number_id = $3, meta_group_access_token = $4 WHERE id = $5',
+          [meta_phone_number_id, meta_access_token, meta_group_phone_number_id || null, meta_group_access_token || null, tenant.id]
         );
         return res.json({ success: true, message: 'WhatsApp number verified and connected: ' + (verifyData.display_phone_number || meta_phone_number_id) });
       } catch(e) {
@@ -870,7 +891,7 @@ router.post('/save-whatsapp-settings', requireAuth, async (req, res) => {
     } else {
       // Clear credentials — revert to shared number
       await pool.query(
-        'UPDATE tenants SET meta_phone_number_id = NULL, meta_access_token = NULL WHERE id = $1',
+        'UPDATE tenants SET meta_phone_number_id = NULL, meta_access_token = NULL, meta_group_phone_number_id = NULL, meta_group_access_token = NULL WHERE id = $1',
         [tenant.id]
       );
       return res.json({ success: true, message: 'Reverted to shared number' });
