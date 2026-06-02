@@ -98,18 +98,6 @@ router.get('/', requireAuth, async (req, res) => {
               </div>
             </div>` : ''}
 
-            ${t.claim_code ? `
-            <div style="background:#16161f;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
-              <div>
-                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.25);margin-bottom:3px">Claim code</div>
-                <div style="font-size:16px;font-weight:800;color:#25D366;letter-spacing:3px;font-family:monospace">${t.claim_code}</div>
-              </div>
-              <button onclick="copyCode('${t.claim_code}')" style="background:rgba(37,211,102,.1);color:#4ade80;border:1px solid rgba(37,211,102,.2);padding:6px 12px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif" id="copy-${t.claim_code}">Copy</button>
-            </div>` : `
-            <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#fbbf24">
-              ⏳ Awaiting activation — our team will assign your WhatsApp number shortly
-            </div>`}
-
             ${t.twilio_number && t.twilio_number !== 'PENDING' ? `
             <div style="font-size:12px;color:rgba(255,255,255,.3)">📱 WhatsApp: <span style="color:rgba(255,255,255,.6);font-weight:600">${t.twilio_number}</span></div>` : ''}
           </div>`;
