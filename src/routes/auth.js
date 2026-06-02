@@ -297,6 +297,7 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;text-a
 .divider{display:flex;align-items:center;gap:12px;margin:20px 0}
 .divider span{font-size:12px;color:var(--t4)}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--b1)}
+.pw-wrap{position:relative}.pw-wrap input{padding-right:42px!important}.eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--t4);padding:4px;display:flex;align-items:center}
 </style>
 </head>
 <body>
@@ -309,7 +310,7 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;text-a
   ${error ? `<div class="err">${error}</div>` : ''}
   <form method="POST" action="/auth/login">
     <div class="fg"><label>Email</label><input type="email" name="email" placeholder="you@company.com" required autocomplete="email"/></div>
-    <div class="fg"><label>Password</label><input type="password" name="password" placeholder="Your password" required/></div>
+    <div class="fg"><label>Password <a href="/auth/forgot-password" style="float:right;color:var(--t4);font-size:11px;font-weight:500;text-decoration:none" onmouseover="this.style.color='#25D366'" onmouseout="this.style.color='var(--t4)'">Forgot password?</a></label><div class="pw-wrap"><input type="password" name="password" placeholder="Your password" required/><button type="button" class="eye-btn" onclick="togglePw(this)" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
     <button type="submit" class="btn">Sign in →</button>
   </form>
   <div class="divider"><span>don't have an account?</span></div>
@@ -330,6 +331,7 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;text-a
   </div>
 </footer>
 
+<script>function togglePw(btn){var inp=btn.previousElementSibling;inp.type=inp.type==="password"?"text":"password";}</script>
 </body>
 </html>`);
 });
