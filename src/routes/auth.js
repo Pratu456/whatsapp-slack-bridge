@@ -553,3 +553,56 @@ h1{font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:10px}
 });
 
 module.exports = router;
+
+// ── Forgot password ───────────────────────────────────────
+router.get('/forgot-password', (req, res) => {
+  const msg = req.query.msg || '';
+  const err = req.query.error || '';
+  res.send('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Syncora - Reset Password</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"/><style>*{margin:0;padding:0;box-sizing:border-box}:root{--g:#25D366;--bg:#060608;--bg2:#111118;--bg3:#16161f;--b1:rgba(255,255,255,.06);--t:#fff;--t3:rgba(255,255,255,.4);--t4:rgba(255,255,255,.2)}body{font-family:Inter,sans-serif;background:var(--bg);color:var(--t);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}.card{background:var(--bg2);border:1px solid var(--b1);border-radius:24px;padding:40px;max-width:420px;width:100%}.logo{text-align:center;margin-bottom:28px}.logo img{height:26px;filter:brightness(0) invert(1) grayscale(1)}h1{font-size:22px;font-weight:800;text-align:center;margin-bottom:8px}.sub{font-size:13px;color:var(--t3);text-align:center;margin-bottom:28px}.fg{margin-bottom:16px}.fg label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t4);margin-bottom:7px}.fg input{width:100%;padding:12px 16px;background:var(--bg3);border:1px solid var(--b1);border-radius:10px;font-size:15px;color:var(--t);outline:none;font-family:Inter,sans-serif}.fg input:focus{border-color:rgba(37,211,102,.4)}.btn{width:100%;padding:13px;background:var(--g);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;font-family:Inter,sans-serif;margin-top:4px}.note{font-size:12px;color:var(--t4);text-align:center;margin-top:16px}.note a{color:var(--g);text-decoration:none}.err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#f87171;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:16px;text-align:center}.ok{background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.2);color:#4ade80;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:16px;text-align:center}</style></head><body><div class="card"><div class="logo"><img src="/logo_text.png" alt="Syncora"/></div><h1>Reset password</h1><p class="sub">Enter your email and we will send you a reset link</p>' + (err ? '<div class="err">'+err+'</div>' : '') + (msg ? '<div class="ok">'+msg+'</div>' : '') + '<form method="POST" action="/auth/forgot-password"><div class="fg"><label>Email address</label><input type="email" name="email" placeholder="you@company.com" required/></div><button type="submit" class="btn">Send reset link</button></form><p class="note"><a href="/auth/login">Back to sign in</a></p></div></body></html>');
+});
+
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.redirect('/auth/forgot-password?error=Please+enter+your+email');
+    const user = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [email.trim().toLowerCase()]);
+    if (!user.rows.length) return res.redirect('/auth/forgot-password?msg=If+this+email+exists+you+will+receive+a+reset+link');
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000);
+    await pool.query('UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3', [token, expires, user.rows[0].id]);
+    const resetUrl = (process.env.APP_URL || 'https://syncora-ar26.onrender.com') + '/auth/reset-password?token=' + token;
+    try {
+      const { sendPasswordResetEmail } = require('../services/emailService');
+      await sendPasswordResetEmail({ to: email.trim(), fullName: user.rows[0].full_name, resetUrl });
+    } catch(e) { console.error('[FORGOT PW] Email failed:', e.message); }
+    res.redirect('/auth/forgot-password?msg=Reset+link+sent+check+your+email');
+  } catch(e) { res.redirect('/auth/forgot-password?error=' + encodeURIComponent(e.message)); }
+});
+
+router.get('/reset-password', async (req, res) => {
+  const { token } = req.query;
+  const err = req.query.error || '';
+  if (!token) return res.redirect('/auth/forgot-password?error=Invalid+reset+link');
+  try {
+    const user = await pool.query('SELECT * FROM users WHERE reset_token = $1 AND reset_token_expires > NOW()', [token]);
+    if (!user.rows.length) return res.redirect('/auth/forgot-password?error=Reset+link+expired+or+invalid');
+    res.send('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Syncora - New Password</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"/><style>*{margin:0;padding:0;box-sizing:border-box}:root{--g:#25D366;--bg:#060608;--bg2:#111118;--bg3:#16161f;--b1:rgba(255,255,255,.06);--t:#fff;--t3:rgba(255,255,255,.4);--t4:rgba(255,255,255,.2)}body{font-family:Inter,sans-serif;background:var(--bg);color:var(--t);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}.card{background:var(--bg2);border:1px solid var(--b1);border-radius:24px;padding:40px;max-width:420px;width:100%}.logo{text-align:center;margin-bottom:28px}.logo img{height:26px;filter:brightness(0) invert(1) grayscale(1)}h1{font-size:22px;font-weight:800;text-align:center;margin-bottom:8px}.sub{font-size:13px;color:var(--t3);text-align:center;margin-bottom:28px}.fg{margin-bottom:16px}.fg label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t4);margin-bottom:7px}.pw-wrap{position:relative;display:flex;align-items:center}.pw-wrap input{width:100%;padding:12px 42px 12px 16px;background:var(--bg3);border:1px solid var(--b1);border-radius:10px;font-size:15px;color:var(--t);outline:none;font-family:Inter,sans-serif}.pw-wrap input:focus{border-color:rgba(37,211,102,.4)}.eye-btn{position:absolute;right:12px;background:none;border:none;cursor:pointer;color:#000;padding:4px;display:flex;align-items:center}.btn{width:100%;padding:13px;background:var(--g);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;font-family:Inter,sans-serif;margin-top:16px}.note{font-size:12px;color:var(--t4);text-align:center;margin-top:16px}.note a{color:var(--g);text-decoration:none}.err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#f87171;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:16px;text-align:center}</style></head><body><div class="card"><div class="logo"><img src="/logo_text.png" alt="Syncora"/></div><h1>Set new password</h1><p class="sub">Choose a strong password for your account</p>' + (err ? '<div class="err">'+err+'</div>' : '') + '<form method="POST" action="/auth/reset-password"><input type="hidden" name="token" value="' + token + '"/><div class="fg"><label>New Password</label><div class="pw-wrap"><input type="password" name="password" placeholder="Minimum 8 characters" required minlength="8"/><button type="button" class="eye-btn" onclick="togglePw(this)" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div><div class="fg"><label>Confirm Password</label><div class="pw-wrap"><input type="password" name="confirm" placeholder="Repeat password" required minlength="8"/><button type="button" class="eye-btn" onclick="togglePw(this)" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div><button type="submit" class="btn">Update password</button></form><p class="note"><a href="/auth/login">Back to sign in</a></p></div><script>function togglePw(btn){var inp=btn.previousElementSibling;inp.type=inp.type==="password"?"text":"password";}</script></body></html>');
+  } catch(e) { res.redirect('/auth/forgot-password?error=' + encodeURIComponent(e.message)); }
+});
+
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, password, confirm } = req.body;
+    if (!token) return res.redirect('/auth/forgot-password?error=Invalid+link');
+    if (password !== confirm) return res.redirect('/auth/reset-password?token=' + token + '&error=Passwords+do+not+match');
+    if (password.length < 8) return res.redirect('/auth/reset-password?token=' + token + '&error=Password+must+be+at+least+8+characters');
+    const user = await pool.query('SELECT * FROM users WHERE reset_token = $1 AND reset_token_expires > NOW()', [token]);
+    if (!user.rows.length) return res.redirect('/auth/forgot-password?error=Reset+link+expired');
+    const bcrypt = require('bcrypt');
+    const hash = await bcrypt.hash(password, 10);
+    await pool.query('UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2', [hash, user.rows[0].id]);
+    res.redirect('/auth/login?msg=Password+updated+please+sign+in');
+  } catch(e) { res.redirect('/auth/forgot-password?error=' + encodeURIComponent(e.message)); }
+});
+
