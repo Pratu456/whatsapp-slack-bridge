@@ -623,7 +623,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
     <div id="mCustomWrap" style="display:none;margin-top:8px">
       <div class="fg"><label>Custom claim code</label><input type="text" id="mCustomCode" placeholder="e.g. mycompany" oninput="validateCustomCode(this)"/><div class="hint" id="mCustomHint">3–20 chars · lowercase letters, numbers and _ only</div></div>
     </div>
-    </div>    </div><div id="emailStatus" class="email-status"></div>
+    </div><div id="emailStatus" class="email-status"></div>
     <input type="hidden" id="mId"/>
     <div class="modal-btns">
       <button class="mbtn-cancel" onclick="closeModal()">Cancel</button>
