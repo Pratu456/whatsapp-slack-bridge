@@ -468,7 +468,7 @@ server.post('/contact', async (req, res) => {
     try {
       const { sendEmail } = require('./services/emailService');
       await sendEmail({
-        to: 'contact@syncora.one',
+        to: 's.mrdja@asd.email',
         subject: '[Syncora Contact] ' + (subject || 'New message'),
         html: '<div style="font-family:sans-serif;padding:20px">'
           + '<h2 style="color:#111">New contact message</h2>'
