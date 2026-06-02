@@ -470,8 +470,14 @@ server.post('/contact', async (req, res) => {
       await sendEmail({
         to: 'contact@syncora.one',
         subject: '[Syncora Contact] ' + (subject || 'New message'),
-        html: '<div style="font-family:sans-serif;padding:20px"><h2>New contact message</h2><p><b>Name:</b> ' + firstName + ' ' + lastName + '</p><p><b>Email:</b> ' + email + '</p><p><b>Subject:</b> ' + (subject||'—') + '</p><p><b>Message:</b></p><p>' + (message||'—').replace(/
-/g,'<br/>') + '</p></div>'
+        html: '<div style="font-family:sans-serif;padding:20px">'
+          + '<h2 style="color:#111">New contact message</h2>'
+          + '<p><b>Name:</b> ' + firstName + ' ' + lastName + '</p>'
+          + '<p><b>Email:</b> ' + email + '</p>'
+          + '<p><b>Subject:</b> ' + (subject || '—') + '</p>'
+          + '<p><b>Message:</b></p>'
+          + '<p style="background:#f5f5f5;padding:12px;border-radius:8px">' + (message || '—') + '</p>'
+          + '</div>'
       });
     } catch(emailErr) { console.error('[CONTACT EMAIL]', emailErr.message); }
     res.json({ success: true });
