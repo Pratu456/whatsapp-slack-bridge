@@ -6,9 +6,9 @@ const bcrypt   = require('bcryptjs');
 require('dotenv').config();
 
 const PLANS = {
-  starter:  { label: 'Starter',  price: '€0',  msgLimit: 200, workspaces: 1,   color: 'rgba(255,255,255,.4)' },
-  pro:      { label: 'Pro',      price: '€29', msgLimit: -1,  workspaces: 3,   color: '#25D366' },
-  business: { label: 'Business', price: '€79', msgLimit: -1,  workspaces: 999, color: '#60a5fa' },
+  starter:  { label: 'Starter',  price: '€0',  msgLimit: 200, workspaces: 1,   color: 'rgba(255,255,255,.4)' }, // MULTI_WORKSPACE_FEATURE: workspaces was 1
+  pro:      { label: 'Pro',      price: '€29', msgLimit: -1,  workspaces: 1,   color: '#25D366' }, // MULTI_WORKSPACE_FEATURE: workspaces was 3
+  business: { label: 'Business', price: '€79', msgLimit: -1,  workspaces: 1,   color: '#60a5fa' }, // MULTI_WORKSPACE_FEATURE: workspaces was 999
 };
 
 // ── Auth middleware ───────────────────────────────────────
