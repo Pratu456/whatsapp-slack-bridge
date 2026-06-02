@@ -257,6 +257,31 @@ const sendConnectWorkspaceEmail = async ({ to, companyName }) => {
   });
 };
 
+
+const sendPasswordResetEmail = async ({ to, fullName, resetUrl }) => {
+  await sendEmail({
+    to,
+    subject: 'Reset your Syncora password',
+    html: '<!DOCTYPE html><html><body style="font-family:Inter,sans-serif;background:#f9f9f9;padding:40px 20px">'
+      + '<div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)">'
+      + '<div style="background:#111;padding:28px 32px">'
+      + '<span style="font-size:22px;font-weight:900;color:#25D366;letter-spacing:-0.5px">Syncora</span>'
+      + '</div>'
+      + '<div style="padding:32px">'
+      + '<h2 style="margin:0 0 8px;color:#111;font-size:22px">Reset your password</h2>'
+      + '<p style="color:#555;margin:0 0 24px;font-size:14px">Hi ' + fullName + ', we received a request to reset your Syncora password. Click the button below to set a new password.</p>'
+      + '<div style="text-align:center;margin:28px 0">'
+      + '<a href="' + resetUrl + '" style="display:inline-block;background:#25D366;color:#000;padding:14px 32px;border-radius:10px;font-weight:700;text-decoration:none;font-size:15px">Reset Password &rarr;</a>'
+      + '</div>'
+      + '<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:14px;margin-bottom:24px">'
+      + '<p style="margin:0;font-size:13px;color:#856404">This link expires in 1 hour. If you did not request a password reset, you can safely ignore this email.</p>'
+      + '</div>'
+      + '<p style="margin-top:24px;font-size:11px;color:#bbb;text-align:center">Powered by Syncora</p>'
+      + '</div></div>'
+      + '</body></html>'
+  });
+};
+
 module.exports = {
   sendVerificationEmail,
   sendActivationEmail,
@@ -266,4 +291,5 @@ module.exports = {
   sendCancellationEmail,
   sendLoginCredentialsEmail,
   sendConnectWorkspaceEmail,
+  sendPasswordResetEmail,
 };

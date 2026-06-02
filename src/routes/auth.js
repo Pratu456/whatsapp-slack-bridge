@@ -77,7 +77,7 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;text-a
     <div class="fg"><label>Full name</label><input type="text" name="full_name" placeholder="Jane Smith" required autocomplete="off"/></div>
     <div class="fg"><label>Company name</label><input type="text" name="company_name" placeholder="Acme Corp" required autocomplete="off"/></div>
     <div class="fg"><label>Work email</label><input type="email" name="email" placeholder="you@company.com" required autocomplete="off"/></div>
-    <div class="fg"><label>Password</label><input type="password" name="password" placeholder="Minimum 8 characters" required minlength="8"/></div>
+    <div class="fg"><label>Password</label><div class="pw-wrap"><input type="password" name="password" placeholder="Minimum 8 characters" required minlength="8"/><button type="button" class="eye-btn" onclick="togglePw(this)" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
     <button type="submit" class="btn">Create account →</button>
   </form>
   <div class="divider"><span>already have an account?</span></div>
