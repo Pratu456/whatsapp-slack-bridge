@@ -465,7 +465,15 @@ server.post('/contact', async (req, res) => {
     const { firstName, lastName, email, subject, message } = req.body;
     if (!email || !email.includes('@')) return res.json({ success: false });
     console.log('[CONTACT]', { firstName, lastName, email, subject, message });
-    // TODO: send email via Resend when official email is ready
+    try {
+      const { sendEmail } = require('./services/emailService');
+      await sendEmail({
+        to: 'contact@syncora.one',
+        subject: '[Syncora Contact] ' + (subject || 'New message'),
+        html: '<div style="font-family:sans-serif;padding:20px"><h2>New contact message</h2><p><b>Name:</b> ' + firstName + ' ' + lastName + '</p><p><b>Email:</b> ' + email + '</p><p><b>Subject:</b> ' + (subject||'—') + '</p><p><b>Message:</b></p><p>' + (message||'—').replace(/
+/g,'<br/>') + '</p></div>'
+      });
+    } catch(emailErr) { console.error('[CONTACT EMAIL]', emailErr.message); }
     res.json({ success: true });
   } catch(err){
     res.json({ success: false });
