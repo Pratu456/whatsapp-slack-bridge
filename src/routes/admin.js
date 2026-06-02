@@ -33,7 +33,7 @@ button:hover{background:#1aad52}
 <div class="card">
 ${req.query.error ? '<div class="err">Incorrect password — try again</div>' : ''}
 <form method="POST" action="/admin/login">
-<div class="pw-wrap"><input type="password" name="pwd" placeholder="Admin password" autofocus/><button type="button" class="eye-btn" onclick="togglePw(this)" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+<div style="position:relative"><input type="password" name="pwd" placeholder="Admin password" autofocus style="width:100%;padding-right:40px"/><button type="button" onclick="togglePw(this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#555;display:flex;align-items:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div><p style="text-align:center;margin-top:10px;font-size:12px;color:#777">Forgot password? Update <code>ADMIN_PASSWORD</code> in Render environment.</p>
 <button type="submit">Sign in →</button>
 </form>
 </div></div><script>function togglePw(btn){var inp=btn.previousElementSibling;inp.type=inp.type==="password"?"text":"password";}</script></body></html>`);
