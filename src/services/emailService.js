@@ -224,7 +224,7 @@ const sendLoginCredentialsEmail = async ({ to, companyName, loginEmail, loginPas
 
 
 const sendConnectWorkspaceEmail = async ({ to, companyName }) => {
-  const installUrl = process.env.APP_URL + '/auth/slack';
+  const installUrl = process.env.APP_URL + '/auth/slack?company=' + encodeURIComponent(companyName) + '&email=' + encodeURIComponent(to);
   await sendEmail({
     to,
     subject: 'Connect your Slack workspace to Syncora',
