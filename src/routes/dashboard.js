@@ -686,6 +686,7 @@ async function saveWhatsAppSettings() {
   const msg = document.getElementById('waSettingsMsg');
   msg.textContent = 'Verifying...';
   msg.style.color = 'rgba(255,255,255,.5)';
+  msg.style.display = 'block';
   try {
     const r = await fetch('/dashboard/save-whatsapp-settings', {
       method: 'POST',
