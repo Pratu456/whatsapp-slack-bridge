@@ -423,7 +423,7 @@ router.get('/slack/callback', async (req, res) => {
         'UPDATE tenants SET slack_bot_token = $1, slack_team_name = $2, company_name = $3, email = COALESCE(NULLIF($4,\'\'), email) WHERE slack_team_id = $5',
         [botToken, teamName, companyName, email, teamId]
       );
-    } else {
+    } else if (companyName && companyName !== "Unknown Company" && email) {
       // Auto-generate claim code
             const claimChars = 'abcdefghijklmnpqrstuvwxyz23456789';
             let autoClaimCode = '';
