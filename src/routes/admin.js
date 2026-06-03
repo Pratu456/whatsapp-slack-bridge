@@ -1170,12 +1170,19 @@ router.post('/delete', auth, async (req, res) => {
 
 router.post('/add', auth, async (req, res) => {
   try {
-    const { company, email, twilio_number, slack_bot_token, claim_code } = req.body;
-    if (!company || !twilio_number || !slack_bot_token) return res.json({ success: false, error: 'Please fill in all required fields' });
-    const validationError = validateClaimCode(claim_code);
-    if (validationError) return res.json({ success: false, error: validationError });
-    const existing = await pool.query('SELECT id FROM tenants WHERE LOWER(claim_code) = $1', [claim_code.toLowerCase().trim()]);
-    if (existing.rows.length) return res.json({ success: false, error: 'This claim code is already taken' });
+    let { company, email, twilio_number, slack_bot_token } = req.body;
+    if (!company || !slack_bot_token) return res.json({ success: false, error: 'Please fill in all required fields' });
+    if (!twilio_number) twilio_number = process.env.META_PHONE_NUMBER_PRIVATE ? '+' + process.env.META_PHONE_NUMBER_PRIVATE : '+381653229717';
+    // Auto-generate unique claim code
+    const ccChars = 'abcdefghijklmnpqrstuvwxyz23456789';
+    let claim_code = '';
+    for (let ci = 0; ci < 7; ci++) claim_code += ccChars[Math.floor(Math.random() * ccChars.length)];
+    const ccCheck = await pool.query('SELECT id FROM tenants WHERE LOWER(claim_code) = $1', [claim_code]);
+    if (ccCheck.rows.length) claim_code = claim_code + Math.floor(Math.random() * 99);
+
+
+
+
     await pool.query(`INSERT INTO tenants (company_name, email, twilio_number, slack_bot_token, slack_team_id, slack_team_name, claim_code, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE)`,
       [company, email || null, twilio_number, slack_bot_token, 'MANUAL', company, claim_code.toLowerCase().trim()]);
     if (email) {
