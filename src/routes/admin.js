@@ -121,7 +121,7 @@ router.get('/', auth, async (req, res) => {
           </div>
         </td>
         <td><select onchange="updatePlan(${t.id},this.value)" onclick="event.stopPropagation()" style="background:#16161f;border:1px solid rgba(255,255,255,.1);color:#fff;padding:4px 8px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif"><option value="starter" ${ (t.plan||'starter')==='starter'?'selected':'' }>Starter</option><option value="pro" ${ t.plan==='pro'?'selected':'' }>Pro</option><option value="business" ${ t.plan==='business'?'selected':'' }>Business</option></select></td>
-        <td><code style="background:rgba(37,211,102,.08);color:#25D366;padding:3px 10px;border-radius:6px;font-size:12px;border:1px solid rgba(37,211,102,.15)">${t.claim_code || '-'}</code></td>
+
         <td class="hide-mob" style="font-size:13px;color:rgba(255,255,255,.4)">${t.twilio_number || '-'}</td>
         <td>${t.is_active ? '<span class="badge-green">Active</span>' : '<span class="badge-yellow">Pending</span>'}</td>
         <td class="hide-mob" style="font-size:12px;color:rgba(255,255,255,.3)">${new Date(t.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td>
@@ -457,7 +457,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
       <div id="mob-co" style="display:none">${mobileCompanyRows}</div>
       <div class="tbl-wrap" id="desk-co">
         <table>
-          <thead><tr><th>Company</th><th>Plan</th><th>Claim code</th><th class="hide-mob">WhatsApp number</th><th>Status</th><th class="hide-mob">Created</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Company</th><th>Plan</th><th class="hide-mob">WhatsApp number</th><th>Status</th><th class="hide-mob">Created</th><th>Actions</th></tr></thead>
           <tbody>${tenantRows}</tbody>
         </table>
       </div>
