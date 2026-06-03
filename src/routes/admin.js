@@ -920,7 +920,7 @@ async function deactivate(id){
   if(!confirm('Deactivate this company?'))return;
   const r=await fetch('/admin/deactivate', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   const d=await r.json();
-  if(d.success){ const btn=document.querySelector('.btn-primary[onclick="addTenant()"]'); if(btn){btn.textContent='✅ Company added!';btn.style.background='#25D366';btn.style.color='#000';} setTimeout(()=>location.reload(), 1500); }else alert('Error: '+d.error);
+  if(d.success){ const btn=document.querySelector('.btn-primary[onclick="addTenant()"]'); if(btn){btn.textContent='✅ Company added!';btn.style.background='#25D366';btn.style.color='#000';} alert('✅ Company added successfully! Login credentials have been sent to their email. They can now login and connect Slack from the dashboard.'); setTimeout(()=>location.reload(), 1500); }else alert('Error: '+d.error);
 }
 async function extendTrial(id) {
   const days = prompt('Extend trial by how many days?', '7');
@@ -1197,8 +1197,8 @@ router.post('/add', auth, async (req, res) => {
           [company, email.trim().toLowerCase(), company, passwordHash]);
       }
       try {
-        const { sendConnectWorkspaceEmail } = require('../services/emailService');
-        await sendConnectWorkspaceEmail({ to: email.trim(), companyName: company });
+        const { sendLoginCredentialsEmail } = require('../services/emailService');
+        await sendLoginCredentialsEmail({ to: email.trim(), companyName: company, loginEmail: email.trim(), loginPassword: tempPassword, loginUrl: (process.env.APP_URL || 'https://syncora-ar26.onrender.com') + '/auth/login' });
       } catch(emailErr) { console.error('[ADD COMPANY] Email failed:', emailErr.message); }
     }
     res.json({ success: true });
