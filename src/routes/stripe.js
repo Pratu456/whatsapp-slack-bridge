@@ -17,6 +17,44 @@ const auth = (req, res, next) => {
   next();
 };
 
+
+// ── GET checkout redirect (from Slack OAuth flow) ────────
+router.get('/create-checkout', auth, async (req, res) => {
+  try {
+    const plan = req.query.plan;
+    if (!PLANS[plan]) return res.redirect('/dashboard');
+    const r1 = await pool.query(
+      'SELECT t.* FROM tenants t JOIN users u ON u.email = t.email WHERE u.id = $1 LIMIT 1',
+      [req.session.userId]
+    );
+    const tenant = r1.rows[0];
+    if (!tenant) return res.redirect('/dashboard');
+    let customerId = tenant.stripe_customer_id;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: tenant.email,
+        name:  tenant.company_name,
+        metadata: { tenant_id: String(tenant.id) },
+      });
+      customerId = customer.id;
+      await pool.query('UPDATE tenants SET stripe_customer_id = $1 WHERE id = $2', [customerId, tenant.id]);
+    }
+    const session = await stripe.checkout.sessions.create({
+      customer:             customerId,
+      payment_method_types: ['card'],
+      mode:                 'subscription',
+      line_items: [{ price: PLANS[plan].priceId, quantity: 1 }],
+      success_url: process.env.APP_URL + '/dashboard?payment=success',
+      cancel_url:  process.env.APP_URL + '/dashboard?payment=cancelled',
+      metadata: { tenant_id: String(tenant.id), plan },
+    });
+    res.redirect(session.url);
+  } catch (err) {
+    console.error('[STRIPE] GET Checkout error:', err.message);
+    res.redirect('/dashboard');
+  }
+});
+
 router.post('/create-checkout', auth, async (req, res) => {
   try {
     const { plan } = req.body;
