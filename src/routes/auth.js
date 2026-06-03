@@ -135,6 +135,7 @@ router.post('/register', async (req, res) => {
      await pool.query("UPDATE users SET verified = TRUE WHERE email = $1", [email.trim().toLowerCase()]);
      const newUser = await pool.query("SELECT * FROM users WHERE email = $1", [email.trim().toLowerCase()]);
      req.session.userId = newUser.rows[0].id;
+    req.session.plan = req.body.plan || req.query.plan || "starter";
      req.session.userName = newUser.rows[0].full_name;
      req.session.userEmail = newUser.rows[0].email;
      req.session.companyName = newUser.rows[0].company_name;
@@ -476,7 +477,11 @@ router.get('/slack/callback', async (req, res) => {
                     }
                   } catch(e) { console.error('[SLACK OAUTH] User creation failed:', e.message); }
                 }
-                return res.redirect('/dashboard');
+        const selectedPlan = req.session.plan || "starter";
+        if (selectedPlan === "pro" || selectedPlan === "business") {
+          return res.redirect("/stripe/create-checkout?plan=" + selectedPlan);
+        }
+        return res.redirect("/dashboard");
 
 res.send(`<!DOCTYPE html>
 <html lang="en">
