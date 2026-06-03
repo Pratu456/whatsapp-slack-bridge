@@ -506,7 +506,7 @@ const start = async () => {
       });
       console.log('Session store: Redis ✅');
     } else {
-      console.log('Session store: memory (Redis unavailable)');
+      console.log('Session store: PostgreSQL ✅'); // Redis disabled - using PG
     }
 
     server.listen(process.env.PORT || 3000, () => {
