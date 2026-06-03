@@ -133,29 +133,7 @@ const getTenantForIncomingMessage = async (fromNumber, messageBody, isGroupNumbe
     return { tenant, isNew: false, claimCodeUsed: false, group: null };
   }
 
-  // No claim code and no existing contact — route to default tenant if on private number
-  if (!isGroupNumber && process.env.DEFAULT_TENANT_ID) {
-    const defaultTenant = await pool.query(
-      'SELECT * FROM tenants WHERE id = $1 AND is_active = TRUE',
-      [process.env.DEFAULT_TENANT_ID]
-    );
-    if (defaultTenant.rows.length > 0) {
-      console.log('[DEFAULT TENANT] Routing new contact to:', defaultTenant.rows[0].company_name);
-      return { tenant: defaultTenant.rows[0], isNew: true, claimCodeUsed: false, group: null };
-    }
-  }
-  // No claim code and no existing contact — route to default tenant if on private number
-  if (!isGroupNumber && process.env.DEFAULT_TENANT_ID) {
-    const defaultTenant = await pool.query(
-      'SELECT * FROM tenants WHERE id = $1 AND is_active = TRUE',
-      [process.env.DEFAULT_TENANT_ID]
-    );
-    if (defaultTenant.rows.length > 0) {
-      console.log('[DEFAULT TENANT] Routing new contact to:', defaultTenant.rows[0].company_name);
-      return { tenant: defaultTenant.rows[0], isNew: true, claimCodeUsed: false, group: null };
-    }
-  }
-  return { tenant: null, isNew: false, claimCodeUsed: false, group: null };
+    return { tenant: null, isNew: false, claimCodeUsed: false, group: null };
 };
 
 const pickAgent = async (tenantId) => {

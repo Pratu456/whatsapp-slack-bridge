@@ -1086,12 +1086,11 @@ router.get('/tenant/:id', auth, async (req, res) => {
 
 router.post('/activate', auth, async (req, res) => {
   try {
-    const { id, email, twilio_number, claim_code, default_slack_channel } = req.body;
-    const validationError = validateClaimCode(claim_code);
-    if (validationError) return res.json({ success: false, error: validationError });
+    const { id, email, twilio_number, default_slack_channel } = req.body;
+    // Auto-generate claim code (kept for group chat routing)
+    const ccA = 'abcdefghijklmnpqrstuvwxyz23456789';
+    let claim_code = ''; for (let ci=0;ci<7;ci++) claim_code+=ccA[Math.floor(Math.random()*ccA.length)];
     if (!email || !email.includes('@')) return res.json({ success: false, error: 'Valid email is required' });
-    const existing = await pool.query('SELECT id FROM tenants WHERE LOWER(claim_code) = $1 AND id != $2', [claim_code.toLowerCase().trim(), id]);
-    if (existing.rows.length) return res.json({ success: false, error: 'This claim code is already taken — try a different one' });
     await pool.query('UPDATE tenants SET is_active = TRUE, twilio_number = $1, claim_code = $2, email = $3, default_slack_channel = $4 WHERE id = $5',
       [twilio_number, claim_code.toLowerCase().trim(), email.trim(), default_slack_channel || null, id]);
     let emailSent = false;
