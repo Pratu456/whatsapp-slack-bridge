@@ -428,7 +428,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
                 <input type="password" id="metaToken" value="${tenants[0]?.meta_access_token || ''}" placeholder="EAAcqZ..."/>
               </div>
             </div>
-            ${tenants[0]?.meta_phone_number_id ? '<div style="margin-top:8px;font-size:12px;color:#25D366">✅ Connected</div>' : '<div style="margin-top:8px;font-size:12px;color:rgba(255,255,255,.3)">Using Syncora shared: +381 65 3229717</div>'}
+            ${tenants[0]?.meta_phone_number_id ? '<div style="margin-top:8px;font-size:12px;color:#25D366">✅ Connected</div>' : ''}
           </div>
 
           <div style="background:rgba(96,165,250,.05);border:1px solid rgba(96,165,250,.15);border-radius:10px;padding:16px;margin-bottom:14px">
@@ -443,7 +443,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
                 <input type="password" id="metaGroupToken" value="${tenants[0]?.meta_group_access_token || ''}" placeholder="EAAcqZ..."/>
               </div>
             </div>
-            ${tenants[0]?.meta_group_phone_number_id ? '<div style="margin-top:8px;font-size:12px;color:#60a5fa">✅ Connected</div>' : '<div style="margin-top:8px;font-size:12px;color:rgba(255,255,255,.3)">Using Syncora shared: +381 66 5789626</div>'}
+            ${tenants[0]?.meta_group_phone_number_id ? '<div style="margin-top:8px;font-size:12px;color:#60a5fa">✅ Connected</div>' : ''}
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
