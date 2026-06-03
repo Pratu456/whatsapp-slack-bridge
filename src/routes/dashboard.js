@@ -52,7 +52,7 @@ router.get('/', requireAuth, async (req, res) => {
           <div style="font-size:32px;margin-bottom:12px">🔗</div>
           <div style="font-size:15px;font-weight:600;color:rgba(255,255,255,.5);margin-bottom:8px">No workspaces connected</div>
           <div style="font-size:13px;color:rgba(255,255,255,.25);margin-bottom:20px">Connect your first Slack workspace to get started</div>
-          <a href="/onboarding" style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#000;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">Connect Slack →</a>
+          <a href="/auth/slack?email=${encodeURIComponent(user.email)}&company=${encodeURIComponent(user.company_name)}" style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#000;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">Connect Slack →</a>
         </div>`
       : tenants.map((t, i) => {
           const total = parseInt(statsResults[i][0].rows[0].total);
@@ -271,7 +271,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
       <div class="section-hd">
         <div style="font-size:15px;font-weight:700;color:#fff">Your workspaces</div>
         ${canAddWorkspace
-          ? `<a href="/onboarding?email=${encodeURIComponent(user.email)}" style="display:inline-flex;align-items:center;gap:6px;background:#25D366;color:#000;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;text-decoration:none">+ Add workspace</a>`
+          ? `<a href="/auth/slack?email=${encodeURIComponent(user.email)}&company=${encodeURIComponent(user.company_name)}" style="display:inline-flex;align-items:center;gap:6px;background:#25D366;color:#000;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;text-decoration:none">+ Add workspace</a>`
           : ""}
       </div>
       <div class="ws-grid">${workspaceCards}</div>
