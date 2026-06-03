@@ -416,7 +416,7 @@ router.get('/slack/callback', async (req, res) => {
 
     console.log(`Slack OAuth success: ${companyName} — ${teamName} (${teamId})`);
 
-    const existing = await pool.query('SELECT id FROM tenants WHERE slack_team_id = $1', [teamId]);
+    const existing = await pool.query('SELECT id FROM tenants WHERE slack_team_id = $1 OR (LOWER(email) = $2 AND slack_team_id = 'MANUAL')', [teamId, (email || '').toLowerCase().trim()]);
 
     if (existing.rows.length > 0) {
       await pool.query(
