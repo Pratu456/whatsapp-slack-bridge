@@ -3,7 +3,7 @@ require('dotenv').config();
 const { pool } = require('./db');
 const express = require('express');
 const session = require('express-session');
-const { RedisStore } = require('connect-redis');
+const pgSession = require('connect-pg-simple')(session);
 const whatsappRoute = require('./routes/whatsapp');
 const { connect: connectRedis } = require('./cache/redis');
 // ✅ CHANGED: replaced twilioService with metaService
