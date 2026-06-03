@@ -951,7 +951,7 @@ async function deleteTenant(id){
   if(!confirm('Permanently delete this company and all its data?'))return;
   const r=await fetch('/admin/delete', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   const d=await r.json();
-  if(d.success)location.reload();else alert('Error: '+d.error);
+  if(d.success){ const btn=document.querySelector('.btn-primary[onclick="addTenant()"]'); if(btn){btn.textContent='✅ Added!';btn.style.background='#25D366';} alert('✅ Company added! Login credentials sent to ' + email + '. They can login and connect Slack from dashboard.'); setTimeout(()=>location.reload(),1500); }else alert('Error: '+d.error);
 }
 async function addTenant(){
   const co=document.getElementById('nCo').value.trim();
@@ -964,7 +964,7 @@ async function addTenant(){
   if(customVisible&&!validateCustomCode(document.getElementById('nCustomCode'))){return}
   const r=await fetch('/admin/add', {credentials:'same-origin',method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company:co,email,twilio_number:tw,slack_bot_token:tok})});
   const d=await r.json();
-  if(d.success)location.reload();else alert('Error: '+d.error);
+  if(d.success){ const btn=document.querySelector('.btn-primary[onclick="addTenant()"]'); if(btn){btn.textContent='✅ Added!';btn.style.background='#25D366';} alert('✅ Company added! Login credentials sent to ' + email + '. They can login and connect Slack from dashboard.'); setTimeout(()=>location.reload(),1500); }else alert('Error: '+d.error);
 }
 async function changePassword(){
   const curr=document.getElementById('sCurrPwd').value;
