@@ -452,6 +452,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
           <div id="waSettingsMsg" class="msg"></div>
         </div>
       </div>
+      <!-- Agents -->
+      <div class="card">
+        <div class="card-title">👥 Support Agents</div>
+        <p style="font-size:13px;color:rgba(255,255,255,.5);margin:0 0 16px">Add Slack team members as agents. They will be automatically added to customer conversations.</p>
+        <div id="agentsList" style="margin-bottom:16px"></div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <select id="agentSelect" style="flex:1;min-width:200px;padding:10px 14px;background:#16161f;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-size:14px;font-family:inherit">
+            <option value="">Loading team members...</option>
+          </select>
+          <button class="btn-primary" onclick="addAgent()" style="white-space:nowrap">Add Agent</button>
+        </div>
+        <div id="agentMsg" class="msg"></div>
+      </div>
       <!-- Pricing plans -->
       <div class="card">
         <div class="card-title">⚡ Upgrade your plan</div>
@@ -719,6 +732,66 @@ async function clearWhatsAppSettings() {
   const d = await r.json();
   if (d.success) location.reload();
 }
+
+async function loadAgents() {
+  try {
+    const r = await fetch('/dashboard/agents', { credentials: 'same-origin' });
+    const d = await r.json();
+    if (d.agents) {
+      const list = document.getElementById('agentsList');
+      if (d.agents.length === 0) {
+        list.innerHTML = '<p style="font-size:13px;color:rgba(255,255,255,.3)">No agents added yet.</p>';
+      } else {
+        list.innerHTML = d.agents.map(a =>
+          '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#16161f;border:1px solid rgba(255,255,255,.07);border-radius:10px;margin-bottom:8px">'
+          + '<div style="display:flex;align-items:center;gap:10px">'
+          + '<div style="width:32px;height:32px;border-radius:50%;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#25D366">' + (a.slack_name||'?')[0].toUpperCase() + '</div>'
+          + '<span style="font-size:14px;color:rgba(255,255,255,.8)">' + (a.slack_name||a.slack_user_id) + '</span>'
+          + '</div>'
+          + '<button onclick="removeAgent('' + a.id + '')" style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Remove</button>'
+          + '</div>'
+        ).join('');
+      }
+    }
+    // Load Slack users
+    const ur = await fetch('/dashboard/slack-users', { credentials: 'same-origin' });
+    const ud = await ur.json();
+    if (ud.users) {
+      const sel = document.getElementById('agentSelect');
+      sel.innerHTML = '<option value="">Select a team member...</option>' + ud.users.map(u =>
+        '<option value="' + u.id + '">' + (u.real_name || u.name) + '</option>'
+      ).join('');
+    }
+  } catch(e) { console.error('loadAgents error', e); }
+}
+
+async function addAgent() {
+  const sel = document.getElementById('agentSelect');
+  const userId = sel.value;
+  const userName = sel.options[sel.selectedIndex]?.text;
+  const msg = document.getElementById('agentMsg');
+  if (!userId) { msg.textContent = 'Please select a team member'; msg.style.color = '#f87171'; msg.style.display = 'block'; return; }
+  const r = await fetch('/dashboard/agents', {
+    method: 'POST', credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ slack_user_id: userId, slack_name: userName })
+  });
+  const d = await r.json();
+  if (d.success) { msg.textContent = '✅ Agent added'; msg.style.color = '#4ade80'; msg.style.display = 'block'; loadAgents(); }
+  else { msg.textContent = '❌ ' + (d.error || 'Failed'); msg.style.color = '#f87171'; msg.style.display = 'block'; }
+}
+
+async function removeAgent(id) {
+  await fetch('/dashboard/agents/' + id, { method: 'DELETE', credentials: 'same-origin' });
+  loadAgents();
+}
+
+// Load agents when account tab is shown
+const origShowTab = window.showTab;
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.location.hash === '#account') loadAgents();
+});
+
 async function upgradePlan(plan) {
   try {
     const btn = event.target;
@@ -888,6 +961,52 @@ router.post('/save-whatsapp-settings', requireAuth, async (req, res) => {
   } catch(e) {
     res.json({ success: false, error: e.message });
   }
+});
+
+
+// ── Agent management ──────────────────────────────────────
+router.get('/agents', requireAuth, async (req, res) => {
+  try {
+    const user = await pool.query('SELECT * FROM users WHERE id = $1', [req.session.userId]);
+    if (!user.rows.length) return res.json({ agents: [] });
+    const tenants = await pool.query('SELECT * FROM tenants WHERE LOWER(email) = $1 AND is_active = TRUE LIMIT 1', [user.rows[0].email.toLowerCase()]);
+    if (!tenants.rows.length) return res.json({ agents: [] });
+    const { rows } = await pool.query('SELECT * FROM tenant_agents WHERE tenant_id = $1 ORDER BY slack_name', [tenants.rows[0].id]);
+    res.json({ agents: rows });
+  } catch(e) { res.json({ agents: [] }); }
+});
+
+router.post('/agents', requireAuth, async (req, res) => {
+  try {
+    const { slack_user_id, slack_name } = req.body;
+    const user = await pool.query('SELECT * FROM users WHERE id = $1', [req.session.userId]);
+    const tenants = await pool.query('SELECT * FROM tenants WHERE LOWER(email) = $1 AND is_active = TRUE LIMIT 1', [user.rows[0].email.toLowerCase()]);
+    if (!tenants.rows.length) return res.json({ success: false, error: 'No workspace found' });
+    const existing = await pool.query('SELECT id FROM tenant_agents WHERE tenant_id = $1 AND slack_user_id = $2', [tenants.rows[0].id, slack_user_id]);
+    if (existing.rows.length) return res.json({ success: false, error: 'Agent already added' });
+    await pool.query('INSERT INTO tenant_agents (tenant_id, slack_user_id, slack_name) VALUES ($1, $2, $3)', [tenants.rows[0].id, slack_user_id, slack_name]);
+    res.json({ success: true });
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+router.delete('/agents/:agentId', requireAuth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM tenant_agents WHERE id = $1', [req.params.agentId]);
+    res.json({ success: true });
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+router.get('/slack-users', requireAuth, async (req, res) => {
+  try {
+    const user = await pool.query('SELECT * FROM users WHERE id = $1', [req.session.userId]);
+    const tenants = await pool.query('SELECT * FROM tenants WHERE LOWER(email) = $1 AND is_active = TRUE LIMIT 1', [user.rows[0].email.toLowerCase()]);
+    if (!tenants.rows.length) return res.json({ users: [] });
+    const { WebClient } = require('@slack/web-api');
+    const slack = new WebClient(tenants.rows[0].slack_bot_token);
+    const result = await slack.users.list({ limit: 200 });
+    const users = (result.members || []).filter(u => !u.is_bot && !u.deleted && u.id !== 'USLACKBOT').map(u => ({ id: u.id, name: u.name, real_name: u.real_name }));
+    res.json({ users });
+  } catch(e) { res.json({ users: [] }); }
 });
 
 router.post('/send-invite', requireAuth, async (req, res) => {
