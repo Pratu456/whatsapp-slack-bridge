@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
 const { logMessage } = require('../services/messageLogger');
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpegPath = require('ffmpeg-static');
 const ffmpeg = require('fluent-ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -13,10 +13,10 @@ function convertToMp3(inputBuffer) {
     const os = require('os');
     const path = require('path');
     const tmpIn = path.join(os.tmpdir(), 'wa_audio_' + Date.now() + '.ogg');
-    const tmpOut = path.join(os.tmpdir(), 'wa_audio_' + Date.now() + '.m4a');
+    const tmpOut = path.join(os.tmpdir(), 'wa_audio_' + Date.now() + '.mp3');
     fs.writeFileSync(tmpIn, inputBuffer);
     ffmpeg(tmpIn)
-      .format('ipod').audioCodec('aac')
+      .audioCodec('libmp3lame').format('mp3')
       .on('end', () => {
         const result = fs.readFileSync(tmpOut);
         console.log("[AUDIO] Input:", inputBuffer.length, "Output:", result.length, "First bytes:", result.slice(0,4).toString("hex"));
@@ -176,7 +176,7 @@ router.post('/', async (req, res) => {
               if (normalizedMime === 'audio/ogg' || ext === 'ogg') {
                 try {
                   uploadBuffer = await convertToMp3(mediaBuffer);
-                  ext = 'm4a';
+                  ext = 'mp3';
                   console.log('[AUDIO] Converted OGG to MP3');
                 } catch(convErr) {
                   console.error('[AUDIO] Conversion failed, using original:', convErr.message);
