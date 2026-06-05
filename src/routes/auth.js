@@ -141,7 +141,7 @@ router.post('/register', async (req, res) => {
      req.session.userName = newUser.rows[0].full_name;
      req.session.userEmail = newUser.rows[0].email;
      req.session.companyName = newUser.rows[0].company_name;
-     res.redirect("/onboarding?email=" + encodeURIComponent(email.trim().toLowerCase()));
+     res.redirect("/dashboard");
   } catch (err) {
     console.error('[REGISTER ERROR]', err.message);
     res.redirect('/auth/register?error=' + encodeURIComponent('Something went wrong — please try again'));
