@@ -72,6 +72,8 @@ h1{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;text-a
 <div class="card">
   <div class="logo"><img src="/logo_text.png" alt="Syncora"/></div>
   <h1>Create your account</h1>
+  <a href="/auth/google" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;background:#fff;color:#333;border:1px solid #ddd;border-radius:12px;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:16px;transition:all .2s" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Continue with Google</a>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div><span style="font-size:12px;color:rgba(255,255,255,.3)">or</span><div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div></div>
   <p class="sub">Start connecting WhatsApp to Slack in minutes</p>
   ${error ? `<div class="err">${error}</div>` : ''}
   <form method="POST" action="/auth/register" autocomplete="off"><input type="text" style="display:none" name="fake_user"/><input type="password" style="display:none" name="fake_pass"/>
@@ -558,6 +560,55 @@ h1{font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:10px}
 });
 
 module.exports = router;
+
+
+// ── Google OAuth ──────────────────────────────────────────
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: (process.env.APP_URL || 'https://syncora-ar26.onrender.com') + '/auth/google/callback'
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    const email = profile.emails[0].value.toLowerCase();
+    const fullName = profile.displayName;
+    const existing = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [email]);
+    if (existing.rows.length) {
+      return done(null, existing.rows[0]);
+    }
+    // Create new user
+    const newUser = await pool.query(
+      'INSERT INTO users (full_name, email, company_name, password_hash, verified) VALUES ($1, $2, $3, $4, TRUE) RETURNING *',
+      [fullName, email, fullName, 'google-oauth']
+    );
+    return done(null, newUser.rows[0]);
+  } catch(e) { return done(e, null); }
+}));
+
+passport.serializeUser((user, done) => done(null, user.id));
+passport.deserializeUser(async (id, done) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    done(null, rows[0]);
+  } catch(e) { done(e, null); }
+});
+
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/auth/register?error=Google+login+failed' }), async (req, res) => {
+  try {
+    const user = req.user;
+    req.session.userId = user.id;
+    req.session.userName = user.full_name;
+    req.session.userEmail = user.email;
+    req.session.companyName = user.company_name;
+    res.redirect('/dashboard');
+  } catch(e) {
+    res.redirect('/auth/register?error=Google+login+failed');
+  }
+});
 
 // ── Forgot password ───────────────────────────────────────
 router.get('/forgot-password', (req, res) => {

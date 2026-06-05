@@ -39,6 +39,8 @@ let sessionMiddleware = session({
     },
   });
 server.use((req, res, next) => sessionMiddleware(req, res, next));
+server.use(require('passport').initialize());
+server.use(require('passport').session());
 
 // ✅ STEP 1 — raw body parser for Slack MUST come before express.json()
 server.post('/slack/events', express.raw({ type: '*/*' }), async (req, res) => {
