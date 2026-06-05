@@ -173,7 +173,7 @@ router.post('/', async (req, res) => {
               const extMap = {'image/jpeg':'jpg','image/png':'png','image/gif':'gif','image/webp':'webp','video/mp4':'mp4','audio/ogg':'ogg','audio/mpeg':'mp3','application/pdf':'pdf'};
               let ext = extMap[normalizedMime] || (normalizedMime.startsWith('audio') ? 'ogg' : message.type);
               let uploadBuffer = mediaBuffer;
-              if (normalizedMime === 'audio/ogg' || ext === 'ogg') {
+              if (normalizedMime === 'audio/ogg' || ext === 'ogg' || normalizedMime === 'audio/mpeg' || ext === 'mp3') {
                 try {
                   uploadBuffer = await convertToMp3(mediaBuffer);
                   ext = 'wav';
