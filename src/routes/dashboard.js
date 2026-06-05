@@ -748,7 +748,7 @@ async function loadAgents() {
           + '<div style="width:32px;height:32px;border-radius:50%;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#25D366">' + (a.slack_name||'?')[0].toUpperCase() + '</div>'
           + '<span style="font-size:14px;color:rgba(255,255,255,.8)">' + (a.slack_name||a.slack_user_id) + '</span>'
           + '</div>'
-          + '<button onclick="removeAgent('" + a.id + "')" style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Remove</button>'
+          + '<button onclick="removeAgent(\'' + a.id + '\')"  style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Remove</button>'
           + '</div>'
         ).join('');
       }
