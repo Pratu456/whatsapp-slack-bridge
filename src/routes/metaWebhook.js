@@ -15,16 +15,22 @@ function convertToMp3(inputBuffer) {
     const tmpIn = path.join(os.tmpdir(), 'wa_audio_' + Date.now() + '.ogg');
     const tmpOut = path.join(os.tmpdir(), 'wa_audio_' + Date.now() + '.mp4');
     fs.writeFileSync(tmpIn, inputBuffer);
+    // Create black PPM image (no lavfi needed)
+    const width = 640, height = 120;
+    const header = Buffer.from('P6\n' + width + ' ' + height + '\n255\n');
+    const pixels = Buffer.alloc(width * height * 3, 0);
+    const tmpImg = path.join(os.tmpdir(), 'black_' + Date.now() + '.ppm');
+    fs.writeFileSync(tmpImg, Buffer.concat([header, pixels]));
     ffmpeg()
-      .input('color=black:size=640x120:rate=1')
-      .inputFormat('lavfi')
+      .input(tmpImg)
+      .inputOptions(['-loop', '1'])
       .input(tmpIn)
-      .outputOptions(['-shortest', '-c:v libx264', '-c:a aac', '-pix_fmt yuv420p', '-movflags +faststart'])
+      .outputOptions(['-shortest', '-c:v libx264', '-c:a aac', '-pix_fmt yuv420p', '-movflags +faststart', '-r 1'])
       .format('mp4')
       .on('end', () => {
         const result = fs.readFileSync(tmpOut);
         console.log('[AUDIO] Converted to MP4 video, size:', result.length);
-        try { fs.unlinkSync(tmpIn); fs.unlinkSync(tmpOut); } catch(e) {}
+        try { fs.unlinkSync(tmpIn); fs.unlinkSync(tmpOut); fs.unlinkSync(tmpImg); } catch(e) {}
         resolve(result);
       })
       .on('error', (err) => {
