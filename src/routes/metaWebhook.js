@@ -9,6 +9,7 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 // Convert audio buffer to MP3
 function convertToMp3(inputBuffer) {
   return new Promise((resolve, reject) => {
+    const fs = require('fs');
     const os = require('os');
     const path = require('path');
     const tmpIn = path.join(os.tmpdir(), 'wa_audio_' + Date.now() + '.ogg');
