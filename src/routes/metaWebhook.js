@@ -184,7 +184,7 @@ router.post('/', async (req, res) => {
               }
               await slack.filesUploadV2({
                 channel_id: channelId,
-                file: mediaBuffer,
+                file: uploadBuffer,
                 filename: `${filename || message.type}.${ext}`,
                 initial_comment: `*${ProfileName}* (${waNumber})${caption ? ': ' + caption : ''}`
               });
