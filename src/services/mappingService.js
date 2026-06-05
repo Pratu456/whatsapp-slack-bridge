@@ -31,7 +31,7 @@ const getOrCreateChannel = async (waNumber, displayName) => {
   const result = await withRetry(() =>
     slack.conversations.create({
       name: channelName,
-      is_private: false,
+      is_private: true,
     })
   );
 
