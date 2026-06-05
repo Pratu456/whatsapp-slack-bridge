@@ -736,62 +736,61 @@ async function clearWhatsAppSettings() {
 
 async function loadAgents() {
   try {
-    const r = await fetch('/dashboard/agents', { credentials: 'same-origin' });
-    const d = await r.json();
+    var r = await fetch('/dashboard/agents', { credentials: 'same-origin' });
+    var d = await r.json();
     if (d.agents) {
-      const list = document.getElementById('agentsList');
+      var list = document.getElementById('agentsList');
       if (d.agents.length === 0) {
         list.innerHTML = '<p style="font-size:13px;color:rgba(255,255,255,.3)">No agents added yet.</p>';
       } else {
-        list.innerHTML = d.agents.map(a =>
-          '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#16161f;border:1px solid rgba(255,255,255,.07);border-radius:10px;margin-bottom:8px">'
-          + '<div style="display:flex;align-items:center;gap:10px">'
-          + '<div style="width:32px;height:32px;border-radius:50%;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#25D366">' + (a.slack_name||'?')[0].toUpperCase() + '</div>'
-          + '<span style="font-size:14px;color:rgba(255,255,255,.8)">' + (a.slack_name||a.slack_user_id) + '</span>'
-          + '</div>'
-          + '<button onclick="removeAgent(\'' + a.id + '\')"  style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Remove</button>'
-          + '</div>'
-        ).join('');
+        var html = '';
+        for (var i = 0; i < d.agents.length; i++) {
+          var a = d.agents[i];
+          var initial = (a.slack_name || '?').charAt(0).toUpperCase();
+          var name = a.slack_name || a.slack_user_id;
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#16161f;border:1px solid rgba(255,255,255,.07);border-radius:10px;margin-bottom:8px">';
+          html += '<div style="display:flex;align-items:center;gap:10px">';
+          html += '<div style="width:32px;height:32px;border-radius:50%;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#25D366">' + initial + '</div>';
+          html += '<span style="font-size:14px;color:rgba(255,255,255,.8)">' + name + '</span>';
+          html += '</div>';
+          html += '<button onclick="removeAgent(' + a.id + ')" style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Remove</button>';
+          html += '</div>';
+        }
+        list.innerHTML = html;
       }
     }
-    // Load Slack users
-    const ur = await fetch('/dashboard/slack-users', { credentials: 'same-origin' });
-    const ud = await ur.json();
+    var ur = await fetch('/dashboard/slack-users', { credentials: 'same-origin' });
+    var ud = await ur.json();
     if (ud.users) {
-      const sel = document.getElementById('agentSelect');
-      sel.innerHTML = '<option value="">Select a team member...</option>' + ud.users.map(u =>
-        '<option value="' + u.id + '">' + (u.real_name || u.name) + '</option>'
-      ).join('');
+      var sel = document.getElementById('agentSelect');
+      var opts = '<option value="">Select a team member...</option>';
+      for (var j = 0; j < ud.users.length; j++) {
+        var u = ud.users[j];
+        opts += '<option value="' + u.id + '">' + (u.real_name || u.name) + '</option>';
+      }
+      sel.innerHTML = opts;
     }
   } catch(e) { console.error('loadAgents error', e); }
 }
-
 async function addAgent() {
-  const sel = document.getElementById('agentSelect');
-  const userId = sel.value;
-  const userName = sel.options[sel.selectedIndex]?.text;
-  const msg = document.getElementById('agentMsg');
+  var sel = document.getElementById('agentSelect');
+  var userId = sel.value;
+  var userName = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : '';
+  var msg = document.getElementById('agentMsg');
   if (!userId) { msg.textContent = 'Please select a team member'; msg.style.color = '#f87171'; msg.style.display = 'block'; return; }
-  const r = await fetch('/dashboard/agents', {
+  var r = await fetch('/dashboard/agents', {
     method: 'POST', credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ slack_user_id: userId, slack_name: userName })
   });
-  const d = await r.json();
-  if (d.success) { msg.textContent = '✅ Agent added'; msg.style.color = '#4ade80'; msg.style.display = 'block'; loadAgents(); }
-  else { msg.textContent = '❌ ' + (d.error || 'Failed'); msg.style.color = '#f87171'; msg.style.display = 'block'; }
+  var d = await r.json();
+  if (d.success) { msg.textContent = 'Agent added'; msg.style.color = '#4ade80'; msg.style.display = 'block'; loadAgents(); }
+  else { msg.textContent = 'Error: ' + (d.error || 'Failed'); msg.style.color = '#f87171'; msg.style.display = 'block'; }
 }
-
 async function removeAgent(id) {
   await fetch('/dashboard/agents/' + id, { method: 'DELETE', credentials: 'same-origin' });
   loadAgents();
 }
-
-// Load agents when account tab is shown
-document.addEventListener('DOMContentLoaded', () => {
-  if (window.location.hash === '#account') loadAgents();
-});
-
 async function upgradePlan(plan) {
   try {
     const btn = event.target;
