@@ -592,6 +592,7 @@ function showTab(name, el, noPush) {
   document.getElementById('topbar-title').textContent = titles[name] || name;
   if (name === 'messages') loadMessages();
   if (name === 'contacts') loadContacts();
+  if (name === 'account') loadAgents();
   if (!noPush) window.history.pushState({tab:name},'','/dashboard');
 }
 var isMobile = window.innerWidth < 700;
@@ -787,7 +788,6 @@ async function removeAgent(id) {
 }
 
 // Load agents when account tab is shown
-const origShowTab = window.showTab;
 document.addEventListener('DOMContentLoaded', () => {
   if (window.location.hash === '#account') loadAgents();
 });
