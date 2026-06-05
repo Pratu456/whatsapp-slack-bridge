@@ -2,6 +2,29 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
 const { logMessage } = require('../services/messageLogger');
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpeg = require('fluent-ffmpeg');
+const { Readable } = require('stream');
+ffmpeg.setFfmpegPath(ffmpegPath);
+
+// Convert audio buffer to MP3
+function convertToMp3(inputBuffer) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    const inputStream = new Readable();
+    inputStream.push(inputBuffer);
+    inputStream.push(null);
+    ffmpeg(inputStream)
+      .inputFormat('ogg')
+      .audioCodec('libmp3lame')
+      .format('mp3')
+      .on('error', reject)
+      .pipe(new (require('stream').Writable)({
+        write(chunk, enc, cb) { chunks.push(chunk); cb(); },
+        final(cb) { resolve(Buffer.concat(chunks)); cb(); }
+      }));
+  });
+}
 const { checkMessageLimit } = require('../services/planEnforcement');
 const { getTenantForIncomingMessage, getOrCreateChannelForTenant, postToTenantSlack, ensureChannelMembers } = require('../services/tenantService');
 const { getOrCreateGroupChannel, postGroupMessageToSlack, broadcastToGroup } = require('../services/groupService');
@@ -143,7 +166,17 @@ router.post('/', async (req, res) => {
               const slack = new WebClient(tenant.slack_bot_token);
               const normalizedMime = mimeType.split(";")[0].trim();
               const extMap = {'image/jpeg':'jpg','image/png':'png','image/gif':'gif','image/webp':'webp','video/mp4':'mp4','audio/ogg':'ogg','audio/mpeg':'mp3','application/pdf':'pdf'};
-              const ext = extMap[normalizedMime] || (normalizedMime.startsWith("audio") ? "ogg" : message.type);
+              let ext = extMap[normalizedMime] || (normalizedMime.startsWith('audio') ? 'ogg' : message.type);
+              let uploadBuffer = mediaBuffer;
+              if (normalizedMime === 'audio/ogg' || ext === 'ogg') {
+                try {
+                  uploadBuffer = await convertToMp3(mediaBuffer);
+                  ext = 'mp3';
+                  console.log('[AUDIO] Converted OGG to MP3');
+                } catch(convErr) {
+                  console.error('[AUDIO] Conversion failed, using original:', convErr.message);
+                }
+              }
               await slack.filesUploadV2({
                 channel_id: channelId,
                 file: mediaBuffer,
