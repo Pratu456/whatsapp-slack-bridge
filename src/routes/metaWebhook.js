@@ -16,7 +16,6 @@ function convertToMp3(inputBuffer) {
     const tmpOut = path.join(os.tmpdir(), 'wa_audio_' + Date.now() + '.mp3');
     fs.writeFileSync(tmpIn, inputBuffer);
     ffmpeg(tmpIn)
-      .audioCodec('libmp3lame')
       .format('mp3')
       .on('end', () => {
         const result = fs.readFileSync(tmpOut);
