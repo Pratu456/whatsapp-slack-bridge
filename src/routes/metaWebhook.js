@@ -4,25 +4,29 @@ const { pool } = require('../db');
 const { logMessage } = require('../services/messageLogger');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
-const { Readable } = require('stream');
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 // Convert audio buffer to MP3
 function convertToMp3(inputBuffer) {
   return new Promise((resolve, reject) => {
-    const chunks = [];
-    const inputStream = new Readable();
-    inputStream.push(inputBuffer);
-    inputStream.push(null);
-    ffmpeg(inputStream)
-      .inputFormat('ogg')
+    const os = require('os');
+    const path = require('path');
+    const tmpIn = path.join(os.tmpdir(), 'wa_audio_' + Date.now() + '.ogg');
+    const tmpOut = path.join(os.tmpdir(), 'wa_audio_' + Date.now() + '.mp3');
+    fs.writeFileSync(tmpIn, inputBuffer);
+    ffmpeg(tmpIn)
       .audioCodec('libmp3lame')
       .format('mp3')
-      .on('error', reject)
-      .pipe(new (require('stream').Writable)({
-        write(chunk, enc, cb) { chunks.push(chunk); cb(); },
-        final(cb) { resolve(Buffer.concat(chunks)); cb(); }
-      }));
+      .on('end', () => {
+        const result = fs.readFileSync(tmpOut);
+        try { fs.unlinkSync(tmpIn); fs.unlinkSync(tmpOut); } catch(e) {}
+        resolve(result);
+      })
+      .on('error', (err) => {
+        try { fs.unlinkSync(tmpIn); } catch(e) {}
+        reject(err);
+      })
+      .save(tmpOut);
   });
 }
 const { checkMessageLimit } = require('../services/planEnforcement');
