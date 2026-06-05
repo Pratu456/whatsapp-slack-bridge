@@ -13,12 +13,11 @@ function convertToMp3(inputBuffer) {
     const os = require('os');
     const path = require('path');
     const tmpIn = path.join(os.tmpdir(), 'wa_audio_' + Date.now() + '.ogg');
-    const tmpOut = path.join(os.tmpdir(), 'wa_audio_' + Date.now() + '.mp4');
+    const tmpOut = path.join(os.tmpdir(), 'wa_audio_' + Date.now() + '.wav');
     fs.writeFileSync(tmpIn, inputBuffer);
     ffmpeg(tmpIn)
-      .audioCodec('aac')
-      .outputOptions(['-vn', '-movflags +faststart'])
-      .format('mp4')      .on('end', () => {
+      .format('wav')
+      .on('end', () => {
         const result = fs.readFileSync(tmpOut);
         console.log('[AUDIO] Converted to MP4 video, size:', result.length);
         try { fs.unlinkSync(tmpIn); fs.unlinkSync(tmpOut); fs.unlinkSync(tmpImg); } catch(e) {}
@@ -177,7 +176,7 @@ router.post('/', async (req, res) => {
               if (normalizedMime === 'audio/ogg' || ext === 'ogg') {
                 try {
                   uploadBuffer = await convertToMp3(mediaBuffer);
-                  ext = 'mp4';
+                  ext = 'wav';
                   console.log('[AUDIO] Converted OGG to MP3');
                 } catch(convErr) {
                   console.error('[AUDIO] Conversion failed, using original:', convErr.message);
