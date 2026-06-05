@@ -177,7 +177,7 @@ router.post('/', async (req, res) => {
                 try {
                   uploadBuffer = await convertToMp3(mediaBuffer);
                   ext = 'wav';
-                  console.log('[AUDIO] Converted OGG to MP3');
+                  console.log('[UPLOAD] Buffer first bytes:', uploadBuffer.slice(0,4).toString('hex'), 'ext:', ext, 'size:', uploadBuffer.length);
                 } catch(convErr) {
                   console.error('[AUDIO] Conversion failed, using original:', convErr.message);
                 }
