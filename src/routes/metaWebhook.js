@@ -19,6 +19,7 @@ function convertToMp3(inputBuffer) {
       .format('ipod').audioCodec('aac')
       .on('end', () => {
         const result = fs.readFileSync(tmpOut);
+        console.log("[AUDIO] Input:", inputBuffer.length, "Output:", result.length, "First bytes:", result.slice(0,4).toString("hex"));
         try { fs.unlinkSync(tmpIn); fs.unlinkSync(tmpOut); } catch(e) {}
         resolve(result);
       })
