@@ -416,7 +416,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
         <div id="invoices-list" style="min-height:40px">
           <div style="color:rgba(255,255,255,.35);font-size:13px">Loading invoices…</div>
         </div>
-        </div>
       </div>` : ''}
 
       <!-- WhatsApp Settings -->
