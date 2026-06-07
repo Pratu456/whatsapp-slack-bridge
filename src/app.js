@@ -106,18 +106,12 @@ server.use('/invoices', express.json(), invoicesRoute);
 server.use(express.urlencoded({ extended: false }));
 
 const { pool: dbPool } = require('./db');
-setTimeout(() => dbPool.query(`CREATE TABLE IF NOT EXISTS invoices (
-  id SERIAL PRIMARY KEY,
-  tenant_id INTEGER NOT NULL,
-  invoice_number VARCHAR(50) NOT NULL,
-  stripe_invoice_id VARCHAR(100),
-  plan VARCHAR(50),
-  amount VARCHAR(20),
-  company_name VARCHAR(255),
-  company_email VARCHAR(255),
-  billing_period VARCHAR(100),
-  created_at TIMESTAMPTZ DEFAULT NOW()
-)`).then(() => console.log('[DB] invoices table ready')).catch(e => console.warn('[DB] invoices table:', e.message)); }, 5000);
+setTimeout(async () => {
+  try {
+    await dbPool.query('CREATE TABLE IF NOT EXISTS invoices (id SERIAL PRIMARY KEY, tenant_id INTEGER NOT NULL, invoice_number VARCHAR(50) NOT NULL, stripe_invoice_id VARCHAR(100), plan VARCHAR(50), amount VARCHAR(20), company_name VARCHAR(255), company_email VARCHAR(255), billing_period VARCHAR(100), created_at TIMESTAMPTZ DEFAULT NOW())');
+    console.log('[DB] invoices table ready');
+  } catch(e) { console.warn('[DB] invoices table:', e.message); }
+}, 5000);
 
 server.use(express.json());
 server.use(express.static(path.join(__dirname, '../public')));
