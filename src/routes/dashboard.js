@@ -418,6 +418,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
         </div>
       </div>` : ''}
 
+      ${plan !== 'starter' ? `
+      <div class="card">
+        <div class="card-title">🧾 Payment Invoices</div>
+        <div id="invoices-list" style="min-height:40px">
+          <div style="color:rgba(255,255,255,.35);font-size:13px">Loading invoices…</div>
+        </div>
+      </div>` : ''}
+
       <!-- WhatsApp Settings -->
       <div class="card">
         <div class="card-title">📱 WhatsApp Settings</div>

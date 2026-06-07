@@ -178,6 +178,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
               console.log('[STRIPE] Invoice saved:', invNum);
             }
           } catch(invErr) { console.warn('[STRIPE] Invoice save failed:', invErr.message); }
+
         break;
       }
       case 'customer.subscription.updated': {
