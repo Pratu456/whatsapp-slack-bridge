@@ -410,6 +410,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
         </div>
       </div>
 
+      ${plan !== 'starter' ? `
+      <div class="card">
+        <div class="card-title">🧾 Payment Invoices</div>
+        <div id="invoices-list" style="min-height:40px">
+          <div style="color:rgba(255,255,255,.35);font-size:13px">Loading invoices…</div>
+        </div>
+      </div>` : ''}
+
       <!-- WhatsApp Settings -->
       <div class="card">
         <div class="card-title">📱 WhatsApp Settings</div>
@@ -862,6 +870,42 @@ if (urlTab) {
   var el = document.querySelector('.sb-link[onclick*="' + urlTab + '"]');
   showTab(urlTab, el);
 }
+
+// ── Load invoices ─────────────────────────────────────────────────────────────
+async function loadInvoices() {
+  const el = document.getElementById('invoices-list');
+  if (!el) return;
+  try {
+    const r = await fetch('/invoices');
+    const data = await r.json();
+    if (!data.invoices || data.invoices.length === 0) {
+      el.innerHTML = '<div style="color:rgba(255,255,255,.35);font-size:13px">No invoices yet. Your first invoice will appear after your next payment.</div>';
+      return;
+    }
+    el.innerHTML = data.invoices.map(function(inv) {
+      const date = new Date(inv.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      const planLabel = inv.plan.charAt(0).toUpperCase() + inv.plan.slice(1);
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06);flex-wrap:wrap;gap:10px">' +
+        '<div>' +
+          '<div style="font-size:13px;font-weight:700;color:#fff">' + inv.invoice_number + '</div>' +
+          '<div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px">Syncora ' + planLabel + ' · ' + date + '</div>' +
+          (inv.billing_period ? '<div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:1px">' + inv.billing_period + '</div>' : '') +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:14px">' +
+          '<span style="font-size:15px;font-weight:800;color:#25D366">' + inv.amount + '</span>' +
+          '<span style="font-size:11px;font-weight:600;color:#4ade80;background:rgba(74,222,128,.1);padding:3px 9px;border-radius:100px">PAID</span>' +
+          '<a href="/invoices/' + inv.id + '/download" target="_blank" style="background:rgba(255,255,255,.08);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,.12)">' +
+            '⬇ Download PDF' +
+          '</a>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    if (el) el.innerHTML = '<div style="color:rgba(255,100,100,.6);font-size:13px">Could not load invoices.</div>';
+  }
+}
+document.addEventListener('DOMContentLoaded', loadInvoices);
+
 </script>
 </body>
 </html>`);

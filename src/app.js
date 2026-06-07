@@ -22,6 +22,7 @@ const commandsRoute = require('./routes/commands');
 const slackCommandsRoute = require('./routes/slackCommands');
 const { router: metaWebhookRoute } = require('./routes/metaWebhook');
 const stripeRoute = require('./routes/stripe');
+const invoicesRoute = require('./routes/invoices');
 const { sendWaitlistConfirmationEmail } = require('./services/emailService');
 const { migrateAdminSettings } = require('./services/adminSettings');
 const server = express();
@@ -101,6 +102,7 @@ server.post('/slack/events', express.raw({ type: '*/*' }), async (req, res) => {
 // ✅ STEP 2 — all other middleware comes AFTER Slack events route
 server.use('/stripe/webhook', express.raw({ type: "application/json" }));
 server.use('/stripe', express.json(), stripeRoute);
+server.use('/invoices', express.json(), invoicesRoute);
 server.use(express.urlencoded({ extended: false }));
 server.use(express.json());
 server.use(express.static(path.join(__dirname, '../public')));

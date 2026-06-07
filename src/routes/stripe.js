@@ -149,6 +149,35 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             await sendUpgradeEmail({ to: t.email, companyName: t.company_name, plan: s.metadata.plan, amount, nextBillingDate: nextBilling }).catch(e => console.warn('[STRIPE] Upgrade email failed:', e.message));
           }
         }
+          // Store invoice in DB
+          try {
+            await pool.query(`CREATE TABLE IF NOT EXISTS invoices (
+              id SERIAL PRIMARY KEY,
+              tenant_id INTEGER NOT NULL,
+              invoice_number VARCHAR(50) NOT NULL,
+              stripe_invoice_id VARCHAR(100),
+              plan VARCHAR(50),
+              amount VARCHAR(20),
+              company_name VARCHAR(255),
+              company_email VARCHAR(255),
+              billing_period VARCHAR(100),
+              created_at TIMESTAMPTZ DEFAULT NOW()
+            )`);
+            const invNum = 'SYN-' + Date.now();
+            const subData = await stripe.subscriptions.retrieve(s.subscription);
+            const pStart = new Date(subData.current_period_start * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            const pEnd   = new Date(subData.current_period_end   * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            const invAmount = s.metadata.plan === 'pro' ? '€29.00' : '€79.00';
+            const tRes2 = await pool.query('SELECT * FROM tenants WHERE id = $1', [s.metadata.tenant_id]);
+            const tRow2 = tRes2.rows[0];
+            if (tRow2) {
+              await pool.query(
+                'INSERT INTO invoices (tenant_id, invoice_number, stripe_invoice_id, plan, amount, company_name, company_email, billing_period) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
+                [tRow2.id, invNum, s.payment_intent || s.subscription, s.metadata.plan, invAmount, tRow2.company_name, tRow2.email, pStart + ' – ' + pEnd]
+              );
+              console.log('[STRIPE] Invoice saved:', invNum);
+            }
+          } catch(invErr) { console.warn('[STRIPE] Invoice save failed:', invErr.message); }
         break;
       }
       case 'customer.subscription.updated': {
