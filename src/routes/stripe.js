@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const Stripe = require('stripe');
 const { pool } = require('../db');
+const PDFDocument = require('pdfkit');
 const { sendUpgradeEmail, sendCancellationEmail } = require('../services/emailService');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -146,7 +147,63 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             const sub = await stripe.subscriptions.retrieve(s.subscription);
             const nextBilling = new Date(sub.current_period_end * 1000).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
             const amount = s.metadata.plan === 'pro' ? '€29.00' : '€79.00';
-            await sendUpgradeEmail({ to: t.email, companyName: t.company_name, plan: s.metadata.plan, amount, nextBillingDate: nextBilling }).catch(e => console.warn('[STRIPE] Upgrade email failed:', e.message));
+            // Generate PDF invoice buffer
+            let pdfBuf = null;
+            let savedInvNum = null;
+            try {
+              // Get the invoice we just saved
+              const invRes = await pool.query('SELECT * FROM invoices WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT 1', [t.id]);
+              const inv = invRes.rows[0];
+              if (inv) {
+                savedInvNum = inv.invoice_number;
+                pdfBuf = await new Promise((resolve, reject) => {
+                  const doc = new PDFDocument({ margin: 50, size: 'A4' });
+                  const chunks = [];
+                  doc.on('data', c => chunks.push(c));
+                  doc.on('end', () => resolve(Buffer.concat(chunks)));
+                  doc.on('error', reject);
+                  // Header
+                  doc.rect(0, 0, doc.page.width, 90).fill('#111827');
+                  doc.fontSize(28).fillColor('#25D366').font('Helvetica-Bold').text('Syncora', 50, 28);
+                  doc.fontSize(10).fillColor('#9ca3af').font('Helvetica').text('WhatsApp ↔ Slack Bridge', 50, 60);
+                  doc.fontSize(18).fillColor('#ffffff').font('Helvetica-Bold').text('INVOICE', 0, 34, { align: 'right', width: doc.page.width - 50 });
+                  doc.fontSize(10).fillColor('#9ca3af').font('Helvetica').text('#' + inv.invoice_number, 0, 58, { align: 'right', width: doc.page.width - 50 });
+                  let y = 115;
+                  doc.font('Helvetica-Bold').fontSize(9).fillColor('#6b7280').text('INVOICE DATE', 50, y);
+                  doc.font('Helvetica-Bold').fontSize(9).fillColor('#6b7280').text('STATUS', 350, y);
+                  y += 14;
+                  const invDate = new Date(inv.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+                  doc.font('Helvetica').fontSize(11).fillColor('#111827').text(invDate, 50, y);
+                  doc.font('Helvetica-Bold').fontSize(11).fillColor('#25D366').text('PAID', 350, y);
+                  y += 40;
+                  doc.moveTo(50, y).lineTo(doc.page.width - 50, y).stroke('#e5e7eb'); y += 20;
+                  doc.font('Helvetica-Bold').fontSize(9).fillColor('#6b7280').text('BILLED TO', 50, y); y += 14;
+                  doc.font('Helvetica-Bold').fontSize(13).fillColor('#111827').text(inv.company_name, 50, y); y += 18;
+                  doc.font('Helvetica').fontSize(11).fillColor('#4b5563').text(inv.company_email, 50, y); y += 40;
+                  doc.rect(50, y, doc.page.width - 100, 28).fill('#f9fafb');
+                  doc.font('Helvetica-Bold').fontSize(9).fillColor('#6b7280').text('DESCRIPTION', 60, y + 9);
+                  doc.font('Helvetica-Bold').fontSize(9).fillColor('#6b7280').text('PERIOD', 280, y + 9);
+                  doc.font('Helvetica-Bold').fontSize(9).fillColor('#6b7280').text('AMOUNT', 0, y + 9, { align: 'right', width: doc.page.width - 60 });
+                  y += 28;
+                  doc.moveTo(50, y).lineTo(doc.page.width - 50, y).stroke('#e5e7eb'); y += 14;
+                  const planLabel2 = inv.plan.charAt(0).toUpperCase() + inv.plan.slice(1);
+                  doc.font('Helvetica-Bold').fontSize(11).fillColor('#111827').text('Syncora ' + planLabel2 + ' Plan', 60, y);
+                  doc.font('Helvetica').fontSize(10).fillColor('#6b7280').text('Monthly subscription', 60, y + 16);
+                  doc.font('Helvetica').fontSize(11).fillColor('#4b5563').text(inv.billing_period || '', 280, y + 4);
+                  doc.font('Helvetica-Bold').fontSize(13).fillColor('#111827').text(inv.amount, 0, y + 4, { align: 'right', width: doc.page.width - 60 });
+                  y += 55;
+                  doc.moveTo(50, y).lineTo(doc.page.width - 50, y).stroke('#e5e7eb'); y += 16;
+                  doc.rect(doc.page.width - 210, y, 160, 42).fill('#f0fdf4');
+                  doc.font('Helvetica-Bold').fontSize(9).fillColor('#6b7280').text('TOTAL PAID', doc.page.width - 200, y + 7);
+                  doc.font('Helvetica-Bold').fontSize(16).fillColor('#16a34a').text(inv.amount, doc.page.width - 200, y + 20);
+                  y += 70;
+                  doc.moveTo(50, y).lineTo(doc.page.width - 50, y).stroke('#e5e7eb'); y += 16;
+                  doc.font('Helvetica').fontSize(9).fillColor('#9ca3af').text('Thank you for your business! Questions? Contact us at support@syncora.one', 50, y, { align: 'center', width: doc.page.width - 100 });
+                  doc.end();
+                });
+              }
+            } catch(pdfErr) { console.warn('[STRIPE] PDF generation failed:', pdfErr.message); }
+            await sendUpgradeEmail({ to: t.email, companyName: t.company_name, plan: s.metadata.plan, amount, nextBillingDate: nextBilling, pdfBuffer: pdfBuf, invoiceNumber: savedInvNum }).catch(e => console.warn('[STRIPE] Upgrade email failed:', e.message));
           }
         }
           // Store invoice in DB

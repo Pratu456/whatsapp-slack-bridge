@@ -1,14 +1,16 @@
 const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const sendEmail = async ({ to, subject, html }) => {
+const sendEmail = async ({ to, subject, html, attachments }) => {
   // Use Resend API (works on Render, no SMTP needed)
-  const { data, error } = await resend.emails.send({
+  const payload = {
     from: 'Syncora <noreply@syncora.one>',
     to: process.env.NODE_ENV === 'production' ? to : process.env.GMAIL_USER,
     subject,
     html,
-  });
+  };
+  if (attachments && attachments.length) payload.attachments = attachments;
+  const { data, error } = await resend.emails.send(payload);
   if (error) throw new Error(JSON.stringify(error));
   console.log('[EMAIL] Sent | id:', data?.id);
   return data;
@@ -91,7 +93,7 @@ const sendInviteEmail = async ({ to, companyName, waLink, groupName, type }) => 
 };
 
 
-const sendUpgradeEmail = async ({ to, companyName, plan, amount, nextBillingDate }) => {
+const sendUpgradeEmail = async ({ to, companyName, plan, amount, nextBillingDate, pdfBuffer, invoiceNumber }) => {
   const planFeatures = {
     pro: [
       '3 Slack workspaces',
@@ -119,7 +121,7 @@ const sendUpgradeEmail = async ({ to, companyName, plan, amount, nextBillingDate
     '<tr><td style="padding:6px 0;font-size:14px;color:#333;border-bottom:1px solid #f0f0f0">&#10003; ' + f + '</td></tr>'
   ).join('');
 
-  await sendEmail({
+  const emailPayload = {
     to,
     subject: 'Your Syncora ' + planLabel + ' plan is now active',
     html: '<!DOCTYPE html><html><body style="font-family:Inter,sans-serif;background:#f9f9f9;padding:40px 20px">'
@@ -153,7 +155,14 @@ const sendUpgradeEmail = async ({ to, companyName, plan, amount, nextBillingDate
       + '<p style="margin-top:24px;font-size:11px;color:#bbb;text-align:center">Powered by Syncora &middot; To manage your subscription visit your dashboard</p>'
       + '</div></div>'
       + '</body></html>'
-  });
+  };
+  if (pdfBuffer) {
+    emailPayload.attachments = [{
+      filename: 'syncora-invoice-' + invoiceNumber + '.pdf',
+      content: pdfBuffer.toString('base64'),
+    }];
+  }
+  await sendEmail(emailPayload);
 };
 
 const sendCancellationEmail = async ({ to, companyName, planEnd }) => {
