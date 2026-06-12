@@ -1198,7 +1198,7 @@ router.post('/add', auth, async (req, res) => {
       }
       try {
         const { sendLoginCredentialsEmail } = require('../services/emailService');
-        await sendLoginCredentialsEmail({ to: email.trim(), companyName: company, loginEmail: email.trim(), loginPassword: tempPassword, loginUrl: (process.env.APP_URL || 'https://syncora-ar26.onrender.com') + '/auth/login' });
+        await sendLoginCredentialsEmail({ to: email.trim(), companyName: company, loginEmail: email.trim(), loginPassword: tempPassword, loginUrl: (process.env.APP_URL || 'https://syncora.one') + '/auth/login' });
       } catch(emailErr) { console.error('[ADD COMPANY] Email failed:', emailErr.message); }
     }
     res.json({ success: true });

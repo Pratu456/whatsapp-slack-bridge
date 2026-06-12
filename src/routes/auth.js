@@ -571,7 +571,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: (process.env.APP_URL || 'https://syncora-ar26.onrender.com') + '/auth/google/callback'
+  callbackURL: (process.env.APP_URL || 'https://syncora.one') + '/auth/google/callback'
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     const email = profile.emails[0].value.toLowerCase();
@@ -629,7 +629,7 @@ router.post('/forgot-password', async (req, res) => {
     const token = crypto.randomBytes(32).toString('hex');
     const expires = new Date(Date.now() + 60 * 60 * 1000);
     await pool.query('UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3', [token, expires, user.rows[0].id]);
-    const resetUrl = (process.env.APP_URL || 'https://syncora-ar26.onrender.com') + '/auth/reset-password?token=' + token;
+    const resetUrl = (process.env.APP_URL || 'https://syncora.one') + '/auth/reset-password?token=' + token;
     try {
       const { sendPasswordResetEmail } = require('../services/emailService');
       await sendPasswordResetEmail({ to: email.trim(), fullName: user.rows[0].full_name, resetUrl });

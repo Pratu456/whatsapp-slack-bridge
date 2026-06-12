@@ -46,7 +46,7 @@ const sendActivationEmail = async ({ to, companyName }) => {
       + '<p style="margin:0;font-size:14px;color:#276749;line-height:1.6">&#x2705; Your Syncora account is active. Login to your dashboard to connect your WhatsApp Business number and start receiving messages in Slack.</p>'
       + '</div>'
       + '<div style="text-align:center;margin:28px 0">'
-      + '<a href="' + (process.env.APP_URL || 'https://syncora-ar26.onrender.com') + '/dashboard" style="display:inline-block;background:#25D366;color:#000;padding:14px 32px;border-radius:10px;font-weight:700;text-decoration:none;font-size:15px">Go to Dashboard &rarr;</a>'
+      + '<a href="' + (process.env.APP_URL || 'https://syncora.one') + '/dashboard" style="display:inline-block;background:#25D366;color:#000;padding:14px 32px;border-radius:10px;font-weight:700;text-decoration:none;font-size:15px">Go to Dashboard &rarr;</a>'
       + '</div>'
       + '<p style="margin-top:24px;font-size:11px;color:#bbb;text-align:center">Powered by Syncora</p>'
       + '</div></div></body></html>'
