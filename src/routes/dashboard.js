@@ -589,7 +589,7 @@ function showInviteMsg(el, text, success) {
   el.style.display = 'block';
   if (success) setTimeout(() => { el.style.display = 'none'; }, 5000);
 }
-window.history.pushState({tab:"overview"},"","/dashboard");
+window.history.replaceState({tab:"overview"},"",window.location.pathname + window.location.search);
 window.addEventListener("popstate",function(e){var tab=(e.state&&e.state.tab)||"overview";showTab(tab,null,true);});
 function showTab(name, el, noPush) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
@@ -868,7 +868,7 @@ function showMsg(el, text, ok) {
 var urlTab = new URLSearchParams(window.location.search).get('tab');
 if (urlTab) {
   var el = document.querySelector('.sb-link[onclick*="' + urlTab + '"]');
-  showTab(urlTab, el);
+  showTab(urlTab, el, true);
 }
 
 // ── Load invoices ─────────────────────────────────────────────────────────────
