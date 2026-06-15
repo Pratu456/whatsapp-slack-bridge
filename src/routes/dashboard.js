@@ -720,7 +720,7 @@ async function saveWhatsAppSettings() {
     if (d.success) {
       msg.textContent = '✅ ' + (d.message || 'Saved successfully');
       msg.style.color = '#4ade80';
-      setTimeout(() => location.reload(), 1500);
+      setTimeout(() => location.href = '/dashboard?tab=account', 1500);
     } else {
       msg.textContent = '❌ ' + (d.error || 'Failed to save');
       msg.style.color = '#f87171';
