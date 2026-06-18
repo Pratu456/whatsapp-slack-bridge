@@ -246,7 +246,7 @@ footer p{font-size:13px;color:var(--t4);line-height:1.8}
 </style>
 </head>
 <body>
-<style id="cookieBlock">body>*:not(#cookieOverlay):not(#cookieBanner):not(#cookieModal){pointer-events:none!important;user-select:none!important}#cookieModal{display:flex!important}</style>
+
 
 <div class="bg-glow">
   <div class="glow1"></div>
@@ -699,7 +699,7 @@ footer p{font-size:13px;color:var(--t4);line-height:1.8}
 
 <script>
 // Animated bridge chat
-(function(){if(localStorage.getItem("cookieConsent")==="accepted"){var s=document.getElementById("cookieBlock");if(s)s.remove();return;}
+(function(){if(localStorage.getItem("cookieConsent")==="accepted"){return;}
   const seq=[
     {wa:'w1',sl:'s1',delay:600},
     {wa:null,sl:'s2',delay:1600},
@@ -781,33 +781,39 @@ undefined
   }
 </script>
 <!-- COOKIE OVERLAY -->
-<div id="cookieOverlay" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.85);backdrop-filter:blur(8px)"></div>
+
 <!-- COOKIE BANNER -->
-<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#0f0f16;border-top:1px solid rgba(255,255,255,.1);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-  <p style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6;max-width:700px;margin:0">Wir verwenden Cookies, um die Funktionalität unserer Website zu gewährleisten. Durch die weitere Nutzung stimmen Sie der Verwendung von Cookies zu. <a href="/privacy.html" style="color:#25D366;text-decoration:none">Mehr erfahren</a></p>
-  <div style="display:flex;gap:8px;flex-shrink:0">
-    <button onclick="declineCookies()" style="padding:8px 16px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:8px;color:rgba(255,255,255,.5);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">Ablehnen</button>
-    <button onclick="acceptCookies()" style="padding:8px 16px;background:#25D366;border:none;border-radius:8px;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Akzeptieren</button>
+<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#0f0f16;border-top:1px solid rgba(255,255,255,.1);padding:16px 24px">
+  <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div>
+      <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px">About cookies on this site</div>
+      <p style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.6;margin:0;max-width:700px">We use cookies to ensure the website works properly. Some cookies are required, others help us improve your experience. <a href="/privacy.html" style="color:#25D366;text-decoration:none">Learn more</a></p>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0">
+      <button onclick="declineCookies()" style="padding:8px 16px;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">Required only</button>
+      <button onclick="acceptCookies()" style="padding:8px 16px;background:#25D366;border:none;border-radius:8px;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Accept all</button>
+    </div>
   </div>
 </div>
-<script>
+
 function acceptCookies(){
-  var s=document.getElementById("cookieBlock");if(s)s.remove();
   document.getElementById("cookieBanner").style.display="none";
-  document.getElementById("cookieOverlay").style.display="none";
   localStorage.setItem("cookieConsent","accepted");
 }
 function declineCookies(){
+  document.getElementById("cookieBanner").style.display="none";
+  localStorage.setItem("cookieConsent","declined");
+  return;
+  // old code below kept for reference
   var popup=document.createElement("div");
   popup.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;background:#0f0f16;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:32px;max-width:380px;width:90%;text-align:center";
-  popup.innerHTML='<div style="font-size:20px;margin-bottom:12px">🍪</div><div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px">Cookies erforderlich</div><div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:20px">Um diese Website nutzen zu können, müssen Sie Cookies akzeptieren.</div><button onclick="this.parentElement.remove()" style="padding:10px 24px;background:#25D366;border:none;border-radius:8px;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">OK</button>';
+  // cookie declined
   document.body.appendChild(popup);
 }
   
-(function(){if(localStorage.getItem("cookieConsent")==="accepted"){var s=document.getElementById("cookieBlock");if(s)s.remove();return;}
+(function(){if(localStorage.getItem("cookieConsent")==="accepted"){return;}
   if(!localStorage.getItem("cookieConsent")){
     document.getElementById("cookieBanner").style.display="flex";
-    document.getElementById("cookieOverlay").style.display="block";
   }
 })()
 // Bridge chat animation
