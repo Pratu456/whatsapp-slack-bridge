@@ -726,8 +726,10 @@ footer p{font-size:13px;color:var(--t4);line-height:1.8}
 })();
 document.querySelectorAll('a[href^="#"]').forEach(a=>{
   a.addEventListener('click',e=>{
+    var href=a.getAttribute('href');
+    if (href.charAt(0) !== '#') return;
     e.preventDefault();
-    const t=document.querySelector(a.getAttribute('href'));
+    const t=document.querySelector(href);
     if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
   });
 });
