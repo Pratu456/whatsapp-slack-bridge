@@ -181,7 +181,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
 <body>
 
 <div class="mob-bar">
-  <img src="/logo_text.png" alt="Syncora" style="height:20px;filter:brightness(0) invert(1)"/>
+  <a href="/" style="display:block;text-decoration:none"><img src="/logo_text.png" alt="Syncora" style="height:20px;filter:brightness(0) invert(1)"/></a>
   <button class="hamburger" onclick="toggleDrawer()"><span></span><span></span><span></span></button>
 </div>
 <div class="mob-overlay" id="overlay" onclick="closeDrawer()"></div>
@@ -199,7 +199,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
 
 <aside class="sidebar">
   <div class="sb-top">
-    <img src="/logo_text.png" alt="Syncora" style="height:24px;filter:brightness(0) invert(1)"/>
+    <a href="/" style="display:block;text-decoration:none"><img src="/logo_text.png" alt="Syncora" style="height:24px;filter:brightness(0) invert(1)"/></a>
   </div>
   <nav class="sb-nav">
     <div class="sb-section">Dashboard</div>
