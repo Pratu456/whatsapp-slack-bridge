@@ -952,37 +952,6 @@ async function loadInvoices() {
 document.addEventListener('DOMContentLoaded', loadInvoices);
 
 
-async function loadInvoices() {
-  var el = document.getElementById('invoices-list');
-  if (!el) return;
-  try {
-    var r = await fetch('/invoices');
-    var data = await r.json();
-    if (!data.invoices || data.invoices.length === 0) {
-      el.innerHTML = '<div style="color:rgba(255,255,255,.35);font-size:13px">No invoices yet.</div>';
-      return;
-    }
-    el.innerHTML = data.invoices.map(function(inv) {
-      var date = new Date(inv.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
-      var pl = inv.plan.charAt(0).toUpperCase() + inv.plan.slice(1);
-      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06);flex-wrap:wrap;gap:10px">' +
-        '<div>' +
-          '<div style="font-size:13px;font-weight:700;color:#fff">' + inv.invoice_number + '</div>' +
-          '<div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px">Syncora ' + pl + ' - ' + date + '</div>' +
-        '</div>' +
-        '<div style="display:flex;align-items:center;gap:14px">' +
-          '<span style="font-size:15px;font-weight:800;color:#25D366">' + inv.amount + '</span>' +
-          '<span style="font-size:11px;font-weight:600;color:#4ade80;background:rgba(74,222,128,.1);padding:3px 9px;border-radius:100px">PAID</span>' +
-          '<a href="/invoices/' + inv.id + '/download" target="_blank" style="background:rgba(255,255,255,.08);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,.12)">Download PDF</a>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-  } catch(e) {
-    el.innerHTML = '<div style="color:rgba(255,100,100,.6);font-size:13px">Could not load invoices.</div>';
-  }
-}
-document.addEventListener('DOMContentLoaded', loadInvoices);
-
 
 function openWaHelp(){ document.getElementById('waHelpOverlay').style.display = 'flex'; }
 function closeWaHelp(){ document.getElementById('waHelpOverlay').style.display = 'none'; }
