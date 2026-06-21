@@ -783,21 +783,99 @@ undefined
 <!-- COOKIE OVERLAY -->
 
 <!-- COOKIE BANNER -->
-<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#0f0f16;border-top:1px solid rgba(255,255,255,.1);padding:14px 24px">
+<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#0f0f16;border-top:1px solid rgba(255,255,255,.1);padding:16px 24px">
   <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-    <p style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.6;margin:0;max-width:800px">This site uses only essential cookies required for the app to function (e.g. keeping you signed in). We do not use tracking or advertising cookies. <a href="/privacy.html" style="color:#25D366;text-decoration:none">Learn more</a></p>
-    <button onclick="acceptCookies()" style="padding:8px 18px;background:#25D366;border:none;border-radius:8px;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0">Got it</button>
+    <p style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.6;margin:0;max-width:700px">We use cookies to enhance your experience, remember your preferences, and analyze traffic. Choose which cookies you allow. <a href="/privacy.html" style="color:#25D366;text-decoration:none">Learn more</a></p>
+    <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap">
+      <button onclick="openCookieSettings()" style="padding:8px 16px;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">Customize</button>
+      <button onclick="declineAllCookies()" style="padding:8px 16px;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">Decline all</button>
+      <button onclick="acceptAllCookies()" style="padding:8px 16px;background:#25D366;border:none;border-radius:8px;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Accept all</button>
+    </div>
   </div>
 </div>
 
+<!-- COOKIE SETTINGS MODAL -->
+<div id="cookieSettingsOverlay" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+  <div style="background:#0f0f16;border:1px solid rgba(255,255,255,.1);border-radius:16px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto;padding:28px">
+    <h3 style="font-size:18px;font-weight:700;color:#fff;margin:0 0 8px">Cookie Settings</h3>
+    <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin:0 0 20px">We use cookies to enhance your experience on our website, personalize content, analyze traffic, and improve our services. Please select which cookies you allow:</p>
+
+    <div style="border-top:1px solid rgba(255,255,255,.08);padding:16px 0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:14px;font-weight:600;color:#fff">Strictly Necessary</span>
+        <input type="checkbox" checked disabled style="width:18px;height:18px;accent-color:#25D366;opacity:.5"/>
+      </div>
+      <p style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.5;margin:0">Essential for the website to function properly, including keeping you signed in. Cannot be disabled.</p>
+    </div>
+
+    <div style="border-top:1px solid rgba(255,255,255,.08);padding:16px 0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:14px;font-weight:600;color:#fff">Functional Cookies</span>
+        <input type="checkbox" id="cookieFunctional" style="width:18px;height:18px;accent-color:#25D366;cursor:pointer"/>
+      </div>
+      <p style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.5;margin:0">Enable personalized features and remember your preferences.</p>
+    </div>
+
+    <div style="border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);padding:16px 0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:14px;font-weight:600;color:#fff">Analytics Cookies</span>
+        <input type="checkbox" id="cookieAnalytics" style="width:18px;height:18px;accent-color:#25D366;cursor:pointer"/>
+      </div>
+      <p style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.5;margin:0">They allow us to understand how visitors use our website so we can improve it.</p>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:24px">
+      <button onclick="closeCookieSettings()" style="flex:1;padding:11px;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.6);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
+      <button onclick="saveCookiePreferences()" style="flex:1;padding:11px;background:#25D366;border:none;border-radius:8px;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Save Preferences</button>
+    </div>
+    <p style="text-align:center;margin-top:14px"><a href="/privacy.html" style="color:#25D366;text-decoration:none;font-size:12px">View our Privacy Policy</a></p>
+  </div>
+</div>
+</div>
+
 <script>
-function acceptCookies(){
-  document.getElementById("cookieBanner").style.display="none";
+function acceptAllCookies(){
+  localStorage.setItem("cookiePrefs", JSON.stringify({functional:true, analytics:true}));
   localStorage.setItem("cookieNoticeSeen","1");
+  document.getElementById("cookieBanner").style.display="none";
+  applyCookiePrefs();
+}
+function declineAllCookies(){
+  localStorage.setItem("cookiePrefs", JSON.stringify({functional:false, analytics:false}));
+  localStorage.setItem("cookieNoticeSeen","1");
+  document.getElementById("cookieBanner").style.display="none";
+  applyCookiePrefs();
+}
+function openCookieSettings(){
+  var prefs = JSON.parse(localStorage.getItem("cookiePrefs") || '{"functional":false,"analytics":false}');
+  document.getElementById("cookieFunctional").checked = prefs.functional;
+  document.getElementById("cookieAnalytics").checked = prefs.analytics;
+  document.getElementById("cookieSettingsOverlay").style.display = "flex";
+}
+function closeCookieSettings(){
+  document.getElementById("cookieSettingsOverlay").style.display = "none";
+}
+function saveCookiePreferences(){
+  var prefs = {
+    functional: document.getElementById("cookieFunctional").checked,
+    analytics: document.getElementById("cookieAnalytics").checked
+  };
+  localStorage.setItem("cookiePrefs", JSON.stringify(prefs));
+  localStorage.setItem("cookieNoticeSeen","1");
+  document.getElementById("cookieSettingsOverlay").style.display = "none";
+  document.getElementById("cookieBanner").style.display = "none";
+  applyCookiePrefs();
+}
+function applyCookiePrefs(){
+  var prefs = JSON.parse(localStorage.getItem("cookiePrefs") || '{"functional":false,"analytics":false}');
+  // Hook for future analytics: if (prefs.analytics) { /* load Google Analytics script here */ }
+  window.cookiePrefs = prefs;
 }
 (function(){
   if (!localStorage.getItem("cookieNoticeSeen")) {
     document.getElementById("cookieBanner").style.display="flex";
+  } else {
+    applyCookiePrefs();
   }
 })()
 // Bridge chat animation
