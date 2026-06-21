@@ -796,6 +796,7 @@ undefined
   </div>
 </div>
 
+<script>
 function acceptCookies(){
   document.getElementById("cookieBanner").style.display="none";
   localStorage.setItem("cookieConsent","accepted");
@@ -803,12 +804,6 @@ function acceptCookies(){
 function declineCookies(){
   document.getElementById("cookieBanner").style.display="none";
   localStorage.setItem("cookieConsent","declined");
-  return;
-  // old code below kept for reference
-  var popup=document.createElement("div");
-  popup.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;background:#0f0f16;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:32px;max-width:380px;width:90%;text-align:center";
-  // cookie declined
-  document.body.appendChild(popup);
 }
   
 (function(){if(localStorage.getItem("cookieConsent")==="accepted"){return;}
