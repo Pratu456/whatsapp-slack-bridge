@@ -420,9 +420,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
 
       <!-- WhatsApp Settings -->
       <div class="card">
-        <div class="card-title" style="display:flex;align-items:center;gap:8px">📱 WhatsApp Settings
-          <button onclick="openWaHelp()" title="How to get these credentials" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);width:20px;height:20px;border-radius:50%;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-family:inherit;padding:0">?</button>
-        </div>
+        <div class="card-title">📱 WhatsApp Settings</div>
         <div style="margin-bottom:16px">
           <p style="font-size:13px;color:rgba(255,255,255,.5);margin:0 0 16px">Connect your own WhatsApp Business numbers. Leave empty to use Syncora's shared numbers.</p>
           
@@ -434,7 +432,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
                 <input type="text" id="metaPhoneId" value="${tenants[0]?.meta_phone_number_id || ''}" placeholder="e.g. 1234567890"/>
               </div>
               <div class="fg" style="margin-bottom:0">
-                <label>Access Token</label>
+                <label>Access Token <button onclick="openWaHelp()" title="How to get this" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);width:14px;height:14px;border-radius:50%;font-size:9px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-family:inherit;padding:0;vertical-align:middle">?</button></label>
                 <input type="password" id="metaToken" value="${tenants[0]?.meta_access_token || ''}" placeholder="EAAcqZ..."/>
               </div>
             </div>
@@ -449,7 +447,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
                 <input type="text" id="metaGroupPhoneId" value="${tenants[0]?.meta_group_phone_number_id || ''}" placeholder="e.g. 9876543210"/>
               </div>
               <div class="fg" style="margin-bottom:0">
-                <label>Access Token</label>
+                <label>Access Token <button onclick="openWaHelp()" title="How to get this" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);width:14px;height:14px;border-radius:50%;font-size:9px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-family:inherit;padding:0;vertical-align:middle">?</button></label>
                 <input type="password" id="metaGroupToken" value="${tenants[0]?.meta_group_access_token || ''}" placeholder="EAAcqZ..."/>
               </div>
             </div>
