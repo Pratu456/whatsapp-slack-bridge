@@ -897,14 +897,11 @@ fetch('/auth/me', {credentials:'same-origin'})
         btn.href = '/dashboard';
         btn.textContent = 'Go to Dashboard →';
       });
-      // Add dashboard link to navbar if it exists
-      var nav = document.querySelector('nav');
-        var link = document.createElement('a');
-        link.id = 'nav-dashboard';
-        link.href = '/dashboard';
-        link.textContent = 'Dashboard →';
-        link.style.cssText = 'background:#25D366;color:#000;padding:8px 18px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;margin-left:12px';
-        nav.appendChild(link);
+      // Update navbar CTA button to Dashboard link instead of duplicate-appending
+      var navBtn = document.querySelector('.btn-nav');
+      if (navBtn) {
+        navBtn.href = '/dashboard';
+        navBtn.textContent = 'Go to Dashboard →';
       }
     }
   }).catch(()=>{});
