@@ -722,6 +722,11 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
 const obs=new IntersectionObserver(entries=>{
   entries.forEach(en=>{if(en.isIntersecting){en.target.style.opacity='1';en.target.style.transform='translateY(0)'}});
 },{threshold:0.08});
+function toggleQA(el){
+  var wasOpen = el.classList.contains('open');
+  el.closest('.sec-right').querySelectorAll('.sec-qa').forEach(function(q){ q.classList.remove('open'); });
+  if (!wasOpen) el.classList.add('open');
+}
 document.querySelectorAll('.feat-card,.sec-qa,.video-block,.side-card').forEach(el=>{
   el.style.opacity='0';el.style.transform='translateY(18px)';
   el.style.transition='opacity .5s ease,transform .5s ease';
