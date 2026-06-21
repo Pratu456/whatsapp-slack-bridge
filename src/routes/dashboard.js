@@ -420,7 +420,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
 
       <!-- WhatsApp Settings -->
       <div class="card">
-        <div class="card-title">📱 WhatsApp Settings</div>
+        <div class="card-title" style="display:flex;align-items:center;gap:8px">📱 WhatsApp Settings
+          <button onclick="openWaHelp()" title="How to get these credentials" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);width:20px;height:20px;border-radius:50%;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-family:inherit;padding:0">?</button>
+        </div>
         <div style="margin-bottom:16px">
           <p style="font-size:13px;color:rgba(255,255,255,.5);margin:0 0 16px">Connect your own WhatsApp Business numbers. Leave empty to use Syncora's shared numbers.</p>
           
@@ -459,6 +461,63 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
           <button onclick="clearWhatsAppSettings()" style="background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Remove custom number</button>
           <div id="waSettingsMsg" class="msg"></div>
         </div>
+
+      <!-- WhatsApp Credentials Help Modal -->
+      <div id="waHelpOverlay" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+        <div style="background:#0f0f16;border:1px solid rgba(255,255,255,.1);border-radius:16px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto;padding:28px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <h3 style="font-size:18px;font-weight:700;color:#fff;margin:0">How to get your WhatsApp credentials</h3>
+            <button onclick="closeWaHelp()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:20px;cursor:pointer;padding:0;line-height:1">×</button>
+          </div>
+          <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin:0 0 20px">You'll need a Meta (Facebook) Business app connected to WhatsApp Cloud API. Follow these steps:</p>
+
+          <div style="display:flex;gap:12px;margin-bottom:18px">
+            <div style="width:24px;height:24px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#000;flex-shrink:0">1</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px">Go to Meta for Developers</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.5">Visit <a href="https://developers.facebook.com" target="_blank" style="color:#25D366;text-decoration:none">developers.facebook.com</a> and create or select an app with the WhatsApp product added.</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-bottom:18px">
+            <div style="width:24px;height:24px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#000;flex-shrink:0">2</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px">Open WhatsApp → API Setup</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.5">In your app's dashboard sidebar, click <strong style="color:rgba(255,255,255,.8)">WhatsApp</strong> → <strong style="color:rgba(255,255,255,.8)">API Setup</strong>. You'll see a test number ready to use.</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-bottom:18px">
+            <div style="width:24px;height:24px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#000;flex-shrink:0">3</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px">Copy Phone Number ID</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.5">Under "From", you'll see your number and a <strong style="color:rgba(255,255,255,.8)">Phone number ID</strong> below it — copy that numeric ID.</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-bottom:18px">
+            <div style="width:24px;height:24px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#000;flex-shrink:0">4</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px">Copy Access Token</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.5">On the same page, find the <strong style="color:rgba(255,255,255,.8)">Temporary access token</strong> box and copy it. For production, generate a permanent token under System Users in Business Settings.</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-bottom:24px">
+            <div style="width:24px;height:24px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#000;flex-shrink:0">5</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px">Paste here and click Verify & Save</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.5">Paste both values into the fields and we'll verify them automatically with Meta before saving.</div>
+            </div>
+          </div>
+
+          <div style="background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.15);border-radius:10px;padding:14px;margin-bottom:20px">
+            <div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.6">💡 Don't have a Meta Business app yet? Leave these fields empty — Syncora's shared number works out of the box, no setup needed.</div>
+          </div>
+
+          <button onclick="closeWaHelp()" style="width:100%;padding:11px;background:#25D366;border:none;border-radius:8px;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Got it</button>
+        </div>
+      </div>
       </div>
       <!-- Agents -->
       <div class="card">
@@ -937,6 +996,10 @@ async function loadInvoices() {
   }
 }
 document.addEventListener('DOMContentLoaded', loadInvoices);
+
+
+function openWaHelp(){ document.getElementById('waHelpOverlay').style.display = 'flex'; }
+function closeWaHelp(){ document.getElementById('waHelpOverlay').style.display = 'none'; }
 
 </script>
 </body>
