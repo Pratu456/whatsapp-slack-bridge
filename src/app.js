@@ -118,7 +118,6 @@ server.use(express.static(path.join(__dirname, '../public')));
 server.use((req, res, next) => { res.setHeader('Accept-Ranges', 'bytes'); next(); });
 
 server.get('/', (req, res) => {
-  if (req.session && req.session.userId) return res.redirect('/dashboard');
   res.sendFile(path.join(__dirname, '../index.html'));
 });
 server.use('/whatsapp', whatsappRoute);
