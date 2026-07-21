@@ -481,7 +481,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
           <div class="form-grid">
             <div class="fg"><label>Company name</label><input type="text" id="nCo" placeholder="e.g. Acme Corp"/></div>
             <div class="fg"><label>Company email</label><input type="email" id="nEmail" placeholder="hello@acmecorp.com"/><div class="hint">Activation email will be sent here</div></div>
-            <div class="fg"><label>WhatsApp number</label><input type="text" id="nWhatsapp" placeholder="+381653229717 (leave empty for shared number)"/></div>
+            <div class="fg"><label>WhatsApp number</label><input type="text" id="nWhatsapp" placeholder="+381653229717"/></div>
             <div class="fg"><label>Slack bot token</label><input type="text" id="nToken" placeholder="xoxb-..."/></div>
           </div>
             <div style="display:none"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t4);margin-bottom:8px">Claim code</div>
@@ -611,7 +611,7 @@ td{padding:13px 16px;border-top:1px solid var(--b1);font-size:13px;vertical-alig
       <div class="hint">Required — activation email will be sent here</div>
     </div>
     <div class="fg"><label>WhatsApp number</label>
-      <input type="text" id="mWhatsapp" placeholder="+381653229717 (leave empty for shared number)"/>
+      <input type="text" id="mWhatsapp" placeholder="+381653229717"/>
     </div>
     
     <div class="divider"></div>
