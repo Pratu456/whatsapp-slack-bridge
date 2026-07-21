@@ -421,7 +421,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
       <div class="card">
         <div class="card-title">📱 WhatsApp Settings</div>
         <div style="margin-bottom:16px">
-          <p style="font-size:13px;color:rgba(255,255,255,.5);margin:0 0 16px">Connect your own WhatsApp Business numbers. Leave empty to use Syncora's shared numbers.</p>
+          <p style="font-size:13px;color:rgba(255,255,255,.5);margin:0 0 16px">Connect your WhatsApp Business number and access token from Meta's developer portal.</p>
           
           <div style="background:rgba(37,211,102,.05);border:1px solid rgba(37,211,102,.15);border-radius:10px;padding:16px;margin-bottom:14px">
             <div style="font-size:12px;font-weight:700;color:#25D366;margin-bottom:12px">💬 PRIVATE CHAT NUMBER</div>
@@ -509,7 +509,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
           </div>
 
           <div style="background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.15);border-radius:10px;padding:14px;margin-bottom:20px">
-            <div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.6">💡 Don't have a Meta Business app yet? Leave these fields empty — Syncora's shared number works out of the box, no setup needed.</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.6">💡 You need a Meta Business app with WhatsApp Cloud API enabled. Follow the steps above to get your credentials.</div>
           </div>
 
           <button onclick="closeWaHelp()" style="width:100%;padding:11px;background:#25D366;border:none;border-radius:8px;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Got it</button>
@@ -773,7 +773,7 @@ async function saveWhatsAppSettings() {
   }
 }
 async function clearWhatsAppSettings() {
-  if (!confirm('Remove your custom WhatsApp number? You will revert to Syncora shared number.')) return;
+  if (!confirm('Remove your WhatsApp credentials? You will need to re-enter them to receive messages.')) return;
   const r = await fetch('/dashboard/save-whatsapp-settings', {
     method: 'POST',
     credentials: 'same-origin',
@@ -1041,12 +1041,12 @@ router.post('/save-whatsapp-settings', requireAuth, async (req, res) => {
         return res.json({ success: false, error: 'Verification failed: ' + e.message });
       }
     } else {
-      // Clear credentials — revert to shared number
+      // Clear credentials
       await pool.query(
         'UPDATE tenants SET meta_phone_number_id = NULL, meta_access_token = NULL, meta_group_phone_number_id = NULL, meta_group_access_token = NULL WHERE id = $1',
         [tenant.id]
       );
-      return res.json({ success: true, message: 'Reverted to shared number' });
+      return res.json({ success: true, message: 'WhatsApp credentials removed.' });
     }
   } catch(e) {
     res.json({ success: false, error: e.message });
