@@ -542,13 +542,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
             <div style="font-size:11px;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Pro ⭐</div>
             <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px">€19.99 <span style="font-size:13px;color:rgba(255,255,255,.35);font-weight:400">/mo</span></div>
             <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px;line-height:1.8">✓ Unlimited messages<br>✓ 5 free users (+€2/user)<br>✓ Priority support<br>✓ 1 workspace</div>
-            <button onclick="upgradePlan('pro')" style="width:100%;padding:10px;border-radius:8px;background:#25D366;color:#000;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit">Upgrade to Pro →</button>
+            ${plan === 'pro' ? '<div style="text-align:center;padding:10px;font-size:13px;font-weight:700;color:#25D366">✓ Current plan</div>' : plan === 'business' ? '<div style="text-align:center;padding:10px;font-size:13px;color:rgba(255,255,255,.3)">Downgrade not available</div>' : '<button onclick="upgradePlan(\'pro\'  )" style="width:100%;padding:10px;border-radius:8px;background:#25D366;color:#000;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit">Upgrade to Pro →</button>'}
           </div>
           <div style="border:2px solid rgba(96,165,250,.5);border-radius:14px;padding:20px">
             <div style="font-size:11px;font-weight:700;color:#60a5fa;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Business 🚀</div>
             <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px">€29.99 <span style="font-size:13px;color:rgba(255,255,255,.35);font-weight:400">/mo</span></div>
             <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px;line-height:1.8">✓ Unlimited messages<br>✓ 10 free users (+€1/user)<br>✓ Dedicated support<br>✓ Group chats</div>
-            <button onclick="upgradePlan('business')" style="width:100%;padding:10px;border-radius:8px;background:#60a5fa;color:#000;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit">Upgrade to Business →</button>
+            ${plan === 'business' ? '<div style="text-align:center;padding:10px;font-size:13px;font-weight:700;color:#60a5fa">✓ Current plan</div>' : '<button onclick="upgradePlan(\'business\')" style="width:100%;padding:10px;border-radius:8px;background:#60a5fa;color:#000;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit">Upgrade to Business →</button>'}
           </div>
         </div>
       </div>
