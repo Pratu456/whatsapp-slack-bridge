@@ -146,7 +146,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           if (t && t.email) {
             const sub = await stripe.subscriptions.retrieve(s.subscription);
             const nextBilling = new Date(sub.current_period_end * 1000).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
-            const amount = s.metadata.plan === 'pro' ? '€29.00' : '€79.00';
+            const amount = s.metadata.plan === 'pro' ? '€19.99' : '€29.99';
             // Generate PDF invoice buffer
             let pdfBuf = null;
             let savedInvNum = null;
@@ -224,7 +224,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             const subData = await stripe.subscriptions.retrieve(s.subscription);
             const pStart = new Date(subData.current_period_start * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
             const pEnd   = new Date(subData.current_period_end   * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-            const invAmount = s.metadata.plan === 'pro' ? '€29.00' : '€79.00';
+            const invAmount = s.metadata.plan === 'pro' ? '€19.99' : '€29.99';
             const tRes2 = await pool.query('SELECT * FROM tenants WHERE id = $1', [s.metadata.tenant_id]);
             const tRow2 = tRes2.rows[0];
             if (tRow2) {

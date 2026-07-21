@@ -6,11 +6,10 @@ const bcrypt   = require('bcryptjs');
 require('dotenv').config();
 
 const PLANS = {
-  starter:  { label: 'Starter',  price: '€0',  msgLimit: 200, workspaces: 1,   color: 'rgba(255,255,255,.4)' }, // MULTI_WORKSPACE_FEATURE: workspaces was 1
-  pro:      { label: 'Pro',      price: '€29', msgLimit: -1,  workspaces: 1,   color: '#25D366' }, // MULTI_WORKSPACE_FEATURE: workspaces was 3
-  business: { label: 'Business', price: '€79', msgLimit: -1,  workspaces: 1,   color: '#60a5fa' }, // MULTI_WORKSPACE_FEATURE: workspaces was 999
+  starter:  { label: 'Starter',  price: '€0',     msgLimit: 50,  workspaces: 1, color: 'rgba(255,255,255,.4)', freeUsers: 0,  extraUserPrice: 0, groupChat: false },
+  pro:      { label: 'Pro',      price: '€19.99', msgLimit: -1,  workspaces: 1, color: '#25D366',              freeUsers: 5,  extraUserPrice: 2, groupChat: false },
+  business: { label: 'Business', price: '€29.99', msgLimit: -1,  workspaces: 1, color: '#60a5fa',              freeUsers: 10, extraUserPrice: 1, groupChat: true  },
 };
-
 // ── Auth middleware ───────────────────────────────────────
 const requireAuth = (req, res, next) => {
   if (req.session && req.session.userId) return next();
@@ -107,7 +106,7 @@ router.get('/', requireAuth, async (req, res) => {
       <div style="background:linear-gradient(135deg,rgba(37,211,102,.08),rgba(96,165,250,.06));border:1px solid rgba(37,211,102,.15);border-radius:16px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px">
         <div>
           <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px">🚀 Upgrade to Pro</div>
-          <div style="font-size:13px;color:rgba(255,255,255,.4)">Get unlimited messages and priority support for €29/mo</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.4)">Get unlimited messages and priority support from €19.99/mo</div>
         </div>
         <a href="#" onclick="showTab('account',this);return false" style="background:#25D366;color:#000;padding:9px 20px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">View plans →</a>
       </div>` : '';
@@ -406,7 +405,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
               ${maxWorkspaces === 999 ? 'Unlimited workspaces' : maxWorkspaces + ' workspace' + (maxWorkspaces > 1 ? 's' : '')}
             </div>
           </div>
-          ${plan !== 'business' ? `<a href="#" onclick="showTab('account',this);return false" style="background:#25D366;color:#000;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">Upgrade plan →</a>` : '<span style="color:#4ade80;font-size:13px;font-weight:600">✓ Max plan</span>'}
+          ${plan === 'starter' ? `<a href="#" onclick="showTab('account',this);return false" style="background:#25D366;color:#000;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">Upgrade to Pro →</a>` : plan === 'pro' ? `<a href="#" onclick="showTab('account',this);return false" style="background:#60a5fa;color:#000;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">Upgrade to Business →</a>` : '<span style="color:#4ade80;font-size:13px;font-weight:600">✓ Max plan</span>'}
         </div>
       </div>
 
@@ -541,14 +540,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
           </div>
           <div style="border:2px solid #25D366;border-radius:14px;padding:20px">
             <div style="font-size:11px;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Pro ⭐</div>
-            <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px">€29 <span style="font-size:13px;color:rgba(255,255,255,.35);font-weight:400">/mo</span></div>
-            <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px;line-height:1.8">✓ Unlimited messages<br>✓ 1 workspace<br>✓ Priority support<br>✓ Group chats</div>
+            <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px">€19.99 <span style="font-size:13px;color:rgba(255,255,255,.35);font-weight:400">/mo</span></div>
+            <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px;line-height:1.8">✓ Unlimited messages<br>✓ 5 free users (+€2/user)<br>✓ Priority support<br>✓ 1 workspace</div>
             <button onclick="upgradePlan('pro')" style="width:100%;padding:10px;border-radius:8px;background:#25D366;color:#000;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit">Upgrade to Pro →</button>
           </div>
           <div style="border:2px solid rgba(96,165,250,.5);border-radius:14px;padding:20px">
             <div style="font-size:11px;font-weight:700;color:#60a5fa;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Business 🚀</div>
-            <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px">€79 <span style="font-size:13px;color:rgba(255,255,255,.35);font-weight:400">/mo</span></div>
-            <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px;line-height:1.8">✓ Unlimited messages<br>✓ 1 workspace<br>✓ Dedicated support<br>✓ Group chats</div>
+            <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px">€29.99 <span style="font-size:13px;color:rgba(255,255,255,.35);font-weight:400">/mo</span></div>
+            <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px;line-height:1.8">✓ Unlimited messages<br>✓ 10 free users (+€1/user)<br>✓ Dedicated support<br>✓ Group chats</div>
             <button onclick="upgradePlan('business')" style="width:100%;padding:10px;border-radius:8px;background:#60a5fa;color:#000;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit">Upgrade to Business →</button>
           </div>
         </div>
