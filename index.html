@@ -478,29 +478,30 @@ footer p{font-size:13px;color:var(--t4);line-height:1.8}
   <div class="videos-inner">
     <div class="sec-tag">See it in action</div>
     <div class="sec-title" style="margin-bottom:32px">Watch how it works</div>
-
     <div class="video-block" style="margin-bottom:32px">
       <div class="vb-meta"><div class="vb-num">1</div><div class="vb-tag">Live demo</div></div>
       <div class="vb-title">Both sides of every conversation — customer on WhatsApp, your team on Slack.</div>
       <p class="vb-desc">Watch a real message flow in real time. Customer sends on WhatsApp, your team sees and replies in Slack — instantly.</p>
       <div class="video-frame">
         <div class="vf-bar"><div class="vf-dots"><div class="vfd" style="background:#ff5f57"></div><div class="vfd" style="background:#ffbd2e"></div><div class="vfd" style="background:#28ca41"></div></div><div class="vf-label">Syncora — Live demo · WhatsApp ↔ Slack</div></div>
-        <div class="video-wrap"><video controls preload="metadata" controlsList="nodownload"><source src="/syncora.mp4" type="video/mp4"/>Your browser does not support the video tag.</video></div>
+        <div style="width:100%;border-radius:0 0 12px 12px;overflow:hidden;background:#0a0a0f">
+          <iframe src="/syncora_complete_demo.html" style="width:1280px;height:720px;border:none;transform-origin:top left;display:block" id="demo-iframe-1" scrolling="no"></iframe>
+        </div>
       </div>
     </div>
-
     <div class="video-block" style="margin-bottom:0">
       <div class="vb-meta"><div class="vb-num">2</div><div class="vb-tag">Setup walkthrough</div></div>
       <div class="vb-title">From zero to live in under 5 minutes.</div>
-      <p class="vb-desc">The full onboarding — connecting Slack, sharing your invite link, and receiving your first customer message.</p>
+      <p class="vb-desc">The full onboarding — connecting Slack, adding agents, and receiving your first customer message.</p>
       <div class="video-frame">
-        <div class="vf-bar"><div class="vf-dots"><div class="vfd" style="background:#ff5f57"></div><div class="vfd" style="background:#ffbd2e"></div><div class="vfd" style="background:#28ca41"></div></div><div class="vf-label">Syncora — Full onboarding walkthrough</div></div>
-        <div class="video-wrap"><video controls preload="metadata" controlsList="nodownload"><source src="/syncora-chat.mp4" type="video/mp4"/>Your browser does not support the video tag.</video></div>
+        <div class="vf-bar"><div class="vf-dots"><div class="vfd" style="background:#ff5f57"></div><div class="vfd" style="background:#ffbd2e"></div><div class="vfd" style="background:#28ca41"></div></div><div class="vf-label">Syncora — Onboarding walkthrough</div></div>
+        <div style="width:100%;border-radius:0 0 12px 12px;overflow:hidden;background:#0a0a0f">
+          <iframe src="/syncora_onboarding.html" style="width:1280px;height:720px;border:none;transform-origin:top left;display:block" id="demo-iframe-2" scrolling="no"></iframe>
+        </div>
       </div>
     </div>
   </div>
 </div>
-
 <!-- SECURITY -->
 <div class="security-section" id="security">
   <div class="security-inner">
@@ -895,5 +896,23 @@ fetch('/auth/me', {credentials:'same-origin'})
   }).catch(()=>{});
 </script>
 
+<style>
+#demo-iframe-1, #demo-iframe-2 {
+  transform: scale(var(--iframe-scale, 1));
+}
+</style>
+<script>
+function scaleDemoIframes() {
+  var frames = document.querySelectorAll('#demo-iframe-1, #demo-iframe-2');
+  frames.forEach(function(f) {
+    var w = f.parentElement.offsetWidth;
+    var scale = w / 1280;
+    f.style.transform = 'scale(' + scale + ')';
+    f.parentElement.style.height = (720 * scale) + 'px';
+  });
+}
+window.addEventListener('load', scaleDemoIframes);
+window.addEventListener('resize', scaleDemoIframes);
+</script>
 </body>
 </html>

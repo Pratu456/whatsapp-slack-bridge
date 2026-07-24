@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=1280"/>
+<title>Syncora — Complete Demo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0a0a0f;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  width: 1280px;
+  height: 720px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TOP BAR ── */
+.top-bar {
+  height: 52px;
+  background: #111118;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  flex-shrink: 0;
+}
+
+.logo { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: #fff; }
+.logo span { color: #25D366; }
+
+.phase-bar { display: flex; align-items: center; gap: 0; }
+
+.phase-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 12px; border-radius: 100px;
+  font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.2);
+  transition: all 0.4s ease;
+}
+
+.phase-item.active { color: #25D366; }
+.phase-item.done { color: rgba(255,255,255,0.4); }
+
+.phase-num {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; transition: all 0.4s ease;
+}
+
+.phase-item.active .phase-num { background: #25D366; border-color: #25D366; color: #000; }
+.phase-item.done .phase-num { background: rgba(37,211,102,0.15); border-color: rgba(37,211,102,0.3); color: #25D366; }
+.phase-sep { width: 20px; height: 1px; background: rgba(255,255,255,0.07); }
+
+.live-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(37,211,102,0.08); border: 1px solid rgba(37,211,102,0.2);
+  color: #25D366; font-size: 11px; font-weight: 600;
+  padding: 4px 12px; border-radius: 100px;
+}
+
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: #25D366; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* ── MAIN ── */
+.main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 44px;
+  padding: 0 44px;
+}
+
+/* ── DASHBOARD ── */
+.dashboard {
+  width: 620px; height: 520px;
+  background: #0c0c12; border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  display: flex; overflow: hidden; flex-shrink: 0;
+}
+
+.sidebar {
+  width: 172px; background: #0f0f16;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex; flex-direction: column; flex-shrink: 0;
+}
+
+.sb-top { padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.sb-logo { font-size: 13px; font-weight: 800; color: #fff; }
+.sb-logo span { color: #25D366; }
+.sb-nav { padding: 8px 6px; flex: 1; }
+.sb-link {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 8px; border-radius: 7px;
+  font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.3);
+  margin-bottom: 2px;
+}
+.sb-link.on { background: rgba(37,211,102,0.1); color: #25D366; }
+.sb-plan {
+  margin: 6px; background: rgba(37,211,102,0.06);
+  border: 1px solid rgba(37,211,102,0.12); border-radius: 8px; padding: 9px 9px;
+}
+.sb-plan-label { font-size: 10px; color: rgba(255,255,255,0.3); margin-bottom: 2px; }
+.sb-plan-name { font-size: 12px; font-weight: 800; color: #25D366; }
+
+.content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.topbar {
+  height: 42px; background: #111118;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; flex-shrink: 0;
+}
+
+.topbar-title { font-size: 12px; font-weight: 700; color: #fff; }
+.topbar-badge {
+  font-size: 10px; color: #25D366;
+  background: rgba(37,211,102,0.08); border: 1px solid rgba(37,211,102,0.2);
+  padding: 2px 9px; border-radius: 100px;
+}
+
+.content-scroll { flex: 1; padding: 14px 16px; overflow: hidden; display: flex; flex-direction: column; gap: 10px; }
+
+.panel { display: none; flex-direction: column; gap: 10px; }
+.panel.show { display: flex; }
+
+.card {
+  background: #16161f; border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 13px 14px;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.card.show { opacity: 1; transform: translateY(0); }
+.card-title { font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.field-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255,255,255,0.25); margin-bottom: 4px; }
+.field-input {
+  background: #0c0c12; border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 7px; padding: 7px 9px; font-size: 11px; color: rgba(255,255,255,0.4); width: 100%;
+}
+.field-input.filled { color: rgba(255,255,255,0.8); border-color: rgba(37,211,102,0.2); }
+
+.connected-badge {
+  font-size: 10px; color: #25D366; font-weight: 600;
+  display: flex; align-items: center; gap: 4px; margin-top: 5px;
+  opacity: 0; transition: opacity 0.4s ease;
+}
+.connected-badge.show { opacity: 1; }
+
+.btn-save {
+  background: #25D366; color: #000; border: none; border-radius: 7px;
+  padding: 7px 14px; font-size: 11px; font-weight: 700; cursor: pointer; margin-top: 3px;
+  opacity: 0; transition: opacity 0.4s ease;
+}
+.btn-save.show { opacity: 1; }
+
+.agent-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 9px; background: #0c0c12; border-radius: 7px; margin-bottom: 5px;
+  opacity: 0; transform: translateX(-8px); transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.agent-item.show { opacity: 1; transform: translateX(0); }
+.agent-left { display: flex; align-items: center; gap: 7px; }
+.agent-av {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700;
+}
+.agent-name { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.8); }
+.agent-role { font-size: 10px; color: rgba(255,255,255,0.3); }
+.agent-tag { font-size: 9px; padding: 2px 7px; border-radius: 100px; font-weight: 600; }
+.agent-tag.owner { background: rgba(37,211,102,0.1); color: #25D366; border: 1px solid rgba(37,211,102,0.2); }
+.agent-tag.agent { background: rgba(96,165,250,0.1); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
+
+/* ── SLACK ── */
+.slack-shell {
+  width: 620px; height: 520px;
+  background: #19171d; border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+  display: none; overflow: hidden; flex-shrink: 0;
+}
+
+.slack-sb {
+  width: 172px; background: #19171d;
+  border-right: 1px solid rgba(255,255,255,0.06); padding: 12px 0; flex-shrink: 0;
+  display: flex; flex-direction: column;
+}
+
+.slack-sb-ws { padding: 0 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 8px; }
+.slack-ws-name { font-size: 12px; font-weight: 700; color: #fff; }
+.slack-ws-sub { font-size: 10px; color: rgba(255,255,255,0.3); }
+.slack-sb-section { padding: 4px 12px 5px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.2); }
+.slack-ch { padding: 3px 12px; font-size: 11px; color: rgba(255,255,255,0.35); display: flex; align-items: center; gap: 3px; }
+.slack-ch.active { background: rgba(37,211,102,0.1); color: #fff; margin: 0 5px; padding: 3px 7px; border-radius: 4px; }
+.ch-unread { margin-left: auto; background: #25D366; color: #000; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 10px; }
+
+.slack-main { flex: 1; display: flex; flex-direction: column; }
+.slack-ch-header { padding: 9px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 5px; }
+.slack-ch-name { font-size: 12px; font-weight: 700; color: #fff; }
+.slack-ch-sub { font-size: 10px; color: rgba(255,255,255,0.3); margin-left: 3px; }
+
+.slack-msgs { flex: 1; padding: 12px 14px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+
+.slack-msg {
+  display: flex; gap: 9px;
+  opacity: 0; transform: translateY(8px); transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.slack-msg.show { opacity: 1; transform: translateY(0); }
+
+.slack-av {
+  width: 30px; height: 30px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;
+}
+.slack-av.wa { background: #25D366; color: #075e54; }
+.slack-av.sarah { background: #4a154b; color: #fff; }
+.slack-av.tom { background: #1164a3; color: #fff; }
+
+.slack-msg-name { font-size: 11px; font-weight: 700; color: #d1d2d3; }
+.slack-msg-time { font-size: 10px; color: rgba(255,255,255,0.3); margin-left: 5px; }
+.slack-app-badge { background: #1164a3; color: #fff; font-size: 9px; font-weight: 600; padding: 1px 5px; border-radius: 3px; margin-left: 4px; }
+.slack-msg-text { font-size: 11px; color: #d1d2d3; line-height: 1.5; margin-top: 2px; }
+
+.slack-typing {
+  display: flex; align-items: center; gap: 3px;
+  padding: 0 14px; font-size: 10px; color: rgba(255,255,255,0.3);
+  opacity: 0; transition: opacity 0.4s; margin-bottom: 4px;
+}
+.slack-typing.show { opacity: 1; }
+.typing-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.3); animation: tdot 1.2s infinite; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes tdot { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-4px)} }
+
+.slack-input {
+  margin: 0 12px 12px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 7px; padding: 8px 12px; font-size: 11px; color: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.slack-input.active { border-color: rgba(37,211,102,0.3); color: rgba(255,255,255,0.7); }
+
+/* ── PHONE ── */
+.phone {
+  width: 200px; flex-shrink: 0;
+  background: #111; border-radius: 32px; border: 2.5px solid #2a2a2a;
+  overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); display: none;
+}
+.phone-notch { height: 22px; background: #111; display: flex; align-items: center; justify-content: center; }
+.phone-notch-bar { width: 60px; height: 5px; background: #2a2a2a; border-radius: 3px; }
+.phone-header { background: #075e54; padding: 9px 12px; display: flex; align-items: center; gap: 8px; }
+.phone-avatar { width: 32px; height: 32px; border-radius: 50%; background: #25D366; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #075e54; flex-shrink: 0; }
+.phone-info-name { color: #fff; font-size: 12px; font-weight: 600; }
+.phone-info-status { color: rgba(255,255,255,0.55); font-size: 10px; }
+.phone-body { background: #0b1f17; padding: 12px 10px; height: 310px; display: flex; flex-direction: column; gap: 9px; overflow: hidden; }
+.wa-bubble { max-width: 82%; padding: 8px 11px; border-radius: 11px; font-size: 12px; line-height: 1.4; color: #e9edef; opacity: 0; transform: translateY(8px); transition: opacity 0.4s ease, transform 0.4s ease; }
+.wa-bubble.show { opacity: 1; transform: translateY(0); }
+.wa-bubble.in { background: #1f2c34; align-self: flex-start; border-bottom-left-radius: 3px; }
+.wa-bubble.out { background: #005c4b; align-self: flex-end; border-bottom-right-radius: 3px; }
+.wa-time { font-size: 9px; color: rgba(255,255,255,0.35); margin-top: 3px; text-align: right; }
+.phone-footer { background: #1f2c34; padding: 8px 12px; display: flex; align-items: center; gap: 8px; }
+.phone-input { flex: 1; background: rgba(255,255,255,0.07); border-radius: 16px; height: 30px; padding: 0 12px; font-size: 11px; color: rgba(255,255,255,0.25); display: flex; align-items: center; }
+
+/* ── BRIDGE ── */
+.bridge { display: flex; flex-direction: column; align-items: center; gap: 10px; flex-shrink: 0; display: none; }
+.bridge-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.22); }
+.bridge-arrow { width: 38px; height: 38px; border-radius: 50%; background: rgba(37,211,102,0.08); border: 1px solid rgba(37,211,102,0.2); display: flex; align-items: center; justify-content: center; }
+.bridge-line { width: 1px; height: 28px; background: linear-gradient(to bottom, rgba(37,211,102,0.3), transparent); }
+.bridge-line.flip { background: linear-gradient(to top, rgba(37,211,102,0.3), transparent); }
+
+/* ── INFO ── */
+.info-panel { width: 300px; flex-shrink: 0; }
+.info-step-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #25D366; margin-bottom: 7px; }
+.info-heading { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -0.8px; line-height: 1.2; margin-bottom: 10px; }
+.info-desc { font-size: 13px; color: rgba(255,255,255,0.42); line-height: 1.65; margin-bottom: 16px; }
+.info-bullets { display: flex; flex-direction: column; gap: 9px; }
+.info-bullet { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.5; opacity: 0; transform: translateX(-8px); transition: opacity 0.4s ease, transform 0.4s ease; }
+.info-bullet.show { opacity: 1; transform: translateX(0); }
+.bullet-dot { width: 5px; height: 5px; border-radius: 50%; background: #25D366; margin-top: 6px; flex-shrink: 0; }
+
+/* ── BOTTOM ── */
+.bottom-bar {
+  height: 44px; background: #111118; border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: center; gap: 20px; flex-shrink: 0;
+}
+.bot-step { font-size: 11px; color: rgba(255,255,255,0.18); display: flex; align-items: center; gap: 5px; transition: color 0.4s; }
+.bot-step.active { color: #25D366; }
+.bot-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo">Sync<span>ora</span></div>
+  <div class="phase-bar">
+    <div class="phase-item active" id="ph1"><div class="phase-num">1</div>WhatsApp Setup</div>
+    <div class="phase-sep"></div>
+    <div class="phase-item" id="ph2"><div class="phase-num">2</div>Add Agents</div>
+    <div class="phase-sep"></div>
+    <div class="phase-item" id="ph3"><div class="phase-num">3</div>First Message</div>
+    <div class="phase-sep"></div>
+    <div class="phase-item" id="ph4"><div class="phase-num">4</div>Team Replies</div>
+    <div class="phase-sep"></div>
+    <div class="phase-item" id="ph5"><div class="phase-num">5</div>Live Demo</div>
+  </div>
+  <div class="live-badge"><div class="live-dot"></div>Live Demo</div>
+</div>
+
+<div class="main" id="main-area">
+
+  <!-- DASHBOARD (phases 1-2) -->
+  <div class="dashboard" id="dash-view">
+    <div class="sidebar">
+      <div class="sb-top"><div class="sb-logo">Sync<span>ora</span></div></div>
+      <div class="sb-nav">
+        <div class="sb-link" id="nav-ov">⬛ Overview</div>
+        <div class="sb-link on" id="nav-acc">⚙ Account</div>
+        <div class="sb-link" id="nav-msg">💬 Messages</div>
+        <div class="sb-link" id="nav-con">👤 Contacts</div>
+      </div>
+      <div class="sb-plan"><div class="sb-plan-label">Current plan</div><div class="sb-plan-name">Starter</div></div>
+    </div>
+    <div class="content-area">
+      <div class="topbar">
+        <div class="topbar-title" id="topbar-title">Account</div>
+        <div class="topbar-badge">Acme Corp</div>
+      </div>
+      <div class="content-scroll">
+        <!-- WA Panel -->
+        <div class="panel show" id="panel-wa">
+          <div class="card" id="wa-card">
+            <div class="card-title">📱 WhatsApp Settings</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:8px">Connect your WhatsApp Business number from Meta's developer portal.</div>
+            <div style="background:rgba(37,211,102,0.05);border:1px solid rgba(37,211,102,0.12);border-radius:8px;padding:10px;margin-bottom:8px">
+              <div style="font-size:9px;font-weight:700;color:#25D366;margin-bottom:7px;letter-spacing:0.8px">💬 PRIVATE CHAT NUMBER</div>
+              <div class="field-row">
+                <div class="field">
+                  <div class="field-label">Phone Number ID</div>
+                  <div class="field-input" id="wa-phone-input">Enter ID...</div>
+                </div>
+                <div class="field">
+                  <div class="field-label">Access Token</div>
+                  <div class="field-input" id="wa-token-input">EAAcqZ...</div>
+                </div>
+              </div>
+              <div class="connected-badge" id="wa-connected">✅ Connected — +1 555 987 6543</div>
+            </div>
+            <button class="btn-save" id="wa-save-btn">Verify & Save</button>
+          </div>
+        </div>
+        <!-- Agents Panel -->
+        <div class="panel" id="panel-agents">
+          <div class="card" id="agents-card">
+            <div class="card-title">👥 Support Agents</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:9px">Add Slack team members as agents. They'll be added to customer conversations.</div>
+            <div id="agents-list"></div>
+            <div style="display:flex;gap:7px;margin-top:3px">
+              <select style="flex:1;background:#0c0c12;border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:6px 9px;font-size:11px;color:rgba(255,255,255,0.4)"><option>Select a team member...</option></select>
+              <button style="background:#25D366;color:#000;border:none;border-radius:7px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer">Add Agent</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLACK (phases 3-4) -->
+  <div class="slack-shell" id="slack-view" style="display:none;flex">
+    <div class="slack-sb">
+      <div class="slack-sb-ws"><div class="slack-ws-name">Acme Corp</div><div class="slack-ws-sub">WA Bridge</div></div>
+      <div class="slack-sb-section">Channels</div>
+      <div class="slack-ch"># general</div>
+      <div class="slack-ch"># support</div>
+      <div class="slack-ch active"># wa-emma-jones <span class="ch-unread" id="ch-unread" style="display:none">1</span></div>
+      <div class="slack-ch" style="opacity:0.3"># wa-...</div>
+    </div>
+    <div class="slack-main">
+      <div class="slack-ch-header"><span class="slack-ch-name">#wa-emma-jones</span><span class="slack-ch-sub">Emma Jones · +1 555 234 7890</span></div>
+      <div class="slack-msgs" id="slack-msgs"></div>
+      <div class="slack-typing" id="slack-typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div><span style="margin-left:4px">Sarah is typing...</span></div>
+      <div class="slack-input" id="slack-input-box"><span id="slack-input-text">Reply to Emma via WhatsApp...</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/></svg></div>
+    </div>
+  </div>
+
+  <!-- PHONE + BRIDGE (phase 5) -->
+  <div class="phone" id="phone-view">
+    <div class="phone-notch"><div class="phone-notch-bar"></div></div>
+    <div class="phone-header">
+      <div class="phone-avatar">S</div>
+      <div><div class="phone-info-name">Support</div><div class="phone-info-status">+1 555 987 6543</div></div>
+    </div>
+    <div class="phone-body">
+      <div class="wa-bubble in" id="w1">Hi! I need help with my order 🙏<div class="wa-time">10:23 AM</div></div>
+      <div class="wa-bubble out" id="w2">Hey! Happy to help. What's your order number?<div class="wa-time">10:24 AM ✓✓</div></div>
+      <div class="wa-bubble in" id="w3">It's #4821. It hasn't arrived yet 😟<div class="wa-time">10:24 AM</div></div>
+      <div class="wa-bubble out" id="w4">Let me check that for you right now!<div class="wa-time">10:25 AM ✓✓</div></div>
+    </div>
+    <div class="phone-footer"><div class="phone-input">Type a message</div></div>
+  </div>
+
+  <div class="bridge" id="bridge-view">
+    <div class="bridge-label">Real-time</div>
+    <div class="bridge-line"></div>
+    <div class="bridge-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+    <div class="bridge-arrow" style="transform:rotate(180deg)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+    <div class="bridge-line flip"></div>
+    <div class="bridge-label">Sync</div>
+  </div>
+
+  <!-- SLACK for phase 5 -->
+  <div class="slack-shell" id="slack-view2" style="display:none;flex;width:480px">
+    <div class="slack-sb">
+      <div class="slack-sb-ws"><div class="slack-ws-name">Acme Corp</div><div class="slack-ws-sub">WA Bridge</div></div>
+      <div class="slack-sb-section">Channels</div>
+      <div class="slack-ch"># general</div>
+      <div class="slack-ch active"># wa-customer-4821</div>
+      <div class="slack-ch" style="opacity:0.3"># wa-...</div>
+    </div>
+    <div class="slack-main">
+      <div class="slack-ch-header"><span class="slack-ch-name">#wa-customer-4821</span></div>
+      <div class="slack-msgs" id="slack-msgs2"></div>
+      <div class="slack-input"><span>Reply to customer via WhatsApp...</span></div>
+    </div>
+  </div>
+
+  <!-- INFO -->
+  <div class="info-panel" id="info-panel"></div>
+</div>
+
+<div class="bottom-bar">
+  <div class="bot-step active" id="b1"><div class="bot-dot"></div>WhatsApp Setup</div>
+  <div class="bot-step" id="b2"><div class="bot-dot"></div>Add Agents</div>
+  <div class="bot-step" id="b3"><div class="bot-dot"></div>First Message</div>
+  <div class="bot-step" id="b4"><div class="bot-dot"></div>Team Replies</div>
+  <div class="bot-step" id="b5"><div class="bot-dot"></div>Live Chat Demo</div>
+</div>
+
+<script>
+const infos = [
+  { label:'Step 1 — WhatsApp Setup', heading:'Connect your\nWhatsApp number', desc:'Add your Meta Phone Number ID and Access Token from the Meta Developer Portal. Syncora verifies them automatically.', bullets:['Get credentials from developers.facebook.com','Paste Phone Number ID and Access Token','Click Verify & Save — done in seconds'] },
+  { label:'Step 2 — Add Agents', heading:'Add your\nsupport team', desc:"Select Slack team members to act as support agents. They'll be automatically added to new customer conversations.", bullets:['Select agents from your Slack workspace','Agents see all incoming WhatsApp messages','Multiple agents can handle different customers'] },
+  { label:'Step 3 — First Message', heading:'Customer sends\na WhatsApp message', desc:'When a customer messages your WhatsApp number, Syncora instantly creates a private Slack channel and routes the message.', bullets:['Private channel created per customer','Only assigned agents can see the conversation','Full GDPR compliance out of the box'] },
+  { label:'Step 4 — Team Replies', heading:'Your team replies\nfrom Slack', desc:'Agents reply directly in Slack. The reply is instantly sent back to the customer on WhatsApp. No app switching needed.', bullets:['Reply in Slack, customer gets WhatsApp message','Full message history in the channel','Media, voice messages all supported'] },
+  { label:'Step 5 — Live Demo', heading:'Real-time\nmessage bridge', desc:'See it in action — customer messages on WhatsApp, your team replies from Slack. Everything syncs instantly.', bullets:['Zero delay message routing','Customer stays on WhatsApp','Your team never leaves Slack'] },
+];
+
+function setInfo(idx) {
+  const s = infos[idx];
+  document.getElementById('info-panel').innerHTML = `
+    <div class="info-step-label">${s.label}</div>
+    <div class="info-heading">${s.heading.replace('\n','<br>')}</div>
+    <div class="info-desc">${s.desc}</div>
+    <div class="info-bullets">${s.bullets.map((b,i)=>`<div class="info-bullet" id="ib${i}"><div class="bullet-dot"></div>${b}</div>`).join('')}</div>
+  `;
+  setTimeout(()=>{ s.bullets.forEach((_,i)=>{ setTimeout(()=>{ const el=document.getElementById('ib'+i); if(el) el.classList.add('show'); },i*200+300); }); },200);
+}
+
+function setPhase(idx) {
+  for(let i=1;i<=5;i++){
+    const ph=document.getElementById('ph'+i), b=document.getElementById('b'+i);
+    ph.classList.remove('active','done'); b.classList.remove('active');
+    if(i<idx) ph.classList.add('done');
+    if(i===idx){ ph.classList.add('active'); b.classList.add('active'); }
+  }
+  setInfo(idx-1);
+}
+
+function showViews(dash,slack,phone,bridge,slack2){
+  document.getElementById('dash-view').style.display = dash ? 'flex' : 'none';
+  document.getElementById('slack-view').style.display = slack ? 'flex' : 'none';
+  document.getElementById('phone-view').style.display = phone ? 'block' : 'none';
+  document.getElementById('bridge-view').style.display = bridge ? 'flex' : 'none';
+  document.getElementById('slack-view2').style.display = slack2 ? 'flex' : 'none';
+}
+
+function addSlackMsg(containerId, av, avClass, name, badge, text, time, delay){
+  setTimeout(()=>{
+    const c=document.getElementById(containerId);
+    const d=document.createElement('div'); d.className='slack-msg';
+    d.innerHTML=`<div class="slack-av ${avClass}">${av}</div><div><div><span class="slack-msg-name">${name}</span>${badge?`<span class="slack-app-badge">${badge}</span>`:''}<span class="slack-msg-time">${time}</span></div><div class="slack-msg-text">${text}</div></div>`;
+    c.appendChild(d); setTimeout(()=>d.classList.add('show'),50);
+  },delay);
+}
+
+// PHASE 1
+function runPhase1(){
+  setPhase(1); showViews(true,false,false,false,false);
+  document.getElementById('panel-wa').classList.add('show');
+  document.getElementById('panel-agents').classList.remove('show');
+  ['wa-card','wa-save-btn','wa-connected'].forEach(id=>{ const el=document.getElementById(id); if(el){ el.classList.remove('show'); } });
+  document.getElementById('wa-phone-input').classList.remove('filled'); document.getElementById('wa-phone-input').textContent='Enter ID...';
+  document.getElementById('wa-token-input').classList.remove('filled'); document.getElementById('wa-token-input').textContent='EAAcqZ...';
+
+  setTimeout(()=>document.getElementById('wa-card').classList.add('show'),300);
+  setTimeout(()=>{ const el=document.getElementById('wa-phone-input'); el.classList.add('filled'); el.textContent='112377321748481'; },1200);
+  setTimeout(()=>{ const el=document.getElementById('wa-token-input'); el.classList.add('filled'); el.textContent='EAAcqZAyLi...'; },2000);
+  setTimeout(()=>document.getElementById('wa-save-btn').classList.add('show'),2600);
+  setTimeout(()=>document.getElementById('wa-connected').classList.add('show'),3400);
+}
+
+// PHASE 2
+function runPhase2(){
+  setPhase(2); showViews(true,false,false,false,false);
+  document.getElementById('panel-wa').classList.remove('show');
+  document.getElementById('panel-agents').classList.add('show');
+  document.getElementById('agents-card').classList.remove('show');
+  document.getElementById('agents-list').innerHTML='';
+
+  const agents=[
+    {i:'S',c:'#4a154b',n:'Sarah Mitchell',r:'sarah@acmecorp.com',t:'owner',tl:'Owner'},
+    {i:'T',c:'#1164a3',n:'Tom Baker',r:'tom@acmecorp.com',t:'agent',tl:'Agent'},
+    {i:'L',c:'#0f6e56',n:'Lisa Chen',r:'lisa@acmecorp.com',t:'agent',tl:'Agent'},
+  ];
+
+  setTimeout(()=>document.getElementById('agents-card').classList.add('show'),300);
+  const list=document.getElementById('agents-list');
+  agents.forEach((a,i)=>{
+    setTimeout(()=>{
+      const div=document.createElement('div'); div.className='agent-item'; div.id='ag'+i;
+      div.innerHTML=`<div class="agent-left"><div class="agent-av" style="background:${a.c};color:#fff">${a.i}</div><div><div class="agent-name">${a.n}</div><div class="agent-role">${a.r}</div></div></div><span class="agent-tag ${a.t}">${a.tl}</span>`;
+      list.appendChild(div); setTimeout(()=>div.classList.add('show'),50);
+    },400+i*600);
+  });
+}
+
+// PHASE 3
+function runPhase3(){
+  setPhase(3); showViews(false,true,false,false,false);
+  document.getElementById('slack-msgs').innerHTML='';
+  document.getElementById('ch-unread').style.display='none';
+  document.getElementById('slack-typing').classList.remove('show');
+  document.getElementById('slack-input-box').classList.remove('active');
+  document.getElementById('slack-input-text').textContent='Reply to Emma via WhatsApp...';
+
+  setTimeout(()=>{ document.getElementById('ch-unread').style.display='inline'; },1000);
+  addSlackMsg('slack-msgs','WA','wa','+1 555 234 7890','APP',"Hi there! I ordered a blue jacket last week (order #7291) and I'm wondering when it will arrive?",'Today at 2:14 PM',1500);
+  setTimeout(()=>{
+    const c=document.getElementById('slack-msgs'), d=document.createElement('div');
+    d.style.cssText='font-size:10px;color:rgba(255,255,255,0.22);text-align:center;padding:3px 0;opacity:0;transition:opacity 0.4s';
+    d.textContent='🔔 New customer conversation — Emma Jones';
+    c.appendChild(d); setTimeout(()=>d.style.opacity='1',50);
+  },2800);
+}
+
+// PHASE 4
+function runPhase4(){
+  setPhase(4); showViews(false,true,false,false,false);
+  setTimeout(()=>{
+    document.getElementById('slack-input-box').classList.add('active');
+    document.getElementById('slack-input-text').textContent="Hi Emma! Let me check order #7291...";
+    document.getElementById('slack-typing').classList.add('show');
+  },600);
+  setTimeout(()=>{
+    document.getElementById('slack-typing').classList.remove('show');
+    document.getElementById('slack-input-box').classList.remove('active');
+    document.getElementById('slack-input-text').textContent='Reply to Emma via WhatsApp...';
+    addSlackMsg('slack-msgs','S','sarah','Sarah',null,"Hi Emma! Order #7291 shipped yesterday — expected by Thursday! You'll get a tracking email shortly 📦",'Today at 2:16 PM',0);
+  },2200);
+  setTimeout(()=>{
+    const c=document.getElementById('slack-msgs'), d=document.createElement('div');
+    d.style.cssText='font-size:10px;color:rgba(37,211,102,0.6);padding:3px 0;margin-left:39px;opacity:0;transition:opacity 0.4s;display:flex;align-items:center;gap:4px';
+    d.innerHTML='<span>✓✓</span> Delivered to Emma on WhatsApp';
+    c.appendChild(d); setTimeout(()=>d.style.opacity='1',50);
+  },3600);
+  addSlackMsg('slack-msgs','WA','wa','+1 555 234 7890','APP',"Thank you so much Sarah! That's great 😊",'Today at 2:18 PM',4800);
+  addSlackMsg('slack-msgs','T','tom','Tom',null,'👍 Nice work!',' Today at 2:19 PM',6200);
+}
+
+// PHASE 5 — Live Demo
+function runPhase5(){
+  setPhase(5); showViews(false,false,true,true,true);
+  document.getElementById('slack-msgs2').innerHTML='';
+  ['w1','w2','w3','w4'].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove('show'); });
+
+  const seq=[
+    {wa:'w1',sl:'slack-msgs2',av:'WA',avc:'wa',name:'+1 555 012 3456',badge:'APP',text:'Hi! I need help with my order 🙏',time:'10:23 AM',delay:800},
+    {wa:'w2',sl:'slack-msgs2',av:'S',avc:'sarah',name:'Sarah',badge:null,text:'Hey! Happy to help. What\'s your order number?',time:'10:24 AM',delay:2600},
+    {wa:'w3',sl:'slack-msgs2',av:'WA',avc:'wa',name:'+1 555 012 3456',badge:'APP',text:"It's #4821. It hasn't arrived yet 😟",time:'10:24 AM',delay:4400},
+    {wa:'w4',sl:'slack-msgs2',av:'S',avc:'sarah',name:'Sarah',badge:null,text:'Let me check that for you right now!',time:'10:25 AM',delay:6200},
+  ];
+
+  seq.forEach(({wa,sl,av,avc,name,badge,text,time,delay})=>{
+    setTimeout(()=>{
+      const waEl=document.getElementById(wa); if(waEl) waEl.classList.add('show');
+      setTimeout(()=>addSlackMsg(sl,av,avc,name,badge,text,time,0),500);
+    },delay);
+  });
+}
+
+const phases=[runPhase1,runPhase2,runPhase3,runPhase4,runPhase5];
+const durations=[5500,6000,5500,8000,9500];
+
+function run(idx){
+  if(idx>=phases.length) idx=0;
+  phases[idx]();
+  setTimeout(()=>run(idx+1),durations[idx]);
+}
+
+run(0);
+</script>
+</body>
+</html>
