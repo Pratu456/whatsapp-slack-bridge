@@ -30,7 +30,7 @@ function convertToMp3(inputBuffer) {
       .save(tmpOut);
   });
 }
-const { checkMessageLimit } = require('../services/planEnforcement');
+const { checkMessageLimit, checkGroupChatAllowed } = require('../services/planEnforcement');
 const { getTenantForIncomingMessage, getOrCreateChannelForTenant, postToTenantSlack, ensureChannelMembers } = require('../services/tenantService');
 const { getOrCreateGroupChannel, postGroupMessageToSlack, broadcastToGroup } = require('../services/groupService');
 
@@ -132,7 +132,13 @@ router.post('/', async (req, res) => {
             continue;
           }
 
+          // Plan check: group chat only allowed on Business plan
           if (group) {
+            const groupAllowed = await checkGroupChatAllowed(tenant.id);
+            if (!groupAllowed) {
+              await sendMetaMessage(waNumber, "Group chats are available on the Business plan. Please ask your team to upgrade at syncora.one", numId, accessToken);
+              return res.sendStatus(200);
+            }
             const channelId = await getOrCreateGroupChannel(tenant, group);
             if (claimCodeUsed) {
               await sendMetaMessage(waNumber,
