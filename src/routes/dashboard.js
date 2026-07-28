@@ -96,7 +96,6 @@ router.get('/', requireAuth, async (req, res) => {
                 <div style="height:100%;width:${usagePct}%;background:${barColor};border-radius:2px;transition:width .3s"></div>
               </div>
             </div>` : ''}
-            <div style="font-size:12px;color:rgba(255,255,255,.3)">📱 WhatsApp: <span style="color:rgba(255,255,255,.6);font-weight:600">${t.twilio_number}</span></div>` : ''}
           </div>`;
         }).join('');
 
