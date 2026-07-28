@@ -1112,7 +1112,9 @@ router.post('/send-invite', requireAuth, async (req, res) => {
 
     if (type === 'individual') {
       // Send individual invite
-      undefined
+      if (!privateNumber) return res.json({ success: false, error: "WhatsApp number not configured. Please add your Meta credentials in Account settings." });
+      const claimCode = tenant.claim_code || Math.random().toString(36).slice(2,8);
+      const waLink = "https://wa.me/" + privateNumber + "?text=" + encodeURIComponent(claimCode);
       const { sendInviteEmail } = require('../services/emailService');
       await sendInviteEmail({
         to: email,
