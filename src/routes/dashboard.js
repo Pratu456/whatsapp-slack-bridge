@@ -96,6 +96,7 @@ router.get('/', requireAuth, async (req, res) => {
                 <div style="height:100%;width:${usagePct}%;background:${barColor};border-radius:2px;transition:width .3s"></div>
               </div>
             </div>` : ''}
+            <a href="/auth/slack" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;margin-top:8px">↺ Reconnect Slack</a>
           </div>`;
         }).join('');
 
