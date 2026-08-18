@@ -540,7 +540,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
             <div style="font-size:11px;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Pro ⭐</div>
             <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px">€19.99 <span style="font-size:13px;color:rgba(255,255,255,.35);font-weight:400">/mo</span></div>
             <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px;line-height:1.8">✓ Unlimited messages<br>✓ 5 free users (+€2/user)<br>✓ Priority support<br>✓ 1 workspace</div>
-            ${plan === 'pro' ? '<div style="text-align:center;padding:10px;font-size:13px;font-weight:700;color:#25D366">✓ Current plan</div>' : plan === 'business' ? '<div style="text-align:center;padding:10px;font-size:13px;color:rgba(255,255,255,.3)">Downgrade not available</div>' : '<button onclick="upgradePlan(\'pro\'  )" style="width:100%;padding:10px;border-radius:8px;background:#25D366;color:#000;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit">Upgrade to Pro →</button>'}
+            ${plan === 'pro' ? '<div style="text-align:center;padding:10px;font-size:13px;font-weight:700;color:#25D366">✓ Current plan</div>' : plan === 'business' ? '<button onclick="showDowngradeModal()" style="width:100%;padding:10px;border-radius:8px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-size:13px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.1);font-family:inherit">Downgrade to Pro</button>' : '<button onclick="upgradePlan(\'pro\'  )" style="width:100%;padding:10px;border-radius:8px;background:#25D366;color:#000;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit">Upgrade to Pro →</button>'}
           </div>
           <div style="border:2px solid rgba(96,165,250,.5);border-radius:14px;padding:20px">
             <div style="font-size:11px;font-weight:700;color:#60a5fa;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Business 🚀</div>
@@ -551,6 +551,34 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
         </div>
       </div>
 
+
+      <!-- Downgrade Modal -->
+      <div id="downgradeOverlay" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px">
+        <div style="background:#0f0f16;border:1px solid rgba(255,255,255,.1);border-radius:16px;max-width:460px;width:100%;padding:28px">
+          <h3 style="font-size:18px;font-weight:700;color:#fff;margin:0 0 8px">⚠️ Downgrade to Pro?</h3>
+          <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin:0 0 20px">You are currently on the <strong style="color:#60a5fa">Business plan</strong>. Downgrading to Pro will affect the following:</p>
+
+          <div style="background:#16161f;border-radius:10px;padding:14px;margin-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px">What you will lose:</div>
+            <div style="font-size:13px;color:#f87171;margin-bottom:6px;display:flex;align-items:center;gap:8px"><span>✕</span> Group chats (Business only)</div>
+            <div style="font-size:13px;color:#f87171;margin-bottom:6px;display:flex;align-items:center;gap:8px"><span>✕</span> 10 free users → 5 free users</div>
+            <div style="font-size:13px;color:#f87171;display:flex;align-items:center;gap:8px"><span>✕</span> Dedicated support → Priority support</div>
+          </div>
+
+          <div style="background:#16161f;border-radius:10px;padding:14px;margin-bottom:20px">
+            <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px">What you keep:</div>
+            <div style="font-size:13px;color:#4ade80;margin-bottom:6px;display:flex;align-items:center;gap:8px"><span>✓</span> Unlimited messages</div>
+            <div style="font-size:13px;color:#4ade80;display:flex;align-items:center;gap:8px"><span>✓</span> 1 workspace</div>
+          </div>
+
+          <p style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:20px">Your plan will be downgraded immediately. You will be billed €19.99/mo from the next billing cycle.</p>
+
+          <div style="display:flex;gap:10px">
+            <button onclick="closeDowngradeModal()" style="flex:1;padding:11px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:8px;color:rgba(255,255,255,.6);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
+            <button onclick="confirmDowngrade()" id="confirm-downgrade-btn" style="flex:1;padding:11px;background:#f87171;border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Yes, Downgrade to Pro</button>
+          </div>
+        </div>
+      </div>
       <!-- Danger zone -->
       <div class="card" style="border-color:rgba(239,68,68,.15)">
         <div class="card-title" style="color:#f87171">⚠ Danger zone</div>
@@ -951,6 +979,41 @@ document.addEventListener('DOMContentLoaded', loadInvoices);
 function openWaHelp(){ document.getElementById('waHelpOverlay').style.display = 'flex'; }
 function closeWaHelp(){ document.getElementById('waHelpOverlay').style.display = 'none'; }
 
+
+function showDowngradeModal() {
+  document.getElementById('downgradeOverlay').style.display = 'flex';
+}
+function closeDowngradeModal() {
+  document.getElementById('downgradeOverlay').style.display = 'none';
+}
+async function confirmDowngrade() {
+  var btn = document.getElementById('confirm-downgrade-btn');
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
+  try {
+    var r = await fetch('/dashboard/downgrade-plan', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({plan: 'pro'})
+    });
+    var d = await r.json();
+    if (d.success) {
+      closeDowngradeModal();
+      alert('Your plan has been downgraded to Pro. The page will now reload.');
+      location.reload();
+    } else {
+      alert('Error: ' + (d.error || 'Something went wrong'));
+      btn.disabled = false;
+      btn.textContent = 'Yes, Downgrade to Pro';
+    }
+  } catch(err) {
+    alert('Error: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = 'Yes, Downgrade to Pro';
+  }
+}
+
 </script>
 </body>
 </html>`);
@@ -1207,6 +1270,44 @@ router.get('/contacts-data', requireAuth, async (req, res) => {
     );
     res.json({ contacts: result.rows });
   } catch(e) { res.json({ contacts: [] }); }
+});
+
+
+// Downgrade plan
+router.post('/downgrade-plan', requireAuth, async (req, res) => {
+  try {
+    const { plan } = req.body;
+    if (!['starter', 'pro'].includes(plan)) return res.json({ success: false, error: 'Invalid downgrade target' });
+    const user = await pool.query('SELECT * FROM users WHERE id = $1', [req.session.userId]);
+    if (!user.rows.length) return res.json({ success: false, error: 'User not found' });
+    const tenant = await pool.query(
+      'SELECT * FROM tenants WHERE LOWER(email) = $1 AND is_active = TRUE LIMIT 1',
+      [user.rows[0].email.toLowerCase()]
+    );
+    if (!tenant.rows.length) return res.json({ success: false, error: 'No active workspace found' });
+    const t = tenant.rows[0];
+
+    // Cancel Stripe subscription if exists
+    if (t.stripe_subscription_id) {
+      try {
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        await stripe.subscriptions.update(t.stripe_subscription_id, {
+          cancel_at_period_end: true,
+        });
+        console.log('[DOWNGRADE] Stripe subscription set to cancel at period end:', t.stripe_subscription_id);
+      } catch(stripeErr) {
+        console.warn('[DOWNGRADE] Stripe error:', stripeErr.message);
+      }
+    }
+
+    // Update plan in DB
+    await pool.query('UPDATE tenants SET plan = $1 WHERE id = $2', [plan, t.id]);
+    console.log('[DOWNGRADE] Tenant', t.id, 'downgraded to', plan);
+    res.json({ success: true });
+  } catch(err) {
+    console.error('[DOWNGRADE] Error:', err.message);
+    res.json({ success: false, error: err.message });
+  }
 });
 
 module.exports = router;
