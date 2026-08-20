@@ -1014,6 +1014,37 @@ async function confirmDowngrade() {
   }
 }
 
+
+// Check if returning from successful payment
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('payment') === 'success') {
+    // Poll for plan update (webhook may be delayed)
+    var attempts = 0;
+    var interval = setInterval(async function() {
+      attempts++;
+      try {
+        var r = await fetch('/auth/me', {credentials: 'same-origin'});
+        var d = await r.json();
+        // Reload page to get fresh plan data from DB
+        if (attempts >= 3) {
+          clearInterval(interval);
+          window.history.replaceState({}, '', '/dashboard');
+          location.reload();
+        }
+      } catch(e) { clearInterval(interval); }
+    }, 2000);
+    // Show success message
+    setTimeout(function() {
+      var banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#25D366;color:#000;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(37,211,102,.3)';
+      banner.textContent = '✅ Payment successful! Activating your plan...';
+      document.body.appendChild(banner);
+      setTimeout(function() { banner.remove(); }, 5000);
+    }, 500);
+  }
+})();
+
 </script>
 </body>
 </html>`);
