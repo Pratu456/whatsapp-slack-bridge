@@ -881,7 +881,8 @@ async function upgradePlan(plan) {
     const d = await r.json();
     if (d.url) {
       window.location.href = d.url;
-    } else {
+    } else if (d.error === "Unauthorized") {
+      window.location.href = "/auth/login";
       alert("Error: " + (d.error || "Something went wrong"));
       btn.disabled = false;
       btn.textContent = "Upgrade to " + plan.charAt(0).toUpperCase() + plan.slice(1) + " →";
