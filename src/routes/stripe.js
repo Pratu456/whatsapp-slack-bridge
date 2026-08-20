@@ -119,6 +119,8 @@ router.post('/portal', auth, async (req, res) => {
 });
 
 router.post('/webhook', async (req, res) => {
+  console.log('[STRIPE WEBHOOK HIT] headers:', JSON.stringify(req.headers['stripe-signature']?.slice(0,20)));
+  console.log('[STRIPE WEBHOOK] body type:', typeof req.body, 'isBuffer:', Buffer.isBuffer(req.body));
   const sig = req.headers['stripe-signature'];
   let event;
   try {
