@@ -1022,19 +1022,10 @@ async function confirmDowngrade() {
   if (params.get('payment') === 'success') {
     // Poll for plan update (webhook may be delayed)
     var attempts = 0;
-    var interval = setInterval(async function() {
-      attempts++;
-      try {
-        var r = await fetch('/auth/me', {credentials: 'same-origin'});
-        var d = await r.json();
-        // Reload page to get fresh plan data from DB
-        if (attempts >= 3) {
-          clearInterval(interval);
-          window.history.replaceState({}, '', '/dashboard');
-          location.reload();
-        }
-      } catch(e) { clearInterval(interval); }
-    }, 2000);
+    setTimeout(function() {
+        window.history.replaceState({}, '', '/dashboard');
+        location.reload();
+      }, 5000);
     // Show success message
     setTimeout(function() {
       var banner = document.createElement('div');
