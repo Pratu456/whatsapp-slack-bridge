@@ -25,7 +25,7 @@ router.get('/create-checkout', auth, async (req, res) => {
     const plan = req.query.plan;
     if (!PLANS[plan]) return res.redirect('/dashboard');
     const r1 = await pool.query(
-      'SELECT t.* FROM tenants t JOIN users u ON u.email = t.email WHERE u.id = $1 LIMIT 1',
+      'SELECT t.* FROM tenants t JOIN users u ON LOWER(u.email) = LOWER(t.email) WHERE u.id = $1 ORDER BY t.created_at ASC LIMIT 1',
       [req.session.userId]
     );
     const tenant = r1.rows[0];
@@ -62,7 +62,7 @@ router.post('/create-checkout', auth, async (req, res) => {
     if (!PLANS[plan]) return res.status(400).json({ error: 'Invalid plan' });
 
     const r1 = await pool.query(
-      'SELECT t.* FROM tenants t JOIN users u ON u.email = t.email WHERE u.id = $1 LIMIT 1',
+      'SELECT t.* FROM tenants t JOIN users u ON LOWER(u.email) = LOWER(t.email) WHERE u.id = $1 ORDER BY t.created_at ASC LIMIT 1',
       [req.session.userId]
     );
     const tenant = r1.rows[0];
@@ -99,7 +99,7 @@ router.post('/create-checkout', auth, async (req, res) => {
 router.post('/portal', auth, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT t.* FROM tenants t JOIN users u ON u.email = t.email WHERE u.id = $1 LIMIT 1',
+      'SELECT t.* FROM tenants t JOIN users u ON LOWER(u.email) = LOWER(t.email) WHERE u.id = $1 ORDER BY t.created_at ASC LIMIT 1',
       [req.session.userId]
     );
     const tenant = result.rows[0];
@@ -243,7 +243,11 @@ router.post('/webhook', async (req, res) => {
       case 'customer.subscription.updated': {
         const sub = event.data.object;
         const customer = await stripe.customers.retrieve(sub.customer);
-        const tenantId = customer.metadata && customer.metadata.tenant_id;
+        let tenantId = customer.metadata && customer.metadata.tenant_id;
+        if (!tenantId) {
+          const _r = await pool.query('SELECT id FROM tenants WHERE stripe_customer_id = $1 LIMIT 1', [sub.customer]);
+          tenantId = _r.rows[0] && _r.rows[0].id;
+        }
         if (tenantId) {
           const priceId = sub.items.data[0] && sub.items.data[0].price && sub.items.data[0].price.id;
           let plan = 'starter';
@@ -261,7 +265,11 @@ router.post('/webhook', async (req, res) => {
       case 'customer.subscription.deleted': {
         const sub = event.data.object;
         const customer = await stripe.customers.retrieve(sub.customer);
-        const tenantId = customer.metadata && customer.metadata.tenant_id;
+        let tenantId = customer.metadata && customer.metadata.tenant_id;
+        if (!tenantId) {
+          const _r = await pool.query('SELECT id FROM tenants WHERE stripe_customer_id = $1 LIMIT 1', [sub.customer]);
+          tenantId = _r.rows[0] && _r.rows[0].id;
+        }
         if (tenantId) {
           await pool.query(
             'UPDATE tenants SET plan = $1, paid = FALSE WHERE id = $2',

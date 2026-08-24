@@ -1001,7 +1001,7 @@ async function confirmDowngrade() {
     var d = await r.json();
     if (d.success) {
       closeDowngradeModal();
-      alert('Your plan has been downgraded to Pro. The page will now reload.');
+      alert('Your plan has been changed to ' + (d.plan || 'your new plan') + '. The page will now reload.');
       location.reload();
     } else {
       alert('Error: ' + (d.error || 'Something went wrong'));
@@ -1021,11 +1021,26 @@ async function confirmDowngrade() {
   var params = new URLSearchParams(window.location.search);
   if (params.get('payment') === 'success') {
     // Poll for plan update (webhook may be delayed)
-    var attempts = 0;
-    setTimeout(function() {
+    var startPlan = '${plan}';
+    var tries = 0;
+    var poll = setInterval(async function() {
+      tries++;
+      try {
+        var pr = await fetch('/dashboard/plan-status', { credentials: 'same-origin' });
+        var pd = await pr.json();
+        if (pd.plan && pd.plan !== startPlan) {
+          clearInterval(poll);
+          window.history.replaceState({}, '', '/dashboard');
+          location.reload();
+          return;
+        }
+      } catch(e) {}
+      if (tries >= 15) {
+        clearInterval(poll);
         window.history.replaceState({}, '', '/dashboard');
         location.reload();
-      }, 5000);
+      }
+    }, 2000);
     // Show success message
     setTimeout(function() {
       var banner = document.createElement('div');
@@ -1304,32 +1319,55 @@ router.post('/downgrade-plan', requireAuth, async (req, res) => {
     const user = await pool.query('SELECT * FROM users WHERE id = $1', [req.session.userId]);
     if (!user.rows.length) return res.json({ success: false, error: 'User not found' });
     const tenant = await pool.query(
-      'SELECT * FROM tenants WHERE LOWER(email) = $1 AND is_active = TRUE LIMIT 1',
+      'SELECT * FROM tenants WHERE LOWER(email) = $1 ORDER BY created_at ASC LIMIT 1',
       [user.rows[0].email.toLowerCase()]
     );
     if (!tenant.rows.length) return res.json({ success: false, error: 'No active workspace found' });
     const t = tenant.rows[0];
 
-    // Cancel Stripe subscription if exists
-    if (t.stripe_subscription_id) {
-      try {
-        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-        await stripe.subscriptions.update(t.stripe_subscription_id, {
-          cancel_at_period_end: true,
-        });
-        console.log('[DOWNGRADE] Stripe subscription set to cancel at period end:', t.stripe_subscription_id);
-      } catch(stripeErr) {
-        console.warn('[DOWNGRADE] Stripe error:', stripeErr.message);
-      }
+    if (!t.stripe_subscription_id) {
+      await pool.query('UPDATE tenants SET plan = $1, paid = FALSE WHERE id = $2', ['starter', t.id]);
+      console.log('[DOWNGRADE] Tenant', t.id, 'no subscription -> starter');
+      return res.json({ success: true, plan: 'starter' });
     }
 
-    // Update plan in DB
-    await pool.query('UPDATE tenants SET plan = $1 WHERE id = $2', [plan, t.id]);
-    console.log('[DOWNGRADE] Tenant', t.id, 'downgraded to', plan);
-    res.json({ success: true });
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const sub = await stripe.subscriptions.retrieve(t.stripe_subscription_id);
+
+    if (plan === 'starter') {
+      await stripe.subscriptions.cancel(t.stripe_subscription_id);
+      console.log('[DOWNGRADE] Tenant', t.id, 'subscription cancelled');
+    } else {
+      const _priceId = plan === 'pro'
+        ? process.env.STRIPE_PRO_PRICE_ID
+        : process.env.STRIPE_BUSINESS_PRICE_ID;
+      await stripe.subscriptions.update(t.stripe_subscription_id, {
+        items: [{ id: sub.items.data[0].id, price: _priceId }],
+        proration_behavior: 'create_prorations',
+      });
+      console.log('[DOWNGRADE] Tenant', t.id, 'price swapped ->', plan);
+    }
+
+    // plan is written by the Stripe webhook only — single source of truth
+    res.json({ success: true, plan: plan });
   } catch(err) {
     console.error('[DOWNGRADE] Error:', err.message);
     res.json({ success: false, error: err.message });
+  }
+});
+
+router.get('/plan-status', requireAuth, async (req, res) => {
+  try {
+    const u = await pool.query('SELECT email FROM users WHERE id = $1', [req.session.userId]);
+    if (!u.rows.length) return res.json({ plan: null });
+    const t = await pool.query(
+      'SELECT plan FROM tenants WHERE LOWER(email) = $1 ORDER BY created_at ASC LIMIT 1',
+      [u.rows[0].email.toLowerCase()]
+    );
+    res.json({ plan: (t.rows[0] && t.rows[0].plan) || 'starter' });
+  } catch (e) {
+    console.warn('[PLAN-STATUS]', e.message);
+    res.json({ plan: null });
   }
 });
 
