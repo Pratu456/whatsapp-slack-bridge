@@ -401,7 +401,10 @@ router.get('/slack/callback', async (req, res) => {
       const decoded = JSON.parse(Buffer.from(state, 'base64').toString());
       companyName = decoded.companyName || 'Unknown Company';
       email       = decoded.email || '';
-    } catch (e) { console.log('Could not decode state:', e.message); }
+    } catch (e) {
+      console.error('[SLACK OAUTH] State decode failed:', e.message);
+      return res.send('<h2>Connection failed - session expired.</h2><p>Please return to your dashboard and click "Connect Slack" again.</p>');
+    }
 
     const response = await axios.post('https://slack.com/api/oauth.v2.access', null, {
       params: {
@@ -421,13 +424,21 @@ router.get('/slack/callback', async (req, res) => {
 
     console.log(`Slack OAuth success: ${companyName} — ${teamName} (${teamId})`);
 
-    const existing = await pool.query('SELECT id FROM tenants WHERE slack_team_id = $1 OR (LOWER(email) = $2 AND slack_team_id = $3)', [teamId, (email || '').toLowerCase().trim(), 'MANUAL']);
+    const existing = await pool.query('SELECT id, email FROM tenants WHERE slack_team_id = $1 OR (LOWER(email) = $2 AND slack_team_id = $3)', [teamId, (email || '').toLowerCase().trim(), 'MANUAL']);
 
     if (existing.rows.length > 0) {
+      const _row = existing.rows[0];
+      const _oldEmail = (_row.email || '').toLowerCase().trim();
+      const _newEmail = (email || '').toLowerCase().trim();
+      if (_oldEmail && _newEmail && _oldEmail !== _newEmail) {
+        console.warn('[SLACK OAUTH] Blocked takeover of workspace', teamId, '- already owned by another account');
+        return res.send('<h2>This Slack workspace is already connected to another Syncora account.</h2><p>Disconnect it there first, or contact support@syncora.one.</p>');
+      }
       await pool.query(
-        'UPDATE tenants SET slack_bot_token = $1, slack_team_name = $2, company_name = $3, email = COALESCE(NULLIF($4,\'\'), email) WHERE slack_team_id = $5',
-        [botToken, teamName, companyName, email, teamId]
+        'UPDATE tenants SET slack_bot_token = $1, slack_team_name = $2, company_name = $3, email = COALESCE(NULLIF($4,\'\'), email), slack_team_id = $5, is_active = TRUE WHERE id = $6',
+        [botToken, teamName, companyName, email, teamId, _row.id]
       );
+      console.log('[SLACK OAUTH] Reconnected tenant', _row.id, '- token refreshed, is_active=TRUE');
     } else if (companyName && companyName !== "Unknown Company" && email) {
       // Auto-generate claim code
             const claimChars = 'abcdefghijklmnpqrstuvwxyz23456789';
@@ -454,6 +465,9 @@ router.get('/slack/callback', async (req, res) => {
                 console.log('[SLACK OAUTH] Activation email sent to', email);
               } catch(e) { console.error('[SLACK OAUTH] Activation email failed:', e.message); }
             }
+    } else {
+      console.error('[SLACK OAUTH] No tenant created - companyName:', companyName, '| email:', email || '(none)');
+      return res.send('<h2>Connection incomplete - missing account details.</h2><p>Please log in to your dashboard and click "Connect Slack" from there.</p>');
     }
 
         // Create user account and send login credentials
