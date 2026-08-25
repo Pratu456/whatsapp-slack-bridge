@@ -87,6 +87,23 @@ server.post('/slack/events', express.raw({ type: '*/*' }), async (req, res) => {
 
     console.log('[SLACK EVENT]', parsed.event?.type, '| channel:', parsed.event?.channel);
 
+    const _evType = parsed.event && parsed.event.type;
+    if (_evType === 'app_uninstalled' || _evType === 'tokens_revoked') {
+      const _teamId = parsed.team_id;
+      if (_teamId) {
+        try {
+          const _r = await pool.query(
+            'UPDATE tenants SET slack_connected = FALSE, slack_disconnected_at = NOW() WHERE slack_team_id = $1 RETURNING id',
+            [_teamId]
+          );
+          console.warn('[SLACK] Disconnected —', _evType, '| team:', _teamId, '| tenants:', _r.rowCount);
+        } catch (e) { console.error('[SLACK] Disconnect update failed:', e.message); }
+      } else {
+        console.warn('[SLACK]', _evType, 'received with no team_id');
+      }
+      return;
+    }
+
     if (parsed.event) {
       handleSlackEvent(parsed.event).catch(err =>
         console.error('[SLACK EVENT ERROR]', err.message)

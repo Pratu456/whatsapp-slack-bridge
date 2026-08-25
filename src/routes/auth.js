@@ -435,7 +435,7 @@ router.get('/slack/callback', async (req, res) => {
         return res.send('<h2>This Slack workspace is already connected to another Syncora account.</h2><p>Disconnect it there first, or contact support@syncora.one.</p>');
       }
       await pool.query(
-        'UPDATE tenants SET slack_bot_token = $1, slack_team_name = $2, company_name = $3, email = COALESCE(NULLIF($4,\'\'), email), slack_team_id = $5, is_active = TRUE WHERE id = $6',
+        'UPDATE tenants SET slack_bot_token = $1, slack_team_name = $2, company_name = $3, email = COALESCE(NULLIF($4,\'\'), email), slack_team_id = $5, is_active = TRUE, slack_connected = TRUE, slack_disconnected_at = NULL WHERE id = $6',
         [botToken, teamName, companyName, email, teamId, _row.id]
       );
       console.log('[SLACK OAUTH] Reconnected tenant', _row.id, '- token refreshed, is_active=TRUE');

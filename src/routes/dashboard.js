@@ -71,7 +71,9 @@ router.get('/', requireAuth, async (req, res) => {
                   <div style="font-size:11px;color:rgba(255,255,255,.3)">Slack workspace</div>
                 </div>
               </div>
-              ${t.is_active
+              ${t.slack_connected === false
+                ? '<span style="background:rgba(248,113,113,.1);color:#f87171;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(248,113,113,.25)">Deactivated</span>'
+                : t.is_active
                 ? '<span style="background:rgba(37,211,102,.1);color:#4ade80;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(37,211,102,.2)">Active</span>'
                 : '<span style="background:rgba(245,158,11,.1);color:#fbbf24;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(245,158,11,.2)">Pending</span>'}
             </div>
