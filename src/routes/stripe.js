@@ -30,6 +30,27 @@ router.get('/create-checkout', auth, async (req, res) => {
     );
     const tenant = r1.rows[0];
     if (!tenant) return res.redirect('/dashboard');
+
+    // Reuse the existing subscription instead of creating a second one
+    if (tenant.stripe_customer_id) {
+      const _subs = await stripe.subscriptions.list({ customer: tenant.stripe_customer_id, status: 'active', limit: 20 });
+      if (_subs.data.length) {
+        const _sub = _subs.data[0];
+        await pool.query('UPDATE tenants SET stripe_subscription_id = $1 WHERE id = $2', [_sub.id, tenant.id]);
+        await stripe.subscriptions.update(_sub.id, {
+          items: [{ id: _sub.items.data[0].id, price: PLANS[plan].priceId }],
+          proration_behavior: 'create_prorations',
+        });
+        console.log('[STRIPE] Reused subscription', _sub.id, '-> ' + plan);
+        for (const _extra of _subs.data.slice(1)) {
+          try {
+            await stripe.subscriptions.cancel(_extra.id);
+            console.warn('[STRIPE] Cancelled duplicate subscription', _extra.id);
+          } catch (e) { console.warn('[STRIPE] Could not cancel', _extra.id, e.message); }
+        }
+        return res.redirect('/dashboard?payment=success');
+      }
+    }
     let customerId = tenant.stripe_customer_id;
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -67,6 +88,27 @@ router.post('/create-checkout', auth, async (req, res) => {
     );
     const tenant = r1.rows[0];
     if (!tenant) return res.status(404).json({ error: 'Tenant not found' });
+
+    // Reuse the existing subscription instead of creating a second one
+    if (tenant.stripe_customer_id) {
+      const _subs = await stripe.subscriptions.list({ customer: tenant.stripe_customer_id, status: 'active', limit: 20 });
+      if (_subs.data.length) {
+        const _sub = _subs.data[0];
+        await pool.query('UPDATE tenants SET stripe_subscription_id = $1 WHERE id = $2', [_sub.id, tenant.id]);
+        await stripe.subscriptions.update(_sub.id, {
+          items: [{ id: _sub.items.data[0].id, price: PLANS[plan].priceId }],
+          proration_behavior: 'create_prorations',
+        });
+        console.log('[STRIPE] Reused subscription', _sub.id, '-> ' + plan);
+        for (const _extra of _subs.data.slice(1)) {
+          try {
+            await stripe.subscriptions.cancel(_extra.id);
+            console.warn('[STRIPE] Cancelled duplicate subscription', _extra.id);
+          } catch (e) { console.warn('[STRIPE] Could not cancel', _extra.id, e.message); }
+        }
+        return res.json({ url: '/dashboard?payment=success' });
+      }
+    }
 
     let customerId = tenant.stripe_customer_id;
     if (!customerId) {
@@ -271,8 +313,14 @@ router.post('/webhook', async (req, res) => {
           tenantId = _r.rows[0] && _r.rows[0].id;
         }
         if (tenantId) {
+          const _cur = await pool.query('SELECT stripe_subscription_id FROM tenants WHERE id = $1', [tenantId]);
+          const _curSub = _cur.rows[0] && _cur.rows[0].stripe_subscription_id;
+          if (_curSub && _curSub !== sub.id) {
+            console.log('[STRIPE] Ignoring deletion of stale subscription', sub.id, '- tenant', tenantId, 'is on', _curSub);
+            break;
+          }
           await pool.query(
-            'UPDATE tenants SET plan = $1, paid = FALSE WHERE id = $2',
+            'UPDATE tenants SET plan = $1, paid = FALSE, stripe_subscription_id = NULL WHERE id = $2',
             ['starter', tenantId]
           );
           console.log('[STRIPE] Tenant', tenantId, 'downgraded to starter');
