@@ -40,6 +40,17 @@ router.get('/', requireAuth, async (req, res) => {
     ]));
     const statsResults = await Promise.all(statsPromises);
 
+    let _pendingBanner = '';
+    if (user.deletion_requested_at) {
+      const _due = new Date(new Date(user.deletion_requested_at).getTime() + 31 * 24 * 60 * 60 * 1000);
+      const _left = Math.max(0, Math.ceil((_due - Date.now()) / 86400000));
+      _pendingBanner = '<div style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:16px;margin-bottom:20px">'
+        + '<div style="font-size:14px;font-weight:700;color:#f87171;margin-bottom:6px">This account is scheduled for deletion</div>'
+        + '<div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:12px">All data will be permanently removed in ' + _left + ' day' + (_left === 1 ? '' : 's') + '. Your workspaces are paused until you restore the account.</div>'
+        + '<button onclick="restoreAccount()" style="padding:9px 16px;border-radius:8px;background:#4ade80;color:#000;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit">Restore my account</button>'
+        + '</div>';
+    }
+
     const plan = (tenants[0] && tenants[0].plan) ? tenants[0].plan : 'starter';
     const planInfo = PLANS[plan] || PLANS.starter;
     const maxWorkspaces = planInfo.workspaces;
@@ -247,6 +258,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);display:
       <div class="page-title">Welcome back, ${user.full_name.split(' ')[0]} 👋</div>
       <div class="page-sub">${user.company_name} · ${planInfo.label} plan</div>
 
+      ${_pendingBanner}
       ${upgradeBanner}
 
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px">
@@ -923,12 +935,25 @@ async function changePassword() {
   if (d.success) { document.getElementById('uCurrPwd').value = ''; document.getElementById('uNewPwd').value = ''; }
 }
 async function deleteAccount() {
-  if (!confirm('Are you sure? This will permanently delete your account and all data.')) return;
-  if (!confirm('This cannot be undone. Are you absolutely sure?')) return;
+  if (!confirm('Delete your account?\n\nYour workspaces will stop working immediately. You have 31 days to log back in and restore the account before everything is permanently deleted.')) return;
   var r = await fetch('/dashboard/delete-account', {method:'POST', credentials:'same-origin'});
   var d = await r.json();
-  if (d.success) { window.location.href = '/'; }
-  else showMsg(document.getElementById('deleteMsg'), 'Error: ' + d.error, false);
+  if (d.success) {
+    alert('Your account is scheduled for deletion in 31 days. Log back in any time before then to restore it.');
+    window.location.href = '/';
+    return;
+  }
+  if (d.code === 'subscription_active') {
+    alert('You still have an active subscription.\n\nPlease cancel it first, then delete your account.');
+    return;
+  }
+  showMsg(document.getElementById('deleteMsg'), 'Error: ' + d.error, false);
+}
+async function restoreAccount() {
+  var r = await fetch('/dashboard/restore-account', {method:'POST', credentials:'same-origin'});
+  var d = await r.json();
+  if (d.success) { location.reload(); }
+  else alert('Error: ' + (d.error || 'Could not restore account'));
 }
 function showMsg(el, text, ok) {
   el.textContent = text;
@@ -1099,12 +1124,43 @@ router.post('/delete-account', requireAuth, async (req, res) => {
   try {
     const userId = req.session.userId;
     const user = await pool.query('SELECT email FROM users WHERE id = $1', [userId]);
-    if (user.rows.length) {
-      // Remove tenants linked to this email
-      await pool.query('DELETE FROM tenants WHERE LOWER(email) = $1', [user.rows[0].email.toLowerCase()]);
+    if (!user.rows.length) return res.json({ success: false, error: 'User not found' });
+    const _email = user.rows[0].email.toLowerCase();
+
+    // The subscription must be cancelled before the account can be deleted
+    const _t = await pool.query('SELECT id, stripe_subscription_id FROM tenants WHERE LOWER(email) = $1', [_email]);
+    const _withSub = _t.rows.filter(r => r.stripe_subscription_id);
+    if (_withSub.length) {
+      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+      for (const r of _withSub) {
+        try {
+          const s = await stripe.subscriptions.retrieve(r.stripe_subscription_id);
+          if (['active', 'trialing', 'past_due', 'unpaid'].includes(s.status)) {
+            return res.json({ success: false, code: 'subscription_active', error: 'Please cancel your subscription before deleting your account.' });
+          }
+        } catch (e) { console.warn('[DELETE] Subscription lookup failed:', e.message); }
+      }
     }
-    await pool.query('DELETE FROM users WHERE id = $1', [userId]);
-    req.session.destroy();
+
+    await pool.query('UPDATE users SET deletion_requested_at = NOW() WHERE id = $1', [userId]);
+    await pool.query('UPDATE tenants SET deletion_requested_at = NOW(), is_active = FALSE WHERE LOWER(email) = $1', [_email]);
+    console.log('[DELETE] Account', userId, '(' + _email + ') scheduled for permanent deletion in 31 days');
+    req.session.destroy(() => {});
+    res.json({ success: true, days: 31 });
+  } catch(err) { res.json({ success: false, error: err.message }); }
+});
+
+// ── Restore a pending-deletion account ─────────────────────
+router.post('/restore-account', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const user = await pool.query('SELECT email, deletion_requested_at FROM users WHERE id = $1', [userId]);
+    if (!user.rows.length) return res.json({ success: false, error: 'User not found' });
+    if (!user.rows[0].deletion_requested_at) return res.json({ success: false, error: 'This account is not scheduled for deletion.' });
+    const _email = user.rows[0].email.toLowerCase();
+    await pool.query('UPDATE users SET deletion_requested_at = NULL WHERE id = $1', [userId]);
+    await pool.query('UPDATE tenants SET deletion_requested_at = NULL, is_active = TRUE WHERE LOWER(email) = $1', [_email]);
+    console.log('[DELETE] Account', userId, 'restored');
     res.json({ success: true });
   } catch(err) { res.json({ success: false, error: err.message }); }
 });
