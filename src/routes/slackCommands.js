@@ -249,7 +249,26 @@ router.post('/commands', express.urlencoded({ extended: true }), verifySlack, as
       return;
     }
 
-    await respond(response_url, '❌ Unknown command. Use `/syncora-add`, `/syncora-remove`, `/syncora-groups`, or `/syncora-create-group`');
+    if (command === '/block' || command === '/unblock') {
+      const { channel_id } = req.body;
+      const _block = command === '/block';
+      const { rows: _c } = await pool.query(
+        'SELECT id, wa_number FROM contacts WHERE slack_channel = $1 AND tenant_id = $2',
+        [channel_id, tenant.id]
+      );
+      if (!_c.length) {
+        await respond(response_url, '❌ This channel is not linked to a WhatsApp contact.');
+        return;
+      }
+      await pool.query('UPDATE contacts SET blocked = $1 WHERE id = $2 AND tenant_id = $3', [_block, _c[0].id, tenant.id]);
+      console.log('[SLASH CMD]', command, 'tenant', tenant.id, 'contact', _c[0].wa_number);
+      await respond(response_url, _block
+        ? '🚫 Contact *' + _c[0].wa_number + '* blocked. No further messages will be forwarded.'
+        : '✅ Contact *' + _c[0].wa_number + '* unblocked.');
+      return;
+    }
+
+    await respond(response_url, '❌ Unknown command. Use `/history`, `/block`, `/unblock`, `/syncora-add`, `/syncora-remove`, `/syncora-groups`, or `/syncora-create-group`');
 
   } catch(e) {
     console.error('[SLASH CMD ERROR]', e.message);
