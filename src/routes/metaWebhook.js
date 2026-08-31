@@ -137,7 +137,7 @@ router.post('/', async (req, res) => {
             const groupAllowed = await checkGroupChatAllowed(tenant.id);
             if (!groupAllowed) {
               await sendMetaMessage(waNumber, "Group chats are available on the Business plan. Please ask your team to upgrade at syncora.one", numId, accessToken);
-              return res.sendStatus(200);
+              continue;
             }
             const channelId = await getOrCreateGroupChannel(tenant, group);
             if (claimCodeUsed) {
