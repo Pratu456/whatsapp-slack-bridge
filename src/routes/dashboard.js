@@ -935,7 +935,7 @@ async function changePassword() {
   if (d.success) { document.getElementById('uCurrPwd').value = ''; document.getElementById('uNewPwd').value = ''; }
 }
 async function deleteAccount() {
-  if (!confirm('Delete your account?\n\nYour workspaces will stop working immediately. You have 31 days to log back in and restore the account before everything is permanently deleted.')) return;
+  if (!confirm('Delete your account? Your workspaces will stop working immediately. You have 31 days to log back in and restore the account before everything is permanently deleted.')) return;
   var r = await fetch('/dashboard/delete-account', {method:'POST', credentials:'same-origin'});
   var d = await r.json();
   if (d.success) {
@@ -944,7 +944,7 @@ async function deleteAccount() {
     return;
   }
   if (d.code === 'subscription_active') {
-    alert('You still have an active subscription.\n\nPlease cancel it first, then delete your account.');
+    alert('You still have an active subscription. Please cancel it first, then delete your account.');
     return;
   }
   showMsg(document.getElementById('deleteMsg'), 'Error: ' + d.error, false);
