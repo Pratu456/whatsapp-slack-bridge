@@ -440,6 +440,18 @@ router.get('/slack/callback', async (req, res) => {
       );
       console.log('[SLACK OAUTH] Reconnected tenant', _row.id, '- token refreshed, is_active=TRUE');
     } else if (companyName && companyName !== "Unknown Company" && email) {
+      // Enforce the plan's workspace limit before creating another tenant
+      const { PLANS } = require('../services/planEnforcement');
+      const _owned = await pool.query('SELECT plan FROM tenants WHERE LOWER(email) = $1 ORDER BY created_at ASC', [email.toLowerCase().trim()]);
+      if (_owned.rows.length) {
+        const _plan = _owned.rows[0].plan || 'starter';
+        const _max = (PLANS[_plan] && PLANS[_plan].workspaces) || 1;
+        if (_max !== 999 && _owned.rows.length >= _max) {
+          console.warn('[SLACK OAUTH] Blocked - ' + email + ' has ' + _owned.rows.length + '/' + _max + ' workspaces on ' + _plan);
+          return res.send('<h2>Workspace limit reached</h2><p>Your ' + _plan + ' plan includes ' + _max + ' workspace' + (_max > 1 ? 's' : '') + '. Upgrade your plan to connect another Slack workspace.</p><p><a href="/dashboard" style="color:#25D366">Back to dashboard</a></p>');
+        }
+      }
+
       // Auto-generate claim code
             const claimChars = 'abcdefghijklmnpqrstuvwxyz23456789';
             let autoClaimCode = '';
