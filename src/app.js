@@ -538,6 +538,8 @@ const start = async () => {
       console.log('Session store: PostgreSQL ✅'); // Redis disabled - using PG
     }
 
+    require("./jobs/purgeDeletedAccounts").start();
+
     server.listen(process.env.PORT || 3000, () => {
       console.log(`Server running on port ${process.env.PORT || 3000} in HTTP mode`);
     });
